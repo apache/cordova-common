@@ -5,5 +5,7 @@ git:
 node_js:
   - "4"
   - "6"
+install:
+  - "npm install"
 script:
   - "npm test"
