@@ -17,43 +17,43 @@
     under the License.
 */
 
-var shell = require('shelljs'),
-    path = require('path'),
-    CordovaCheck = require('../src/CordovaCheck');
+var shell = require('shelljs');
+var path = require('path');
+var CordovaCheck = require('../src/CordovaCheck');
 
 var cwd = process.cwd();
-var home = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+var home = process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'];
 var origPWD = process.env.PWD;
 
-describe('findProjectRoot method', function() {
-    afterEach(function() {
+describe('findProjectRoot method', function () {
+    afterEach(function () {
         process.env.PWD = origPWD;
         process.chdir(cwd);
     });
-    function removeDir(someDirectory) {
+    function removeDir (someDirectory) {
         shell.rm('-rf', someDirectory);
     }
-    it('Test 001 : should return false if it hits the home directory', function() {
+    it('Test 001 : should return false if it hits the home directory', function () {
         var somedir = path.join(home, 'somedir');
         removeDir(somedir);
         shell.mkdir(somedir);
         expect(CordovaCheck.findProjectRoot(somedir)).toEqual(false);
     });
-    it('Test 002 : should return false if it cannot find a .cordova directory up the directory tree', function() {
+    it('Test 002 : should return false if it cannot find a .cordova directory up the directory tree', function () {
         var somedir = path.join(home, '..');
         expect(CordovaCheck.findProjectRoot(somedir)).toEqual(false);
     });
-    it('Test 003 : should return the first directory it finds with a .cordova folder in it', function() {
-        var somedir = path.join(home,'somedir');
+    it('Test 003 : should return the first directory it finds with a .cordova folder in it', function () {
+        var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
         removeDir(somedir);
         shell.mkdir('-p', anotherdir);
         shell.mkdir('-p', path.join(somedir, 'www', 'config.xml'));
         expect(CordovaCheck.findProjectRoot(somedir)).toEqual(somedir);
     });
-    it('Test 004 : should ignore PWD when its undefined', function() {
+    it('Test 004 : should ignore PWD when its undefined', function () {
         delete process.env.PWD;
-        var somedir = path.join(home,'somedir');
+        var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
         removeDir(somedir);
         shell.mkdir('-p', anotherdir);
@@ -62,8 +62,8 @@ describe('findProjectRoot method', function() {
         process.chdir(anotherdir);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
     });
-    it('Test 005 : should use PWD when available', function() {
-        var somedir = path.join(home,'somedir');
+    it('Test 005 : should use PWD when available', function () {
+        var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
         removeDir(somedir);
         shell.mkdir('-p', anotherdir);
@@ -72,8 +72,8 @@ describe('findProjectRoot method', function() {
         process.chdir(path.sep);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
     });
-    it('Test 006 : should use cwd as a fallback when PWD is not a cordova dir', function() {
-        var somedir = path.join(home,'somedir');
+    it('Test 006 : should use cwd as a fallback when PWD is not a cordova dir', function () {
+        var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
         removeDir(somedir);
         shell.mkdir('-p', anotherdir);
@@ -82,8 +82,8 @@ describe('findProjectRoot method', function() {
         process.chdir(anotherdir);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
     });
-    it('Test 007 : should ignore platform www/config.xml', function() {
-        var somedir = path.join(home,'somedir');
+    it('Test 007 : should ignore platform www/config.xml', function () {
+        var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
         removeDir(somedir);
         shell.mkdir('-p', anotherdir);

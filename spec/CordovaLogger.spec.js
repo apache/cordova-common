@@ -23,7 +23,7 @@ var EventEmitter = require('events').EventEmitter;
 
 var DEFAULT_LEVELS = ['verbose', 'normal', 'warn', 'info', 'error', 'results'];
 
-describe('CordovaLogger class', function() {
+describe('CordovaLogger class', function () {
     it('Test 001 : should be constructable', function () {
         expect(new CordovaLogger()).toEqual(jasmine.any(CordovaLogger));
     });
@@ -99,10 +99,10 @@ describe('CordovaLogger class', function() {
                 };
 
                 var listenerSpy = jasmine.createSpy('listenerSpy')
-                .and.callFake(function (eventName) {
-                    eventName = eventNamesExclusions[eventName] || eventName;
-                    expect(logger.levels[eventName]).toBeDefined();
-                });
+                    .and.callFake(function (eventName) {
+                        eventName = eventNamesExclusions[eventName] || eventName;
+                        expect(logger.levels[eventName]).toBeDefined();
+                    });
 
                 var emitter = new EventEmitter().on('newListener', listenerSpy);
                 logger.subscribe(emitter);
@@ -163,7 +163,7 @@ describe('CordovaLogger class', function() {
 
         describe('adjustLevel method', function () {
             it('Test 014 : should properly adjust log level', function () {
-                var resetLogLevel = function() {
+                var resetLogLevel = function () {
                     logger.setLevel('normal');
                 };
 

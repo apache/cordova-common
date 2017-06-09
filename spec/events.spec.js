@@ -20,11 +20,11 @@
 var events = require('../src/events');
 
 describe('forwardEventsTo method', function () {
-    afterEach(function() {
+    afterEach(function () {
         events.forwardEventsTo(null);
     });
     it('Test 001 : should not go to infinite loop when trying to forward to self', function () {
-        expect(function() {
+        expect(function () {
             events.forwardEventsTo(events);
             events.emit('log', 'test message');
         }).not.toThrow();

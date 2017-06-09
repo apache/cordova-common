@@ -17,13 +17,14 @@
     under the License.
 */
 
-var PluginInfo = require('../../src/PluginInfo/PluginInfo'),
-    path = require('path');
+var PluginInfo = require('../../src/PluginInfo/PluginInfo');
+var path = require('path');
 
 var pluginsDir = path.join(__dirname, '../fixtures/plugins');
 
 describe('PluginInfo', function () {
     it('Test 001 : should read a plugin.xml file', function () {
+        /* eslint-disable no-unused-vars */
         var p, prefs, assets, deps, configFiles, infos, srcFiles;
         var headerFiles, libFiles, resourceFiles;
         expect(function () {
@@ -41,10 +42,11 @@ describe('PluginInfo', function () {
         expect(p).toBeDefined();
         expect(p.name).toEqual('Child Browser');
         // TODO: Add some expectations for results of getSomething.
+        /* eslint-enable no-unused-vars */
     });
     it('Test 002 : should throw when there is no plugin.xml file', function () {
         expect(function () {
-            new PluginInfo('/non/existent/dir');
+            new PluginInfo('/non/existent/dir'); /* eslint no-new : 0 */
         }).toThrow();
     });
 });

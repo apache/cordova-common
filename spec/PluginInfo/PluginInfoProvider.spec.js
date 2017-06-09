@@ -17,8 +17,8 @@
     under the License.
 */
 
-var PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider'),
-    path = require('path');
+var PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider');
+var path = require('path');
 
 var pluginsDir = path.join(__dirname, '../fixtures/plugins');
 
