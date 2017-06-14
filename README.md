@@ -19,7 +19,7 @@
 #
 -->
 
-[![Build status](https://ci.appveyor.com/api/projects/status/6xv212nihtcnbsov?svg=true)](https://ci.appveyor.com/project/ApacheSoftwareFoundation/cordova-common/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/wxkmo0jalsr8gane?svg=true)](https://ci.appveyor.com/project/ApacheSoftwareFoundation/cordova-common/branch/master)
 [![Build Status](https://travis-ci.org/apache/cordova-common.svg?branch=master)](https://travis-ci.org/apache/cordova-common)
 [![NPM](https://nodei.co/npm/cordova-common.png)](https://nodei.co/npm/cordova-common/)
 
