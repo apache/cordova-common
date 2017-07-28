@@ -168,17 +168,24 @@ function add_config_changes (config, should_increment) {
     var platform_config = self.platformJson.root;
 
     var config_munge;
-    var edit_config_changes = null;
+    var changes = [];
+
     if (config.getEditConfigs) {
-        edit_config_changes = config.getEditConfigs(self.platform);
+        var edit_config_changes = config.getEditConfigs(self.platform);
+        if (edit_config_changes) {
+            changes = changes.concat(edit_config_changes);
+        }
     }
 
-    if (!edit_config_changes || edit_config_changes.length === 0) {
-        // There are no edit-config changes to add, return here
-        return self;
-    } else {
-        var isConflictingInfo = is_conflicting(edit_config_changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
+    if (config.getConfigFiles) {
+        var config_files_changes = config.getConfigFiles(self.platform);
+        if (config_files_changes) {
+            changes = changes.concat(config_files_changes);
+        }
+    }
 
+    if (changes && changes.length > 0) {
+        var isConflictingInfo = is_conflicting(changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
         if (isConflictingInfo.conflictFound) {
             var conflict_munge;
             var conflict_file;
@@ -200,10 +207,10 @@ function add_config_changes (config, should_increment) {
                 }
             }
         }
-        // Add config.xml edit-config munges
-        config_munge = self.generate_config_xml_munge(config, edit_config_changes, 'config.xml');
     }
 
+    // Add config.xml edit-config and config-file munges
+    config_munge = self.generate_config_xml_munge(config, changes, 'config.xml');
     self = munge_helper(should_increment, self, platform_config, config_munge);
 
     // Move to installed/dependent_plugins
@@ -251,13 +258,11 @@ function reapply_global_munge () {
 // generate_plugin_config_munge
 // Generate the munge object from config.xml
 PlatformMunger.prototype.generate_config_xml_munge = generate_config_xml_munge;
-function generate_config_xml_munge (config, edit_config_changes, type) {
-
+function generate_config_xml_munge (config, config_changes, type) {
     var munge = { files: {} };
-    var changes = edit_config_changes;
     var id;
 
-    if (!changes) {
+    if (!config_changes) {
         return munge;
     }
 
@@ -267,13 +272,15 @@ function generate_config_xml_munge (config, edit_config_changes, type) {
         id = config.id;
     }
 
-    changes.forEach(function (change) {
+    config_changes.forEach(function (change) {
         change.xmls.forEach(function (xml) {
             // 1. stringify each xml
             var stringified = (new et.ElementTree(xml)).write({xml_declaration: false});
             // 2. add into munge
             if (change.mode) {
                 mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id: id });
+            } else {
+                mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after });
             }
         });
     });
