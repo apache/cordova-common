@@ -554,6 +554,29 @@ ConfigParser.prototype = {
             return editConfig;
         });
     },
+
+    /* Get all config-file tags */
+    getConfigFiles: function (platform) {
+        var platform_tag = this.doc.find('./platform[@name="' + platform + '"]');
+        var platform_config_files = platform_tag ? platform_tag.findall('config-file') : [];
+
+        var config_files = this.doc.findall('config-file').concat(platform_config_files);
+
+        return config_files.map(function (tag) {
+            var configFile =
+                {
+                    target: tag.attrib['target'],
+                    parent: tag.attrib['parent'],
+                    after: tag.attrib['after'],
+                    xmls: tag.getchildren(),
+                    // To support demuxing via versions
+                    versions: tag.attrib['versions'],
+                    deviceTarget: tag.attrib['device-target']
+                };
+            return configFile;
+        });
+    },
+
     write: function () {
         fs.writeFileSync(this.path, this.doc.write({indent: 4}), 'utf-8');
     }

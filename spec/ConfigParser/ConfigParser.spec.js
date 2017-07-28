@@ -245,9 +245,13 @@ describe('config.xml parser', function () {
                 var intents = cfg.getAllowIntents();
                 expect(intents.length).not.toEqual(0);
             });
-            it('it should read <edit-config> tag entries', function () {
+            it('Test 035: it should read <edit-config> tag entries', function () {
                 var editConfigs = cfg.getEditConfigs('android');
                 expect(editConfigs.length).not.toEqual(0);
+            });
+            it('Test 036: it should read <config-file> tag entries', function () {
+                var configFiles = cfg.getConfigFiles('android');
+                expect(configFiles.length).not.toEqual(0);
             });
         });
         describe('static resources', function () {
