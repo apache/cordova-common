@@ -99,6 +99,12 @@
         <edit-config file="AndroidManifest.xml" target="/manifest/uses-sdk" mode="remove">
             <uses-sdk android:maxSdkVersion="24" />
         </edit-config>
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="com.foo.Foo" android:label="@string/app_name">
+                <intent-filter>
+                </intent-filter>
+            </activity>
+        </config-file>
     </platform>
     <platform name="windows">
         <icon src="res/windows/logo.scale-200.png" target="logo.png"/>
