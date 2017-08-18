@@ -310,9 +310,8 @@ function PluginInfo (dirname) {
     self.getFrameworks = function (platform, options) {
         return _getTags(self._et, 'framework', platform, function (el) {
             var src = el.attrib.src;
-            var vars = {};
             if (options) {
-                vars = options.cli_variables;
+                var vars = options.cli_variables || {};
                 if (Object.keys(vars).length === 0) {
                     // get variable defaults from plugin.xml for removal
                     vars = self.getPreferences(platform);
@@ -322,8 +321,10 @@ function PluginInfo (dirname) {
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
                 Object.keys(vars).forEach(function (name) {
-                    regExp = new RegExp('\\$' + name, 'g');
-                    src = src.replace(regExp, vars[name]);
+                    if (vars[name]) {
+                        regExp = new RegExp('\\$' + name, 'g');
+                        src = src.replace(regExp, vars[name]);
+                    }
                 });
             }
             var ret = {
