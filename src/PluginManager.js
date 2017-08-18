@@ -92,7 +92,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
     var actions = new ActionStack();
 
     // gather all files need to be handled during operation ...
-    plugin.getFilesAndFrameworks(this.platform)
+    plugin.getFilesAndFrameworks(this.platform, options)
         .concat(plugin.getAssets(this.platform))
         .concat(plugin.getJsModules(this.platform))
         // ... put them into stack ...
