@@ -317,7 +317,6 @@ function PluginInfo (dirname) {
                     // get variable defaults from plugin.xml for removal
                     vars = self.getPreferences(platform);
                 }
-                
                 var regExp;
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
