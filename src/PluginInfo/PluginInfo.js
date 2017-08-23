@@ -6,9 +6,7 @@
     to you under the Apache License, Version 2.0 (the
     "License"); you may not use this file except in compliance
     with the License.  You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
     Unless required by applicable law or agreed to in writing,
     software distributed under the License is distributed on an
     "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -21,7 +19,6 @@
 A class for holidng the information currently stored in plugin.xml
 It should also be able to answer questions like whether the plugin
 is compatible with a given engine version.
-
 TODO (kamrik): refactor this to not use sync functions and return promises.
 */
 
@@ -310,9 +307,8 @@ function PluginInfo (dirname) {
     self.getFrameworks = function (platform, options) {
         return _getTags(self._et, 'framework', platform, function (el) {
             var src = el.attrib.src;
-            var vars = {};
             if (options) {
-                vars = options.cli_variables;
+                var vars = options.cli_variables || {};
                 if (Object.keys(vars).length === 0) {
                     // get variable defaults from plugin.xml for removal
                     vars = self.getPreferences(platform);
@@ -322,8 +318,10 @@ function PluginInfo (dirname) {
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
                 Object.keys(vars).forEach(function (name) {
-                    regExp = new RegExp('\\$' + name, 'g');
-                    src = src.replace(regExp, vars[name]);
+                    if (vars[name]) {
+                        regExp = new RegExp('\\$' + name, 'g');
+                        src = src.replace(regExp, vars[name]);
+                    }
                 });
             }
             var ret = {
