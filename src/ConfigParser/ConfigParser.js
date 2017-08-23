@@ -496,7 +496,8 @@ ConfigParser.prototype = {
             var requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
             var requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
             var allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
-            var allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean */
+            var allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean (DEPRECATED) */
+            var allows_arbitrary_loads_for_media = access.attrib['allows-arbitrary-loads-for-media']; /* Boolean */
             var allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
 
             return {
@@ -506,6 +507,7 @@ ConfigParser.prototype = {
                 'requires_certificate_transparency': requires_certificate_transparency,
                 'allows_arbitrary_loads_in_web_content': allows_arbitrary_loads_in_web_content,
                 'allows_arbitrary_loads_in_media': allows_arbitrary_loads_in_media,
+                'allows_arbitrary_loads_for_media': allows_arbitrary_loads_for_media,
                 'allows_local_networking': allows_local_networking
             };
         });
