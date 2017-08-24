@@ -306,15 +306,34 @@ function PluginInfo (dirname) {
             return n.attrib.name;
         });
     };
-    self.getFrameworks = function (platform) {
+
+    self.getFrameworks = function (platform, options) {
         return _getTags(self._et, 'framework', platform, function (el) {
+            var src = el.attrib.src;
+            if (options) {
+                var vars = options.cli_variables || {};
+                if (Object.keys(vars).length === 0) {
+                    // get variable defaults from plugin.xml for removal
+                    vars = self.getPreferences(platform);
+                }
+
+                var regExp;
+                // Iterate over plugin variables.
+                // Replace them in framework src if they exist
+                Object.keys(vars).forEach(function (name) {
+                    if (vars[name]) {
+                        regExp = new RegExp('\\$' + name, 'g');
+                        src = src.replace(regExp, vars[name]);
+                    }
+                });
+            }
             var ret = {
                 itemType: 'framework',
                 type: el.attrib.type,
                 parent: el.attrib.parent,
                 custom: isStrTrue(el.attrib.custom),
                 embed: isStrTrue(el.attrib.embed),
-                src: el.attrib.src,
+                src: src,
                 spec: el.attrib.spec,
                 weak: isStrTrue(el.attrib.weak),
                 versions: el.attrib.versions,
@@ -328,14 +347,14 @@ function PluginInfo (dirname) {
     };
 
     self.getFilesAndFrameworks = getFilesAndFrameworks;
-    function getFilesAndFrameworks (platform) {
+    function getFilesAndFrameworks (platform, options) {
         // Please avoid changing the order of the calls below, files will be
         // installed in this order.
         var items = [].concat(
             self.getSourceFiles(platform),
             self.getHeaderFiles(platform),
             self.getResourceFiles(platform),
-            self.getFrameworks(platform),
+            self.getFrameworks(platform, options),
             self.getLibFiles(platform)
         );
         return items;
