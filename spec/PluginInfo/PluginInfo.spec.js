@@ -19,14 +19,22 @@
 
 var PluginInfo = require('../../src/PluginInfo/PluginInfo');
 var path = require('path');
-
 var pluginsDir = path.join(__dirname, '../fixtures/plugins');
 
 describe('PluginInfo', function () {
     it('Test 001 : should read a plugin.xml file', function () {
         /* eslint-disable no-unused-vars */
-        var p, prefs, assets, deps, configFiles, infos, srcFiles;
-        var headerFiles, libFiles, resourceFiles;
+        var p;
+        var prefs;
+        var assets;
+        var deps;
+        var configFiles;
+        var infos;
+        var srcFiles;
+        var headerFiles;
+        var libFiles;
+        var resourceFiles;
+        var getFrameworks;
         expect(function () {
             p = new PluginInfo(path.join(pluginsDir, 'ChildBrowser'));
             prefs = p.getPreferences('android');
@@ -37,6 +45,7 @@ describe('PluginInfo', function () {
             srcFiles = p.getSourceFiles('android');
             headerFiles = p.getHeaderFiles('android');
             libFiles = p.getLibFiles('android');
+            getFrameworks = p.getFrameworks('android');
             resourceFiles = p.getResourceFiles('android');
         }).not.toThrow();
         expect(p).toBeDefined();
@@ -48,5 +57,17 @@ describe('PluginInfo', function () {
         expect(function () {
             new PluginInfo('/non/existent/dir'); /* eslint no-new : 0 */
         }).toThrow();
+    });
+
+    it('Test 003: replace framework src', function () {
+        var p = new PluginInfo(path.join(pluginsDir, 'org.test.src'));
+        var result = p.getFrameworks('android', {cli_variables: { FCM_VERSION: '9.0.0' }});
+        expect(result[2].src).toBe('com.google.firebase:firebase-messaging:9.0.0');
+    });
+
+    it('Test 004: framework src uses default variable', function () {
+        var p = new PluginInfo(path.join(pluginsDir, 'org.test.src'));
+        var result = p.getFrameworks('android', {});
+        expect(result[2].src).toBe('com.google.firebase:firebase-messaging:11.0.1');
     });
 });
