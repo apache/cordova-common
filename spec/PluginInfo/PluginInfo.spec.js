@@ -64,10 +64,4 @@ describe('PluginInfo', function () {
         var result = p.getFrameworks('android', {cli_variables: { FCM_VERSION: '9.0.0' }});
         expect(result[2].src).toBe('com.google.firebase:firebase-messaging:9.0.0');
     });
-
-    it('Test 004: framework src uses default variable', function () {
-        var p = new PluginInfo(path.join(pluginsDir, 'org.test.src'));
-        var result = p.getFrameworks('android', {});
-        expect(result[2].src).toBe('com.google.firebase:firebase-messaging:11.0.1');
-    });
 });
