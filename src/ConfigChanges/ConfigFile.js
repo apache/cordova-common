@@ -188,12 +188,12 @@ function resolveConfigFilePath (project_dir, platform, file) {
     // only if none of the options above are satisfied does this get called
     // TODO: Move this out of cordova-common and into the platforms somehow
     if (platform === 'android' && !fs.existsSync(filepath)) {
-        if(file === 'AndroidManifest.xml') {
-          filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
-        } else if(file.endsWith('config.xml')) {
-          filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
-        } else if(file.endsWith('strings.xml')) {
-          filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', 'strings.xml');
+        if (file === 'AndroidManifest.xml') {
+            filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
+        } else if (file.endsWith('config.xml')) {
+            filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
+        } else if (file.endsWith('strings.xml')) {
+            filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', 'strings.xml');
         }
         return filepath;
     }
