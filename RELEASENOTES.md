@@ -20,6 +20,10 @@
 -->
 # Cordova-common Release Notes
 
+### 2.1.1 (Oct 04, 2017)
+* [CB-13145](https://issues.apache.org/jira/browse/CB-13145) added `getFrameworks` to unit tests
+* [CB-13145](https://issues.apache.org/jira/browse/CB-13145) added variable replacing to framework tag
+
 ### 2.1.0 (August 30, 2017)
 * [CB-13145](https://issues.apache.org/jira/browse/CB-13145) added variable replacing to `framework` tag
 * [CB-13211](https://issues.apache.org/jira/browse/CB-13211) Add `allows-arbitrary-loads-for-media` attribute parsing for `getAccesses`
