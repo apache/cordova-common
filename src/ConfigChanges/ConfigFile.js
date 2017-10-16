@@ -205,7 +205,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         if (platform === 'ubuntu') {
             filepath = path.join(project_dir, 'config.xml');
         } else if (platform === 'ios') {
-            var iospath = getIOSProjectname(project_dir);
+            var iospath = module.exports.getIOSProjectname(project_dir);
             filepath = path.join(project_dir, iospath, 'config.xml');
         } else {
             matches = modules.glob.sync(path.join(project_dir, '**', 'config.xml'));
@@ -247,3 +247,6 @@ function isBinaryPlist (filename) {
 }
 
 module.exports = ConfigFile;
+module.exports.isBinaryPlist = isBinaryPlist;
+module.exports.getIOSProjectname = getIOSProjectname;
+module.exports.resolveConfigFilePath = resolveConfigFilePath;
