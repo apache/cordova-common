@@ -184,27 +184,39 @@ function resolveConfigFilePath (project_dir, platform, file) {
         return filepath;
     }
 
-    // special-case config.xml target that is just "config.xml". This should be resolved to the real location of the file.
-    // TODO: move the logic that contains the locations of config.xml from cordova CLI into plugman.
+    // XXX this checks for android studio projects
+    // only if none of the options above are satisfied does this get called
+    // TODO: Move this out of cordova-common and into the platforms somehow
+    if (platform === 'android' && !fs.existsSync(filepath)) {
+        if (file === 'AndroidManifest.xml') {
+            filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
+        } else if (file.endsWith('config.xml')) {
+            // First change it to the old path
+            filepath = path.join(project_dir, 'res', 'xml', 'config.xml');
+            if (!fs.existsSync(filepath)) {
+                // Then change it to the new path if the old one isn't found
+                filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
+            }
+        } else if (file.endsWith('strings.xml')) {
+            filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', 'strings.xml');
+        }
+        return filepath;
+    }
+
+    // special-case config.xml target that is just "config.xml" for other platforms. This should 
+    // be resolved to the real location of the file.
+    // TODO: Move this out of cordova-common into platforms
     if (file === 'config.xml') {
         if (platform === 'ubuntu') {
             filepath = path.join(project_dir, 'config.xml');
         } else if (platform === 'ios') {
             var iospath = getIOSProjectname(project_dir);
             filepath = path.join(project_dir, iospath, 'config.xml');
-        } else if (platform === 'android') {
-            filepath = path.join(project_dir, 'res', 'xml', 'config.xml');
         } else {
             matches = modules.glob.sync(path.join(project_dir, '**', 'config.xml'));
             if (matches.length) filepath = matches[0];
         }
         return filepath;
-    }
-
-    // XXX this checks for android studio projects
-    // only if none of the options above are satisfied does this get called
-    if (platform === 'android' && !fs.existsSync(filepath)) {
-        filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
     }
 
     // None of the special cases matched, returning project_dir/file.
