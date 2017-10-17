@@ -191,7 +191,12 @@ function resolveConfigFilePath (project_dir, platform, file) {
         if (file === 'AndroidManifest.xml') {
             filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
         } else if (file.endsWith('config.xml')) {
-            filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
+            //First change it to the old path
+            filepath = path.join(project_dir, 'res', 'xml', 'config.xml');
+            if(!fs.existsSync(filepath)) {
+              //Then change it to the new path if the old one isn't found
+              filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
+            }
         } else if (file.endsWith('strings.xml')) {
             filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', 'strings.xml');
         }
