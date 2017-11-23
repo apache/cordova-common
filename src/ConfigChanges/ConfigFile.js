@@ -203,7 +203,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         return filepath;
     }
 
-    // special-case config.xml target that is just "config.xml" for other platforms. This should 
+    // special-case config.xml target that is just "config.xml" for other platforms. This should
     // be resolved to the real location of the file.
     // TODO: Move this out of cordova-common into platforms
     if (file === 'config.xml') {
