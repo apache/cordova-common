@@ -225,6 +225,17 @@ ConfigParser.prototype = {
                     (!res.height || (height === res.height)));
             })[0] || null;
         };
+        
+        /**
+         * Returns resource with specified text in its source.
+         * @param  {string} source name to search.
+         * @return {Resource}       Resource object or null if not found.
+         */
+        ret.getByName = function (name) {
+            return ret.filter(function (res) {
+                return res.src.indexOf(name) > -1;
+            })[0] || null;
+        };
 
         /**
          * Returns resource with specified density.
