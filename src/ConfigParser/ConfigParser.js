@@ -234,7 +234,7 @@ ConfigParser.prototype = {
         ret.getByName = function (name) {
             return ret.filter(function (res) {
                 return res.src.indexOf(name) > -1;
-            })[0] || null;
+            }.bind(name))[0] || null;
         };
 
         /**
