@@ -6,7 +6,7 @@
   "version": "2.2.2-dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/apache/cordova-lib"
+    "url": "https://github.com/apache/cordova-common"
   },
   "bugs": {
     "url": "https://issues.apache.org/jira/browse/CB",
