@@ -91,7 +91,7 @@ ConfigParser.prototype = {
         return this.doc.getroot().attrib[attr];
     },
 
-    packageName: function (id) {
+    packageName: function () {
         return this.getAttribute('id');
     },
     setPackageName: function (id) {

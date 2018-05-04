@@ -123,7 +123,7 @@ describe('PlatformJson class', function () {
 describe('ModuleMetadata class', function () {
     it('Test 010 : should be constructable', function () {
         var meta;
-        expect(function name (params) {
+        expect(function () {
             meta = new ModuleMetadata('fakePlugin', {src: 'www/fakeModule.js'});
         }).not.toThrow();
         expect(meta instanceof ModuleMetadata).toBeTruthy();

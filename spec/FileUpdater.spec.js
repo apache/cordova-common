@@ -118,7 +118,7 @@ var testDirStats = mockDirStats();
 var testFileStats = mockFileStats(now);
 var testFileStats2 = mockFileStats(now);
 var testFileStats3 = mockFileStats(now);
-var nullLogger = function (message) {};
+var nullLogger = function () {};
 
 describe('FileUpdater class', function () {
 
