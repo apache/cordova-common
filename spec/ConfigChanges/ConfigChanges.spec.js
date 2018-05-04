@@ -56,7 +56,7 @@ function innerXML (xmltext) {
     return xmltext.replace(/^<[\w\s\-=\/"\.]+>/, '').replace(/<\/[\w\s\-=\/"\.]+>$/, ''); /* eslint no-useless-escape : 0 */
 }
 
-function get_munge_change (munge, keys) {
+function get_munge_change () {
     return mungeutil.deep_find.apply(null, arguments);
 }
 
