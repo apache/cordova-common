@@ -82,4 +82,10 @@ describe('ConfigFile tests', function () {
         var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
         expect(configFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
     });
+
+    it('resolveConfigFilePath should return file path', function () {
+        var file = 'res/xml';
+        var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
+        expect(configFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
+    });
 });
