@@ -71,7 +71,7 @@ function ConfigFile_load () {
     var ext = path.extname(filepath);
     // Windows8 uses an appxmanifest, and wp8 will likely use
     // the same in a future release
-    if (ext === '.xml' || ext === '.appxmanifest') {
+    if (ext === '.xml' || ext === '.appxmanifest' || ext === '.storyboard') {
         self.type = 'xml';
         self.data = modules.xml_helpers.parseElementtreeSync(filepath);
     } else {
