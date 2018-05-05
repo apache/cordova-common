@@ -2611,7 +2611,7 @@ function getBasicAuthHeader(urlString) {
         var origin = protocol + url.host;
 
         // check whether there are the username:password credentials in the url
-        if (url.href.indexOf(origin) != 0) { // credentials found
+        if (!url.href.startsWith(origin)) { // credentials found
             var atIndex = url.href.indexOf("@");
             credentials = url.href.substring(protocol.length, atIndex);
         }
@@ -6266,7 +6266,7 @@ module.exports = {
 
         var name = "unknown";
         hostNames.some(function (nm) {
-            if (nm.displayName.indexOf(".local") > -1) {
+            if (nm.displayName.includes(".local")) {
                 name = nm.displayName.split(".local")[0];
                 return true;
             }
