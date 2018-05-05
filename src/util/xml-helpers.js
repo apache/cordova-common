@@ -257,7 +257,7 @@ var BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
 var SINGLETONS = ['content', 'author', 'name'];
 function mergeXml (src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
-    if (BLACKLIST.indexOf(src.tag) !== -1) return;
+    if (BLACKLIST.includes(src.tag)) return;
 
     // Handle attributes
     Object.getOwnPropertyNames(src.attrib).forEach(function (attribute) {
@@ -289,9 +289,9 @@ function mergeXml (src, dest, platform, clobber) {
         var query = srcTag + '';
         var shouldMerge = true;
 
-        if (BLACKLIST.indexOf(srcTag) !== -1) return;
+        if (BLACKLIST.includes(srcTag)) return;
 
-        if (SINGLETONS.indexOf(srcTag) !== -1) {
+        if (SINGLETONS.includes(srcTag)) {
             foundChild = dest.find(query);
             if (foundChild) {
                 destChild = foundChild;

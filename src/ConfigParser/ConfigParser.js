@@ -57,7 +57,7 @@ function getCordovaNamespacePrefix (doc) {
     var rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
     var prefix = 'cdv';
     for (var j = 0; j < rootAtribs.length; j++) {
-        if (rootAtribs[j].indexOf('xmlns:') === 0 &&
+        if (rootAtribs[j].startsWith('xmlns:') &&
             doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
             var strings = rootAtribs[j].split(':');
             prefix = strings[1];
