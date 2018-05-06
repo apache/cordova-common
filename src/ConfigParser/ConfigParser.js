@@ -161,7 +161,7 @@ ConfigParser.prototype = {
         pref.attrib.value = value;
     },
     getPlatformPreference: function (name, platform) {
-        return findElementAttributeValue(name, this.doc.findall('platform[@name=\'' + platform + '\']/preference'));
+        return findElementAttributeValue(name, this.doc.findall('./platform[@name="' + platform + '"]/preference'));
     },
     getPreference: function (name, platform) {
 
@@ -185,7 +185,7 @@ ConfigParser.prototype = {
         var ret = [];
         var staticResources = [];
         if (platform) { // platform specific icons
-            this.doc.findall('platform[@name=\'' + platform + '\']/' + resourceName).forEach(function (elt) {
+            this.doc.findall('./platform[@name="' + platform + '"]/' + resourceName).forEach(function (elt) {
                 elt.platform = platform; // mark as platform specific resource
                 staticResources.push(elt);
             });
@@ -274,7 +274,7 @@ ConfigParser.prototype = {
         var fileResources = [];
 
         if (platform) { // platform specific resources
-            fileResources = this.doc.findall('platform[@name=\'' + platform + '\']/resource-file').map(function (tag) {
+            fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(function (tag) {
                 return {
                     platform: platform,
                     src: tag.attrib.src,
@@ -539,9 +539,7 @@ ConfigParser.prototype = {
     },
     /* Get all edit-config tags */
     getEditConfigs: function (platform) {
-        var platform_tag = this.doc.find('./platform[@name="' + platform + '"]');
-        var platform_edit_configs = platform_tag ? platform_tag.findall('edit-config') : [];
-
+        var platform_edit_configs = this.doc.findall('./platform[@name="' + platform + '"]/edit-config');
         var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
         return edit_configs.map(function (tag) {
@@ -559,9 +557,7 @@ ConfigParser.prototype = {
 
     /* Get all config-file tags */
     getConfigFiles: function (platform) {
-        var platform_tag = this.doc.find('./platform[@name="' + platform + '"]');
-        var platform_config_files = platform_tag ? platform_tag.findall('config-file') : [];
-
+        var platform_config_files = this.doc.findall('./platform[@name="' + platform + '"]/config-file');
         var config_files = this.doc.findall('config-file').concat(platform_config_files);
 
         return config_files.map(function (tag) {
