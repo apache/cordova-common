@@ -82,6 +82,7 @@
     <preference name="orientation" value="portrait" />
     <icon id="icon" src="icon.png" />
     <icon height="255" id="logo" src="logo.png" width="255" />
+    <platform name="android"></platform>
     <platform name="android">
         <icon density="mdpi" height="255" src="logo-android.png" width="255" />
         <icon gap:density="mdpi" height="255" src="logo-android-gap.png" width="255" />
