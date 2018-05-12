@@ -82,7 +82,7 @@ function ConfigFile_load () {
         //       Do we still need to support binary plist?
         //       If yes, use plist.parseStringSync() and read the file once.
         self.data = isBinaryPlist(filepath) ?
-            modules.bplist.parseBuffer(fs.readFileSync(filepath)) :
+            modules.bplist.parseBuffer(fs.readFileSync(filepath))[0] :
             modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
     }
 }
