@@ -34,6 +34,7 @@ var editconfigplugin = path.join(__dirname, '../fixtures/plugins/org.test.editco
 var editconfigplugin_two = path.join(__dirname, '../fixtures/plugins/org.test.editconfigtest_two');
 var varplugin = path.join(__dirname, '../fixtures/plugins/com.adobe.vars');
 var plistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.plist');
+var bplistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.bplist');
 var android_two_project = path.join(__dirname, '../fixtures/projects/android_two/*');
 var android_two_no_perms_project = path.join(__dirname, '../fixtures/projects/android_two_no_perms', '*');
 var ios_config_xml = path.join(__dirname, '../fixtures/projects/ios-config-xml/*');
@@ -423,6 +424,19 @@ describe('config-changes module', function () {
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<key>UINewsstandIcon<\/key>[\s\S]*<key>CFBundlePrimaryIcon<\/key>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<string>schema-b<\/string>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).not.toMatch(/(<string>schema-a<\/string>[^]*){2,}/);
+                });
+            });
+            describe('of binary plist config files', function () {
+                it('should merge dictionaries and arrays, removing duplicates', function () {
+                    shell.cp('-rf', ios_config_xml, temp);
+                    shell.cp('-rf', bplistplugin, plugins_dir);
+                    var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                    platformJson.addInstalledPluginToPrepareQueue('org.apache.bplist', {});
+                    configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
+                    var edited_plist = fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8');
+                    expect(edited_plist).toMatch(/<key>UINewsstandIcon<\/key>[\s\S]*<key>CFBundlePrimaryIcon<\/key>/);
+                    expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8')).toMatch(/<string>schema-b<\/string>/);
+                    expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8')).not.toMatch(/(<string>schema-a<\/string>[^]*){2,}/);
                 });
             });
             it('Test 025 : should resolve wildcard config-file targets to the project, if applicable', function () {
