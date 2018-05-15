@@ -14,9 +14,8 @@
  *
 */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var shelljs = require('shelljs');
 var mungeutil = require('./ConfigChanges/munge-util');
 var pluginMappernto = require('cordova-registry-mapper').newToOld;
 var pluginMapperotn = require('cordova-registry-mapper').oldToNew;
@@ -37,7 +36,7 @@ PlatformJson.load = function (plugins_dir, platform) {
 };
 
 PlatformJson.prototype.save = function () {
-    shelljs.mkdir('-p', path.dirname(this.filePath));
+    fs.ensureDirSync(path.dirname(this.filePath));
     fs.writeFileSync(this.filePath, JSON.stringify(this.root, null, 2), 'utf-8');
 };
 
@@ -212,7 +211,7 @@ PlatformJson.prototype.generateMetadata = function () {
  */
 PlatformJson.prototype.generateAndSaveMetadata = function (destination) {
     var meta = this.generateMetadata();
-    shelljs.mkdir('-p', path.dirname(destination));
+    fs.ensureDirSync(path.dirname(destination));
     fs.writeFileSync(destination, meta, 'utf-8');
 
     return this;

@@ -18,11 +18,11 @@
 */
 
 var child_process = require('child_process');
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
 var Q = require('q');
-var shell = require('shelljs');
+var which = require('which');
 var events = require('./events');
 var iswin32 = process.platform === 'win32';
 
@@ -35,7 +35,7 @@ function resolveWindowsExe (cmd) {
     if (isValidExe(cmd)) {
         return cmd;
     }
-    cmd = String(shell.which(cmd) || cmd);
+    cmd = which.sync(cmd, { nothrow: true }) || cmd;
     if (!isValidExe(cmd)) {
         winExtensions.some(function (ext) {
             if (fs.existsSync(cmd + ext)) {

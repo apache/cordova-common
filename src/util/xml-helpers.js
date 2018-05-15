@@ -21,7 +21,7 @@
  * contains XML utility functions, some of which are specific to elementtree
  */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var _ = require('underscore');
 var et = require('elementtree');

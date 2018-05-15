@@ -53,7 +53,7 @@ function mockDirStats () {
     };
 }
 
-// Create a mock to replace the fs and shelljs modules used by the FileUpdater,
+// Create a mock to replace the fs-extra module used by the FileUpdater,
 // so the tests don't have to actually touch the filesystem.
 var mockFs = {
     mkdirPaths: [],
@@ -86,20 +86,19 @@ var mockFs = {
         return result;
     },
 
-    mkdir: function (flags, path) {
+    ensureDirSync: function (path) {
         this.mkdirPaths.push(path);
     },
 
-    cp: function (flags, sourcePath, targetPath) {
+    copySync: function (sourcePath, targetPath) {
         this.cpPaths.push([sourcePath, targetPath]);
     },
 
-    rm: function (flags, path) {
+    removeSync: function (path) {
         this.rmPaths.push(path);
     }
 };
 FileUpdater.__set__('fs', mockFs);
-FileUpdater.__set__('shell', mockFs);
 
 // Define some constants used in the test cases.
 var testRootDir = 'testRootDir';
