@@ -137,8 +137,8 @@ module.exports = {
         if (!parent) return false;
 
         nodes.forEach(function (node) {
-            var matchingKid = null;
-            if ((matchingKid = findChild(node, parent)) !== null) {
+            var matchingKid = findChild(node, parent);
+            if (matchingKid !== undefined) {
                 // stupid elementtree takes an index argument it doesn't use
                 // and does not conform to the python lib
                 parent.remove(matchingKid);
@@ -208,32 +208,12 @@ module.exports = {
 };
 
 function findChild (node, parent) {
-    var matchingKids = parent.findall(node.tag);
-    var i;
-    var j;
-
-    for (i = 0, j = matchingKids.length; i < j; i++) {
-        if (module.exports.equalNodes(node, matchingKids[i])) {
-            return matchingKids[i];
-        }
-    }
-    return null;
+    const matches = parent.findall(node.tag);
+    return matches.find(m => module.exports.equalNodes(node, m));
 }
 
 function uniqueChild (node, parent) {
-    var matchingKids = parent.findall(node.tag);
-    var i = 0;
-
-    if (matchingKids.length === 0) {
-        return true;
-    } else {
-        for (i; i < matchingKids.length; i++) {
-            if (module.exports.equalNodes(node, matchingKids[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
+    return !findChild(node, parent);
 }
 
 // Find the index at which to insert an entry. After is a ;-separated priority list
