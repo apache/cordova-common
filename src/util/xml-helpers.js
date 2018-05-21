@@ -25,6 +25,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var et = require('elementtree');
+var stripBom = require('strip-bom');
 
 /* eslint-disable no-useless-escape */
 var ROOT = /^\/([^\/]*)/;
@@ -177,11 +178,7 @@ module.exports = {
     },
 
     parseElementtreeSync: function (filename) {
-        var contents = fs.readFileSync(filename, 'utf-8');
-        if (contents) {
-            // Windows is the BOM. Skip the Byte Order Mark.
-            contents = contents.substring(contents.indexOf('<'));
-        }
+        var contents = stripBom(fs.readFileSync(filename, 'utf-8'));
         return new et.ElementTree(et.XML(contents));
     },
 
