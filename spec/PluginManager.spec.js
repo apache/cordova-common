@@ -40,6 +40,7 @@ describe('PluginManager class', function () {
 
     beforeEach(function () {
         spyOn(ConfigChanges, 'PlatformMunger');
+        spyOn(fs, 'outputJsonSync');
         spyOn(fs, 'writeFileSync');
         spyOn(fs, 'ensureDirSync');
     });

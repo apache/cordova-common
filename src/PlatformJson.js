@@ -36,8 +36,7 @@ PlatformJson.load = function (plugins_dir, platform) {
 };
 
 PlatformJson.prototype.save = function () {
-    fs.ensureDirSync(path.dirname(this.filePath));
-    fs.writeFileSync(this.filePath, JSON.stringify(this.root, null, 2), 'utf-8');
+    fs.outputJsonSync(this.filePath, this.root, {spaces: 2});
 };
 
 /**
@@ -211,8 +210,7 @@ PlatformJson.prototype.generateMetadata = function () {
  */
 PlatformJson.prototype.generateAndSaveMetadata = function (destination) {
     var meta = this.generateMetadata();
-    fs.ensureDirSync(path.dirname(destination));
-    fs.writeFileSync(destination, meta, 'utf-8');
+    fs.outputJsonSync(destination, meta);
 
     return this;
 };

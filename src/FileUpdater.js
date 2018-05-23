@@ -65,14 +65,12 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     if (sourceStats) {
         var sourceFullPath = path.join(rootDir || '', sourcePath);
 
-        if (targetStats) {
+        if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
             // The target exists. But if the directory status doesn't match the source, delete it.
-            if ((targetStats.isDirectory() && !sourceStats.isDirectory()) || (!targetStats.isDirectory() && sourceStats.isDirectory())) {
-                log('delete ' + targetPath);
-                fs.removeSync(targetFullPath);
-                targetStats = null;
-                updated = true;
-            }
+            log('delete ' + targetPath);
+            fs.removeSync(targetFullPath);
+            targetStats = null;
+            updated = true;
         }
 
         if (!targetStats) {
