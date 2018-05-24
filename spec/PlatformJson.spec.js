@@ -108,13 +108,27 @@ describe('PlatformJson class', function () {
             });
         });
 
+        function evaluateCordovaDefineStatement (str) {
+            expect(typeof str).toBe('string');
+            const fnString = str.replace(/^\s*cordova\.define\('cordova\/plugin_list',\s*([\s\S]+)\);\s*$/, '($1)');
+            const mod = {exports: {}};
+            global.eval(fnString)(null, mod.exports, mod); // eslint-disable-line no-eval
+            return mod;
+        }
+
+        function expectedMetadata () {
+            // Create plain objects from ModuleMetadata instances
+            const modules = platformJson.root.modules.map(o => Object.assign({}, o));
+            modules.metadata = platformJson.root.plugin_metadata;
+            return modules;
+        }
+
         describe('generateMetadata method', function () {
             it('Test 009 : should generate text metadata containing list of installed modules', function () {
-                var meta = platformJson.addPluginMetadata(fakePlugin).generateMetadata();
-                expect(typeof meta).toBe('string');
-                expect(meta.indexOf(JSON.stringify(platformJson.root.modules, null, 2))).toBeGreaterThan(0);
-                // expect(meta).toMatch(JSON.stringify(platformJson.root.modules, null, 2));
-                expect(meta).toMatch(JSON.stringify(platformJson.root.plugin_metadata, null, 2));
+                const meta = platformJson.addPluginMetadata(fakePlugin).generateMetadata();
+                const mod = evaluateCordovaDefineStatement(meta);
+
+                expect(mod.exports).toEqual(expectedMetadata());
             });
         });
 
@@ -129,8 +143,8 @@ describe('PlatformJson class', function () {
                 expect(spy).toHaveBeenCalledTimes(1);
                 const [file, data] = spy.calls.argsFor(0);
                 expect(file).toBe(dest);
-                expect(data.indexOf(JSON.stringify(platformJson.root.modules, null, 2))).toBeGreaterThan(0);
-                expect(data).toMatch(JSON.stringify(platformJson.root.plugin_metadata, null, 2));
+                const mod = evaluateCordovaDefineStatement(data);
+                expect(mod.exports).toEqual(expectedMetadata());
             });
         });
     });
