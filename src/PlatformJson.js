@@ -16,6 +16,7 @@
 
 var fs = require('fs-extra');
 var path = require('path');
+var endent = require('endent');
 var mungeutil = require('./ConfigChanges/munge-util');
 
 function PlatformJson (filePath, platform, root) {
@@ -182,15 +183,13 @@ PlatformJson.prototype.makeTopLevel = function (pluginId) {
  * @returns {String} cordova_plugins.js contents
  */
 PlatformJson.prototype.generateMetadata = function () {
-    return [
-        'cordova.define(\'cordova/plugin_list\', function(require, exports, module) {',
-        'module.exports = ' + JSON.stringify(this.root.modules, null, 2) + ';',
-        'module.exports.metadata = ',
-        '// TOP OF METADATA',
-        JSON.stringify(this.root.plugin_metadata, null, 2) + ';',
-        '// BOTTOM OF METADATA',
-        '});' // Close cordova.define.
-    ].join('\n');
+    const stringify = o => JSON.stringify(o, null, 2);
+    return endent`
+        cordova.define('cordova/plugin_list', function(require, exports, module) {
+          module.exports = ${stringify(this.root.modules)};
+          module.exports.metadata = ${stringify(this.root.plugin_metadata)};
+        });
+    `;
 };
 
 /**
