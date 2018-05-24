@@ -209,8 +209,7 @@ PlatformJson.prototype.generateMetadata = function () {
  * @return {PlatformJson} PlatformJson instance
  */
 PlatformJson.prototype.generateAndSaveMetadata = function (destination) {
-    var meta = this.generateMetadata();
-    fs.outputJsonSync(destination, meta);
+    fs.outputFileSync(destination, this.generateMetadata());
 
     return this;
 };
