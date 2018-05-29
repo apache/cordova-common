@@ -186,33 +186,38 @@ function add_config_changes (config, should_increment) {
         }
     }
 
-    if (changes && changes.length > 0) {
-        var isConflictingInfo = is_conflicting(changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
-        if (isConflictingInfo.conflictFound) {
-            var conflict_munge;
-            var conflict_file;
+    var differs = (function (changes) {
+      if (changes && changes.length > 0) {
+          var isConflictingInfo = is_conflicting(changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
+          if (isConflictingInfo.conflictFound) {
+              var conflict_munge;
+              var conflict_file;
 
-            if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
-                // silently remove conflicting config.xml munges so new munges can be added
-                conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
-                for (conflict_file in conflict_munge.files) {
-                    self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
-                }
-            }
-            if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
-                events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
+              if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
+                  // silently remove conflicting config.xml munges so new munges can be added
+                  conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
+                  for (conflict_file in conflict_munge.files) {
+                      self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+                  }
+              }
+              if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
+                  events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
-                // remove conflicting plugin.xml munges
-                conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
-                for (conflict_file in conflict_munge.files) {
-                    self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
-                }
-            }
-        }
-    }
+                  // remove conflicting plugin.xml munges
+                  conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
+                  for (conflict_file in conflict_munge.files) {
+                      self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+                  }
+              }
+              return changes.filter( function(x) { return isConflictingInfo.noChanges.indexOf(x) == -1; } );
+          }
+      }
+      return changes;
+    })(changes);
+
 
     // Add config.xml edit-config and config-file munges
-    config_munge = self.generate_config_xml_munge(config, changes, 'config.xml');
+    config_munge = self.generate_config_xml_munge(config, differs, 'config.xml');
     self = munge_helper(should_increment, self, platform_config, config_munge);
 
     // Move to installed/dependent_plugins
@@ -335,16 +340,28 @@ function is_conflicting (editchanges, config_munge, self, force) {
     var configxmlMunge = { files: {} };
     var conflictingParent;
     var conflictingPlugin;
+    var noChanges = [];
 
     editchanges.forEach(function (editchange) {
-        if (files[editchange.file]) {
-            var parents = files[editchange.file].parents;
-            var target = parents[editchange.target];
+        var change_file, change_target, change_id;
+        if (editchange.file) { // for edit_config
+          change_file = editchange.file;
+          change_target = editchange.target;
+          change_id = editchange.id;
+        } else { // for config_file
+          change_file = editchange.target;
+          change_target = editchange.parent;
+          change_id = editchange.target;
+        }
+
+        if (files[change_file]) {
+            var parents = files[change_file].parents;
+            var target = parents[change_target];
 
             // Check if the edit target will resolve to an existing target
             if (!target || target.length === 0) {
-                var file_xml = self.config_keeper.get(self.project_dir, self.platform, editchange.file).data;
-                var resolveEditTarget = xml_helpers.resolveParent(file_xml, editchange.target);
+                var file_xml = self.config_keeper.get(self.project_dir, self.platform, change_file).data;
+                var resolveEditTarget = xml_helpers.resolveParent(file_xml, change_target);
                 var resolveTarget;
 
                 if (resolveEditTarget) {
@@ -358,20 +375,20 @@ function is_conflicting (editchanges, config_munge, self, force) {
                     }
                 }
             } else {
-                conflictingParent = editchange.target;
+                conflictingParent = change_target;
             }
 
             if (target && target.length !== 0) {
                 // conflict has been found
                 conflictFound = true;
 
-                if (editchange.id === 'config.xml') {
+                if (change_id === 'config.xml') {
                     if (target[0].id === 'config.xml') {
                         // Keep track of config.xml/config.xml edit-config conflicts
-                        mungeutil.deep_add(configxmlMunge, editchange.file, conflictingParent, target[0]);
+                        mungeutil.deep_add(configxmlMunge, change_file, conflictingParent, target[0]);
                     } else {
                         // Keep track of config.xml x plugin.xml edit-config conflicts
-                        mungeutil.deep_add(conflictingMunge, editchange.file, conflictingParent, target[0]);
+                        mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
                     }
                 } else {
                     if (target[0].id === 'config.xml') {
@@ -381,8 +398,17 @@ function is_conflicting (editchanges, config_munge, self, force) {
                     }
 
                     if (force) {
-                        // Need to find all conflicts when --force is used, track conflicting munges
-                        mungeutil.deep_add(conflictingMunge, editchange.file, conflictingParent, target[0]);
+                        var xmlStrList = changedXmlStrList(editchange);
+                        var isSameAll =  compareChangedXmlsAndTarget(xmlStrList,target);
+
+                        if (isSameAll) {
+                          noChanges.push( editchange );
+                        } else {
+                          // Need to find all conflicts when --force is used, track conflicting munges
+                          // mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
+                          mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
+                        }
+
                     } else {
                         // plugin cannot overwrite other plugin changes without --force
                         conflictingPlugin = target[0].plugin;
@@ -397,7 +423,34 @@ function is_conflicting (editchanges, config_munge, self, force) {
         conflictingPlugin: conflictingPlugin,
         conflictingMunge: conflictingMunge,
         configxmlMunge: configxmlMunge,
-        conflictWithConfigxml: conflictWithConfigxml};
+        conflictWithConfigxml: conflictWithConfigxml,
+        noChanges: noChanges};
+}
+
+function changedXmlStrList(editchange) {
+  var xmlStrList = [];
+  editchange.xmls.forEach(function(xml) {
+    var stringified = (new et.ElementTree(xml)).write({xml_declaration: false});
+    xmlStrList.push(stringified);
+  });
+  return xmlStrList;
+}
+
+// if all elements of target are same as xmlStrList, return true;
+// otherwise return false;
+function compareChangedXmlsAndTarget(xmlStrList,target) {
+  if (xmlStrList.length != target.length) {
+    return false;
+  }
+  var isSame = target.reduce( function(acc,elem) {
+    var found1 = xmlStrList.find( function(x) { return x == elem.xml; } );
+    if (found1) {
+      return acc;
+    } else {
+      return false;
+    }
+  } , true );
+  return isSame;
 }
 
 // Go over the prepare queue and apply the config munges for each plugin
