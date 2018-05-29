@@ -169,7 +169,6 @@ function add_config_changes (config, should_increment) {
     var self = this;
     var platform_config = self.platformJson.root;
 
-    var config_munge;
     var changes = [];
 
     if (config.getEditConfigs) {
@@ -186,16 +185,26 @@ function add_config_changes (config, should_increment) {
         }
     }
 
+    var platform_config_munge = platform_config.config_munge;
+
     var differs = (function (changes) {
-      if (changes && changes.length > 0) {
-          var isConflictingInfo = is_conflicting(changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
+      if (changes && changes.length >= 0) {
+          var isConflictingInfo = is_conflicting(changes, platform_config_munge, self, true /* always force overwrite other edit-config */);
+          // remove unused config munge.
+          if (Object.keys(isConflictingInfo.unusedConfigMunge.files).length !==0) {
+            conflict_munge = mungeutil.decrement_munge(platform_config_munge, isConflictingInfo.unusedConfigMunge);
+            for (conflict_file in conflict_munge.files) {
+              self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+            }
+          }
+          // check override conflicting munge.
           if (isConflictingInfo.conflictFound) {
               var conflict_munge;
               var conflict_file;
 
               if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
                   // silently remove conflicting config.xml munges so new munges can be added
-                  conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
+                  conflict_munge = mungeutil.decrement_munge(platform_config_munge, isConflictingInfo.configxmlMunge);
                   for (conflict_file in conflict_munge.files) {
                       self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                   }
@@ -204,20 +213,21 @@ function add_config_changes (config, should_increment) {
                   events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
                   // remove conflicting plugin.xml munges
-                  conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
+                  conflict_munge = mungeutil.decrement_munge(platform_config_munge, isConflictingInfo.conflictingMunge);
                   for (conflict_file in conflict_munge.files) {
                       self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                   }
               }
+              // skip no chnages
               return changes.filter( function(x) { return isConflictingInfo.noChanges.indexOf(x) == -1; } );
           }
+
       }
       return changes;
     })(changes);
 
-
     // Add config.xml edit-config and config-file munges
-    config_munge = self.generate_config_xml_munge(config, differs, 'config.xml');
+    var config_munge = self.generate_config_xml_munge(config, differs, 'config.xml');
     self = munge_helper(should_increment, self, platform_config, config_munge);
 
     // Move to installed/dependent_plugins
@@ -262,7 +272,7 @@ function reapply_global_munge () {
     return self;
 }
 
-// generate_plugin_config_munge
+// generate_config_xml_munge
 // Generate the munge object from config.xml
 PlatformMunger.prototype.generate_config_xml_munge = generate_config_xml_munge;
 function generate_config_xml_munge (config, config_changes, type) {
@@ -287,7 +297,7 @@ function generate_config_xml_munge (config, config_changes, type) {
             if (change.mode) {
                 mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id: id });
             } else {
-                mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after });
+                mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after, id: id });
             }
         });
     });
@@ -342,6 +352,8 @@ function is_conflicting (editchanges, config_munge, self, force) {
     var conflictingPlugin;
     var noChanges = [];
 
+    var unusedConfigMunge = mungeutil.filterClone( config_munge, function(x) { return x.id == "config.xml"; } );
+
     editchanges.forEach(function (editchange) {
         var change_file, change_target, change_id;
         if (editchange.file) { // for edit_config
@@ -351,7 +363,7 @@ function is_conflicting (editchanges, config_munge, self, force) {
         } else { // for config_file
           change_file = editchange.target;
           change_target = editchange.parent;
-          change_id = editchange.target;
+          change_id = editchange.id;
         }
 
         if (files[change_file]) {
@@ -360,19 +372,25 @@ function is_conflicting (editchanges, config_munge, self, force) {
 
             // Check if the edit target will resolve to an existing target
             if (!target || target.length === 0) {
-                var file_xml = self.config_keeper.get(self.project_dir, self.platform, change_file).data;
-                var resolveEditTarget = xml_helpers.resolveParent(file_xml, change_target);
-                var resolveTarget;
+                var configFile = self.config_keeper.get(self.project_dir, self.platform, change_file);
+                var file_type = configFile.type;
+                if (file_type == "xml") {
+                  var file_xml = configFile.data;
+                  var resolveEditTarget = xml_helpers.resolveParent(file_xml, change_target);
+                  var resolveTarget;
 
-                if (resolveEditTarget) {
-                    for (var parent in parents) {
-                        resolveTarget = xml_helpers.resolveParent(file_xml, parent);
-                        if (resolveEditTarget === resolveTarget) {
-                            conflictingParent = parent;
-                            target = parents[parent];
-                            break;
-                        }
-                    }
+                  if (resolveEditTarget) {
+                      for (var parent in parents) {
+                          resolveTarget = xml_helpers.resolveParent(file_xml, parent);
+                          if (resolveEditTarget === resolveTarget) {
+                              conflictingParent = parent;
+                              target = parents[parent];
+                              break;
+                          }
+                      }
+                  }
+                } else {
+                  conflictingParent = change_target;
                 }
             } else {
                 conflictingParent = change_target;
@@ -383,12 +401,28 @@ function is_conflicting (editchanges, config_munge, self, force) {
                 conflictFound = true;
 
                 if (change_id === 'config.xml') {
+                  target.forEach( function(target_elem) {
+                    mungeutil.deep_remove(unusedConfigMunge, change_file, conflictingParent, target_elem);
+                  });
+                }
+
+                if (change_id === 'config.xml') {
                     if (target[0].id === 'config.xml') {
-                        // Keep track of config.xml/config.xml edit-config conflicts
-                        mungeutil.deep_add(configxmlMunge, change_file, conflictingParent, target[0]);
+                        var xmlStrList = changedXmlStrList(editchange);
+                        var isSameAll =  compareChangedXmlsAndTarget(xmlStrList,target);
+                        if (isSameAll) {
+                          noChanges.push( editchange );
+                        } else {
+                          // Keep track of config.xml/config.xml edit-config conflicts
+                          target.forEach( function(target_elem) {
+                            mungeutil.deep_add(configxmlMunge, change_file, conflictingParent, target_elem);
+                          });
+                        }
                     } else {
                         // Keep track of config.xml x plugin.xml edit-config conflicts
-                        mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
+                        target.forEach( function(target_elem) {
+                          mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target_elem);
+                        });
                     }
                 } else {
                     if (target[0].id === 'config.xml') {
@@ -405,8 +439,9 @@ function is_conflicting (editchanges, config_munge, self, force) {
                           noChanges.push( editchange );
                         } else {
                           // Need to find all conflicts when --force is used, track conflicting munges
-                          // mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
-                          mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target[0]);
+                          target.forEach( function(target_elem) {
+                            mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target_elem);
+                          });
                         }
 
                     } else {
@@ -424,7 +459,8 @@ function is_conflicting (editchanges, config_munge, self, force) {
         conflictingMunge: conflictingMunge,
         configxmlMunge: configxmlMunge,
         conflictWithConfigxml: conflictWithConfigxml,
-        noChanges: noChanges};
+        noChanges: noChanges,
+        unusedConfigMunge: unusedConfigMunge };
 }
 
 function changedXmlStrList(editchange) {
@@ -443,7 +479,7 @@ function compareChangedXmlsAndTarget(xmlStrList,target) {
     return false;
   }
   var isSame = target.reduce( function(acc,elem) {
-    var found1 = xmlStrList.find( function(x) { return x == elem.xml; } );
+    var found1 = xmlStrList.find( function(x) { return x == elem.xml && elem.id == 'config.xml'; } );
     if (found1) {
       return acc;
     } else {
