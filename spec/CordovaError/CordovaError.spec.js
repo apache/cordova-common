@@ -34,7 +34,7 @@ describe('CordovaError class', function () {
     it('Test 003 : toString works', function () {
         var error003_1 = new CordovaError('error', 0);
         expect(error003_1.toString(false)).toEqual('error');
-        expect(error003_1.toString(true).substring(0, 5)).toEqual('Error');
+        expect(error003_1.toString(true).substring(0, 12)).toEqual('CordovaError');
         var error003_2 = new CordovaError('error', 1);
         expect(error003_2.toString(false)).toEqual('External tool failed with an error: error');
     });
