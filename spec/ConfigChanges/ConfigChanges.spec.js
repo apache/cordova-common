@@ -388,6 +388,32 @@ describe('config-changes module', function () {
                     expect(sdk.attrib['android:minSdkVersion']).toEqual('5');
                     expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
                 });
+                it('should recover AndroidManifest after removing editconfig', function () {
+                    var editconfig_cfg = new ConfigParser(editconfig_xml);
+                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+
+                    // once add editconfig
+                    munger.add_config_changes(cfg, true).save_all();
+                    munger.add_config_changes(editconfig_cfg, true).save_all();
+
+                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    var sdk = am_xml.find('./uses-sdk');
+                    expect(sdk).toBeDefined();
+                    expect(sdk.attrib['android:targetSdkVersion']).toEqual('23');
+                    expect(sdk.attrib['android:minSdkVersion']).toEqual('5');
+                    expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
+
+                    // should recover
+                    munger.add_config_changes(cfg, true).save_all();
+                    am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    sdk = am_xml.find('./uses-sdk');
+                    expect(sdk).toBeDefined();
+                    expect(sdk.attrib['android:targetSdkVersion']).toEqual('24');
+                    expect(sdk.attrib['android:minSdkVersion']).toEqual('14');
+                    expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
+
+                });
                 it('should append new children to XML document tree', function () {
                     var configfile_cfg = new ConfigParser(configfile_xml);
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
