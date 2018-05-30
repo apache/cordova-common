@@ -46,6 +46,9 @@ var ConfigParser = require('../../src/ConfigParser/ConfigParser');
 var xml = path.join(__dirname, '../fixtures/test-config.xml');
 var editconfig_xml = path.join(__dirname, '../fixtures/test-editconfig.xml');
 var configfile_xml = path.join(__dirname, '../fixtures/test-configfile.xml');
+var configfile0_xml = path.join(__dirname, '../fixtures/test-configfile0.xml');
+var configfile1_xml = path.join(__dirname, '../fixtures/test-configfile1.xml');
+var configfile2_xml = path.join(__dirname, '../fixtures/test-configfile2.xml');
 var cfg = new ConfigParser(xml);
 
 // TODO: dont do fs so much
@@ -404,6 +407,47 @@ describe('config-changes module', function () {
                     var am_file = fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8');
                     expect(am_file.indexOf('android:name="zoo"')).toBeLessThan(am_file.indexOf('android:name="com.foo.Bar"'));
                 });
+                // testing removing <config-file> tag in config.xml
+                it('should recover AndroidManifest after removing config-file tag', function () {
+                    // add config-file same as previous
+                    var configfile_cfg = new ConfigParser(configfile_xml);
+                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    munger.add_config_changes(configfile_cfg, true).save_all();
+                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    var activity = am_xml.find('./application/activity[@android:name="com.foo.Bar"]');
+                    expect(activity).not.toBeNull();
+                    // add removing config-file
+                    var configfile0_cfg = new ConfigParser(configfile0_xml); // removing config-file tag
+                    munger.add_config_changes(configfile0_cfg, true).save_all();
+                    am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    activity = am_xml.find('./application/activity[@android:name="com.foo.Bar"]');
+                    expect(activity).toBeNull();
+                });
+                it('should recover AndroidManifest if one of permission tags is removed', function () {
+                    shell.cp('-rf', android_two_no_perms_project, temp);
+                    var configfile2_cfg = new ConfigParser(configfile2_xml);
+                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    munger.add_config_changes(configfile2_cfg, true).save_all();
+                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    var permission_vibrate = am_xml.find('./uses-permission[@android:name="android.permission.VIBRATE"]');
+                    var permission_write = am_xml.find('./uses-permission[@android:name="android.permission.WRITE_EXTERNAL_STORAGE"]');
+                    var permission_contacts = am_xml.find('./uses-permission[@android:name="android.permission.READ_CONTACTS"]');
+                    expect(permission_vibrate).not.toBeNull();
+                    expect(permission_write).not.toBeNull();
+                    expect(permission_contacts).toBeNull();
+                    // add removing of of permission tag
+                    var configfile1_cfg = new ConfigParser(configfile1_xml); // removing one of permission tag
+                    munger.add_config_changes(configfile1_cfg, true).save_all();
+                    am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    permission_vibrate = am_xml.find('./uses-permission[@android:name="android.permission.VIBRATE"]');
+                    permission_write = am_xml.find('./uses-permission[@android:name="android.permission.WRITE_EXTERNAL_STORAGE"]');
+                    permission_contacts = am_xml.find('./uses-permission[@android:name="android.permission.READ_CONTACTS"]');
+                    expect(permission_vibrate).not.toBeNull();
+                    expect(permission_write).toBeNull();
+                    expect(permission_contacts).toBeNull();
+                });
                 it('should throw error for conflicting plugin config munge with config.xml config munge', function () {
                     install_plugin(editconfigplugin_two);
 
@@ -436,6 +480,24 @@ describe('config-changes module', function () {
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<key>UINewsstandIcon<\/key>[\s\S]*<key>CFBundlePrimaryIcon<\/key>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<string>schema-b<\/string>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).not.toMatch(/(<string>schema-a<\/string>[^]*){2,}/);
+                });
+                it('should recover Info.plist after removing config-file tag', function () {
+                    shell.cp('-rf', ios_config_xml, temp);
+                    var configfile2_cfg = new ConfigParser(configfile2_xml);
+                    var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                    var munger = new configChanges.PlatformMunger('ios', temp, platformJson, pluginInfoProvider);
+                    munger.add_config_changes(configfile2_cfg, true).save_all();
+                    var info_plist = fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8');
+                    expect(info_plist).toMatch(/<key>NSCameraUsageDescription<\/key>\s*<string>Please permit Camera<\/string>/);
+                    expect(info_plist).toMatch(/<key>NSPhotoLibraryUsageDescription<\/key>\s*<string>Please permit PhotoLibrary<\/string>/);
+                    expect(info_plist).toMatch(/<key>LSApplicationQueriesSchemes<\/key>\s*<array>\s*<string>twitter<\/string>\s*<string>fb<\/string>\s*<\/array>/);
+                    var configfile1_cfg = new ConfigParser(configfile1_xml);
+                    munger.add_config_changes(configfile1_cfg, true).save_all();
+                    info_plist = fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8');
+                    expect(info_plist).toMatch(/<key>NSCameraUsageDescription<\/key>\s*<string>This app uses Camera<\/string>/);
+                    expect(info_plist).not.toMatch(/<key>NSPhotoLibraryUsageDescription<\/key>\s*<string>Please permit PhotoLibrary<\/string>/);
+                    expect(info_plist).not.toMatch(/<key>LSApplicationQueriesSchemes<\/key>\s*<array>\s*<string>twitter<\/string>\s*<string>fb<\/string>\s*<\/array>/);
+                    expect(info_plist).toMatch(/<key>LSApplicationQueriesSchemes<\/key>\s*<array>\s*<string>twitter<\/string>\s*<\/array>/);
                 });
             });
             describe('of binary plist config files', function () {

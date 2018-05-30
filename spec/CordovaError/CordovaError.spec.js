@@ -25,17 +25,17 @@ describe('CordovaError class', function () {
     });
 
     it('Test 002 : getErrorCodeName works', function () {
-        var error002_1 = new CordovaError('error',0);
+        var error002_1 = new CordovaError('error', 0);
         expect(error002_1.getErrorCodeName()).toEqual('UNKNOWN_ERROR');
-        var error002_2 = new CordovaError('error',1);
+        var error002_2 = new CordovaError('error', 1);
         expect(error002_2.getErrorCodeName()).toEqual('EXTERNAL_TOOL_ERROR');
     });
 
     it('Test 003 : toString works', function () {
-        var error003_1 = new CordovaError('error',0);
+        var error003_1 = new CordovaError('error', 0);
         expect(error003_1.toString(false)).toEqual('error');
-        expect(error003_1.toString(true).substring(0,5)).toEqual('Error');
-        var error003_2 = new CordovaError('error',1);
+        expect(error003_1.toString(true).substring(0, 5)).toEqual('Error');
+        var error003_2 = new CordovaError('error', 1);
         expect(error003_2.toString(false)).toEqual('External tool failed with an error: error');
     });
 });
