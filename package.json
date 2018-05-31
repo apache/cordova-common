@@ -3,7 +3,7 @@
   "name": "cordova-common",
   "description": "Apache Cordova tools and platforms shared routines",
   "license": "Apache-2.0",
-  "version": "2.2.2-dev",
+  "version": "2.2.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/apache/cordova-common"
