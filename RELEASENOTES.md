@@ -20,6 +20,9 @@
 -->
 # Cordova-common Release Notes
 
+### 2.2.3 (June 1, 2018)
+* Revert a minor refactoring that was incompatible with NodeJS 4.x. No change to functionality.
+
 ### 2.2.2 (May 30, 2018)
 * [CB-13979](https://issues.apache.org/jira/browse/CB-13979) More consistency for `config.xml` lookups
 * [CB-14064](https://issues.apache.org/jira/browse/CB-14064) Remove Node 4 from CI matrix
