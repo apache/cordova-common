@@ -161,9 +161,9 @@ CordovaLogger.prototype.setLevel = function (logLevel) {
  * @return  {CordovaLogger}     Current instance, to allow calls chaining.
  */
 CordovaLogger.prototype.adjustLevel = function (opts) {
-    if (opts.verbose || (Array.isArray(opts) && opts.includes('--verbose'))) {
+    if (opts.verbose || (Array.isArray(opts) && opts.indexOf('--verbose') !== -1)) {
         this.setLevel('verbose');
-    } else if (opts.silent || (Array.isArray(opts) && opts.includes('--silent'))) {
+    } else if (opts.silent || (Array.isArray(opts) && opts.indexOf('--silent') !== -1)) {
         this.setLevel('error');
     }
 
@@ -209,7 +209,7 @@ function formatError (error, isVerbose) {
         message = error;
     }
 
-    if (typeof message === 'string' && !message.toUpperCase().startsWith('ERROR:')) {
+    if (typeof message === 'string' && message.toUpperCase().indexOf('ERROR:') !== 0) {
         // Needed for backward compatibility with external tools
         message = 'Error: ' + message;
     }

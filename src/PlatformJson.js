@@ -111,7 +111,7 @@ PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
         })
         .filter(function (metadata) {
             // Filter out modules which are already added to metadata
-            return !installedPaths.includes(metadata.file);
+            return installedPaths.indexOf(metadata.file) === -1;
         });
 
     this.root.modules = installedModules.concat(modulesToInstall);
@@ -151,7 +151,7 @@ PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
     this.root.modules = installedModules
         .filter(function (installedModule) {
             // Leave only those metadatas which 'file' is not in removed modules
-            return !modulesToRemove.includes(installedModule.file);
+            return (modulesToRemove.indexOf(installedModule.file) === -1);
         });
 
     if (this.root.plugin_metadata) {
