@@ -30,7 +30,7 @@ var iswin32 = process.platform === 'win32';
 function resolveWindowsExe (cmd) {
     var winExtensions = ['.exe', '.bat', '.cmd', '.js', '.vbs'];
     function isValidExe (c) {
-        return winExtensions.includes(path.extname(c)) && fs.existsSync(c);
+        return winExtensions.indexOf(path.extname(c)) !== -1 && fs.existsSync(c);
     }
     if (isValidExe(cmd)) {
         return cmd;
