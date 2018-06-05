@@ -18,7 +18,7 @@
 */
 
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-extra');
 var ConfigParser = require('../../src/ConfigParser/ConfigParser');
 var xml = path.join(__dirname, '../fixtures/test-config.xml');
 var xml_contents = fs.readFileSync(xml, 'utf-8');

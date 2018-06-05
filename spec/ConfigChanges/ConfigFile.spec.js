@@ -17,7 +17,7 @@
 
 var rewire = require('rewire');
 var configFile = rewire('../../src/ConfigChanges/ConfigFile');
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var projectDir = path.join('project_dir', 'app', 'src', 'main');
 

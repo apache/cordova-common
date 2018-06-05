@@ -17,7 +17,7 @@
     under the License.
 */
 
-var shell = require('shelljs');
+var fs = require('fs-extra');
 var path = require('path');
 var CordovaCheck = require('../src/CordovaCheck');
 
@@ -30,13 +30,10 @@ describe('findProjectRoot method', function () {
         process.env.PWD = origPWD;
         process.chdir(cwd);
     });
-    function removeDir (someDirectory) {
-        shell.rm('-rf', someDirectory);
-    }
+
     it('Test 001 : should return false if it hits the home directory', function () {
         var somedir = path.join(home, 'somedir');
-        removeDir(somedir);
-        shell.mkdir(somedir);
+        fs.emptyDirSync(somedir);
         expect(CordovaCheck.findProjectRoot(somedir)).toEqual(false);
     });
     it('Test 002 : should return false if it cannot find a .cordova directory up the directory tree', function () {
@@ -46,28 +43,28 @@ describe('findProjectRoot method', function () {
     it('Test 003 : should return the first directory it finds with a .cordova folder in it', function () {
         var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
-        removeDir(somedir);
-        shell.mkdir('-p', anotherdir);
-        shell.mkdir('-p', path.join(somedir, 'www', 'config.xml'));
+        fs.removeSync(somedir);
+        fs.ensureDirSync(anotherdir);
+        fs.ensureFileSync(path.join(somedir, 'www', 'config.xml'));
         expect(CordovaCheck.findProjectRoot(somedir)).toEqual(somedir);
     });
     it('Test 004 : should ignore PWD when its undefined', function () {
         delete process.env.PWD;
         var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
-        removeDir(somedir);
-        shell.mkdir('-p', anotherdir);
-        shell.mkdir('-p', path.join(somedir, 'www'));
-        shell.mkdir('-p', path.join(somedir, 'config.xml'));
+        fs.removeSync(somedir);
+        fs.ensureDirSync(anotherdir);
+        fs.ensureDirSync(path.join(somedir, 'www'));
+        fs.ensureFileSync(path.join(somedir, 'config.xml'));
         process.chdir(anotherdir);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
     });
     it('Test 005 : should use PWD when available', function () {
         var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
-        removeDir(somedir);
-        shell.mkdir('-p', anotherdir);
-        shell.mkdir('-p', path.join(somedir, 'www', 'config.xml'));
+        fs.removeSync(somedir);
+        fs.ensureDirSync(anotherdir);
+        fs.ensureFileSync(path.join(somedir, 'www', 'config.xml'));
         process.env.PWD = anotherdir;
         process.chdir(path.sep);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
@@ -75,9 +72,9 @@ describe('findProjectRoot method', function () {
     it('Test 006 : should use cwd as a fallback when PWD is not a cordova dir', function () {
         var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
-        removeDir(somedir);
-        shell.mkdir('-p', anotherdir);
-        shell.mkdir('-p', path.join(somedir, 'www', 'config.xml'));
+        fs.removeSync(somedir);
+        fs.ensureDirSync(anotherdir);
+        fs.ensureFileSync(path.join(somedir, 'www', 'config.xml'));
         process.env.PWD = path.sep;
         process.chdir(anotherdir);
         expect(CordovaCheck.findProjectRoot()).toEqual(somedir);
@@ -85,11 +82,10 @@ describe('findProjectRoot method', function () {
     it('Test 007 : should ignore platform www/config.xml', function () {
         var somedir = path.join(home, 'somedir');
         var anotherdir = path.join(somedir, 'anotherdir');
-        removeDir(somedir);
-        shell.mkdir('-p', anotherdir);
-        shell.mkdir('-p', path.join(anotherdir, 'www', 'config.xml'));
-        shell.mkdir('-p', path.join(somedir, 'www'));
-        shell.mkdir('-p', path.join(somedir, 'config.xml'));
+        fs.removeSync(somedir);
+        fs.ensureFileSync(path.join(anotherdir, 'www', 'config.xml'));
+        fs.ensureDirSync(path.join(somedir, 'www'));
+        fs.ensureFileSync(path.join(somedir, 'config.xml'));
         expect(CordovaCheck.findProjectRoot(anotherdir)).toEqual(somedir);
     });
 });

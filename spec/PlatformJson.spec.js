@@ -117,6 +117,22 @@ describe('PlatformJson class', function () {
                 expect(meta).toMatch(JSON.stringify(platformJson.root.plugin_metadata, null, 2));
             });
         });
+
+        describe('generateAndSaveMetadata method', function () {
+            it('should save generated metadata', function () {
+                // Needs to use graceful-fs, since that is used by fs-extra
+                const spy = spyOn(require('graceful-fs'), 'writeFileSync');
+
+                const dest = require('path').join(__dirname, 'test-destination');
+                platformJson.addPluginMetadata(fakePlugin).generateAndSaveMetadata(dest);
+
+                expect(spy).toHaveBeenCalledTimes(1);
+                const [file, data] = spy.calls.argsFor(0);
+                expect(file).toBe(dest);
+                expect(data.indexOf(JSON.stringify(platformJson.root.modules, null, 2))).toBeGreaterThan(0);
+                expect(data).toMatch(JSON.stringify(platformJson.root.plugin_metadata, null, 2));
+            });
+        });
     });
 });
 

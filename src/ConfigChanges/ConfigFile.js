@@ -16,7 +16,7 @@
 
 /* eslint no-control-regex: 0 */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 
 var modules = {};

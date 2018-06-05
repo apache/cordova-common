@@ -21,9 +21,8 @@
 // require('promise-matchers');
 
 var Q = require('q');
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var shell = require('shelljs');
 var rewire = require('rewire');
 var PluginManager = rewire('../src/PluginManager');
 var PluginInfo = require('../src/PluginInfo/PluginInfo');
@@ -41,8 +40,9 @@ describe('PluginManager class', function () {
 
     beforeEach(function () {
         spyOn(ConfigChanges, 'PlatformMunger');
+        spyOn(fs, 'outputJsonSync');
         spyOn(fs, 'writeFileSync');
-        spyOn(shell, 'mkdir');
+        spyOn(fs, 'ensureDirSync');
     });
 
     it('Test 001 : should be constructable', function () {

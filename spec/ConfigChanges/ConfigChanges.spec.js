@@ -19,11 +19,10 @@
 
 var configChanges = require('../../src/ConfigChanges/ConfigChanges');
 var xml_helpers = require('../../src/util/xml-helpers');
-var fs = require('fs');
+var fs = require('fs-extra');
 var os = require('osenv');
 var et = require('elementtree');
 var path = require('path');
-var shell = require('shelljs');
 var temp = path.join(os.tmpdir(), 'plugman');
 var dummyplugin = path.join(__dirname, '../fixtures/plugins/org.test.plugins.dummyplugin');
 var cbplugin = path.join(__dirname, '../fixtures/plugins/org.test.plugins.childbrowser');
@@ -35,9 +34,9 @@ var editconfigplugin_two = path.join(__dirname, '../fixtures/plugins/org.test.ed
 var varplugin = path.join(__dirname, '../fixtures/plugins/com.adobe.vars');
 var plistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.plist');
 var bplistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.bplist');
-var android_two_project = path.join(__dirname, '../fixtures/projects/android_two/*');
-var android_two_no_perms_project = path.join(__dirname, '../fixtures/projects/android_two_no_perms', '*');
-var ios_config_xml = path.join(__dirname, '../fixtures/projects/ios-config-xml/*');
+var android_two_project = path.join(__dirname, '../fixtures/projects/android_two/');
+var android_two_no_perms_project = path.join(__dirname, '../fixtures/projects/android_two_no_perms');
+var ios_config_xml = path.join(__dirname, '../fixtures/projects/ios-config-xml/');
 var plugins_dir = path.join(temp, 'cordova', 'plugins');
 var mungeutil = require('../../src/ConfigChanges/munge-util');
 var PlatformJson = require('../../src/PlatformJson');
@@ -61,13 +60,17 @@ function get_munge_change () {
     return mungeutil.deep_find.apply(null, arguments);
 }
 
+function install_plugin (pluginPath) {
+    fs.copySync(pluginPath, path.join(plugins_dir, path.basename(pluginPath)));
+}
+
 describe('config-changes module', function () {
     beforeEach(function () {
-        shell.mkdir('-p', temp);
-        shell.mkdir('-p', plugins_dir);
+        fs.ensureDirSync(temp);
+        fs.ensureDirSync(plugins_dir);
     });
     afterEach(function () {
-        shell.rm('-rf', temp);
+        fs.removeSync(temp);
     });
 
     describe('queue methods', function () {
@@ -131,7 +134,7 @@ describe('config-changes module', function () {
     describe('generate_plugin_config_munge method', function () {
         describe('for android projects', function () {
             beforeEach(function () {
-                shell.cp('-rf', android_two_project, temp);
+                fs.copySync(android_two_project, temp);
             });
             it('Test 007 : should return a flat config hierarchy for simple, one-off config changes', function () {
                 var xml;
@@ -196,10 +199,10 @@ describe('config-changes module', function () {
 
     describe('processing of plugins (via process method)', function () {
         beforeEach(function () {
-            shell.cp('-rf', dummyplugin, plugins_dir);
+            install_plugin(dummyplugin);
         });
         it('Test 014 : should generate config munges for queued plugins', function () {
-            shell.cp('-rf', android_two_project, temp);
+            fs.copySync(android_two_project, temp);
             var platformJson = PlatformJson.load(plugins_dir, 'android');
             platformJson.root.prepare_queue.installed = [{'plugin': 'org.test.plugins.dummyplugin', 'vars': {}}];
             var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
@@ -210,7 +213,7 @@ describe('config-changes module', function () {
         describe(': installation', function () {
             describe('of xml config files', function () {
                 beforeEach(function () {
-                    shell.cp('-rf', android_two_project, temp);
+                    fs.copySync(android_two_project, temp);
                 });
                 it('Test 015 : should call graftXML for every new config munge it introduces (every leaf in config munge that does not exist)', function () {
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
@@ -227,7 +230,7 @@ describe('config-changes module', function () {
                     expect(spy.calls.argsFor(3)[2]).toEqual('/cordova/plugins');
                 });
                 it('Test 016 : should not call graftXML for a config munge that already exists from another plugin', function () {
-                    shell.cp('-rf', configplugin, plugins_dir);
+                    install_plugin(configplugin);
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.configtest', {});
 
@@ -247,7 +250,8 @@ describe('config-changes module', function () {
                     expect(spy).not.toHaveBeenCalledWith(path.join(temp, 'res', 'xml', 'plugins.xml'), 'utf-8');
                 });
                 it('Test 018 : should call graftXMLMerge for every new config munge with mode \'merge\' it introduces', function () {
-                    shell.cp('-rf', editconfigplugin, plugins_dir);
+                    install_plugin(editconfigplugin);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
 
@@ -259,8 +263,9 @@ describe('config-changes module', function () {
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity[@android:name=\'org.test.DroidGap\']');
                 });
                 it('Test 019 : should call graftXMLMerge with --force for every new config munge with mode \'merge\' it introduces', function () {
-                    shell.cp('-rf', editconfigplugin, plugins_dir);
-                    shell.cp('-rf', editconfigplugin_two, plugins_dir);
+                    install_plugin(editconfigplugin);
+                    install_plugin(editconfigplugin_two);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
@@ -275,7 +280,8 @@ describe('config-changes module', function () {
                     expect(spy.calls.argsFor(2)[2]).toEqual('/manifest/uses-sdk');
                 });
                 it('Test 020 : should call graftXMLOverwrite for every new config munge with mode \'overwrite\' it introduces', function () {
-                    shell.cp('-rf', editconfigplugin, plugins_dir);
+                    install_plugin(editconfigplugin);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
 
@@ -287,8 +293,9 @@ describe('config-changes module', function () {
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity');
                 });
                 it('Test 021 : should call graftXMLOverwrite with --force for every new config munge with mode \'overwrite\' it introduces', function () {
-                    shell.cp('-rf', editconfigplugin, plugins_dir);
-                    shell.cp('-rf', editconfigplugin_two, plugins_dir);
+                    install_plugin(editconfigplugin);
+                    install_plugin(editconfigplugin_two);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
@@ -302,8 +309,9 @@ describe('config-changes module', function () {
                     expect(spy.calls.argsFor(1)[2]).toEqual('/manifest/application/activity[@android:name=\'ChildApp\']');
                 });
                 it('Test 022 : should not install plugin when there are edit-config conflicts', function () {
-                    shell.cp('-rf', editconfigplugin, plugins_dir);
-                    shell.cp('-rf', editconfigplugin_two, plugins_dir);
+                    install_plugin(editconfigplugin);
+                    install_plugin(editconfigplugin_two);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {});
@@ -348,7 +356,8 @@ describe('config-changes module', function () {
                     expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
                 });
                 it('should overwrite plugin config munge for every conflicting config.xml config munge', function () {
-                    shell.cp('-rf', editconfigplugin_two, plugins_dir);
+                    install_plugin(editconfigplugin_two);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
@@ -396,7 +405,8 @@ describe('config-changes module', function () {
                     expect(am_file.indexOf('android:name="zoo"')).toBeLessThan(am_file.indexOf('android:name="com.foo.Bar"'));
                 });
                 it('should throw error for conflicting plugin config munge with config.xml config munge', function () {
-                    shell.cp('-rf', editconfigplugin_two, plugins_dir);
+                    install_plugin(editconfigplugin_two);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
@@ -408,16 +418,18 @@ describe('config-changes module', function () {
             });
             describe('of plist config files', function () {
                 it('Test 023 : should write empty string nodes with no whitespace', function () {
-                    shell.cp('-rf', ios_config_xml, temp);
-                    shell.cp('-rf', varplugin, plugins_dir);
+                    fs.copySync(ios_config_xml, temp);
+                    install_plugin(varplugin);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<key>APluginNode<\/key>\n {4}<string\/>/m);
                 });
                 it('Test 024 : should merge dictionaries and arrays, removing duplicates', function () {
-                    shell.cp('-rf', ios_config_xml, temp);
-                    shell.cp('-rf', plistplugin, plugins_dir);
+                    fs.copySync(ios_config_xml, temp);
+                    install_plugin(plistplugin);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('org.apache.plist', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
@@ -428,8 +440,9 @@ describe('config-changes module', function () {
             });
             describe('of binary plist config files', function () {
                 it('should merge dictionaries and arrays, removing duplicates', function () {
-                    shell.cp('-rf', ios_config_xml, temp);
-                    shell.cp('-rf', bplistplugin, plugins_dir);
+                    fs.copySync(ios_config_xml, temp);
+                    install_plugin(bplistplugin);
+
                     var platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('org.apache.bplist', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
@@ -440,8 +453,9 @@ describe('config-changes module', function () {
                 });
             });
             it('Test 025 : should resolve wildcard config-file targets to the project, if applicable', function () {
-                shell.cp('-rf', ios_config_xml, temp);
-                shell.cp('-rf', cbplugin, plugins_dir);
+                fs.copySync(ios_config_xml, temp);
+                install_plugin(cbplugin);
+
                 var platformJson = PlatformJson.load(plugins_dir, 'ios');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.childbrowser', {});
                 var spy = spyOn(fs, 'readFileSync').and.callThrough();
@@ -451,8 +465,9 @@ describe('config-changes module', function () {
                 expect(spy).toHaveBeenCalledWith(path.join(temp, 'SampleApp', 'SampleApp-Info.plist').replace(/\\/g, '/'), 'utf8');
             });
             it('Test 026 : should move successfully installed plugins from queue to installed plugins section, and include/retain vars if applicable', function () {
-                shell.cp('-rf', android_two_project, temp);
-                shell.cp('-rf', varplugin, plugins_dir);
+                fs.copySync(android_two_project, temp);
+                install_plugin(varplugin);
+
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', {'API_KEY': 'hi'}, true);
 
@@ -467,7 +482,7 @@ describe('config-changes module', function () {
 
         describe(': uninstallation', function () {
             it('Test 027 : should call pruneXML for every config munge it completely removes from the app (every leaf that is decremented to 0)', function () {
-                shell.cp('-rf', android_two_project, temp);
+                fs.copySync(android_two_project, temp);
 
                 // Run through an "install"
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
@@ -486,8 +501,9 @@ describe('config-changes module', function () {
                 expect(spy.calls.argsFor(3)[2]).toEqual('/cordova/plugins');
             });
             it('Test 028 : should generate a config munge that interpolates variables into config changes, if applicable', function () {
-                shell.cp('-rf', android_two_project, temp);
-                shell.cp('-rf', varplugin, plugins_dir);
+                fs.copySync(android_two_project, temp);
+                install_plugin(varplugin);
+
                 // Run through an "install"
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', {'API_KEY': 'canucks'});
@@ -504,9 +520,9 @@ describe('config-changes module', function () {
                 expect(munge_params[1]['API_KEY']).toEqual('canucks');
             });
             it('Test 029 : should not call pruneXML for a config munge that another plugin depends on', function () {
-                shell.cp('-rf', android_two_no_perms_project, temp);
-                shell.cp('-rf', childrenplugin, plugins_dir);
-                shell.cp('-rf', shareddepsplugin, plugins_dir);
+                fs.copySync(android_two_no_perms_project, temp);
+                install_plugin(childrenplugin);
+                install_plugin(shareddepsplugin);
 
                 // Run through and "install" two plugins (they share a permission for INTERNET)
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
@@ -525,7 +541,7 @@ describe('config-changes module', function () {
                 expect(permission.attrib['android:name']).toEqual('android.permission.INTERNET');
             });
             it('Test 030 : should not call pruneXML for a config munge targeting a config file that does not exist', function () {
-                shell.cp('-rf', android_two_project, temp);
+                fs.copySync(android_two_project, temp);
                 // install a plugin
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
@@ -541,8 +557,9 @@ describe('config-changes module', function () {
                 expect(spy).not.toHaveBeenCalledWith(path.join(temp, 'res', 'xml', 'plugins.xml'), 'utf-8');
             });
             it('Test 031 : should remove uninstalled plugins from installed plugins list', function () {
-                shell.cp('-rf', android_two_project, temp);
-                shell.cp('-rf', varplugin, plugins_dir);
+                fs.copySync(android_two_project, temp);
+                install_plugin(varplugin);
+
                 // install the var plugin
                 var platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', {'API_KEY': 'eat my shorts'});
@@ -557,8 +574,8 @@ describe('config-changes module', function () {
                 expect(platformJson.root.installed_plugins['com.adobe.vars']).not.toBeDefined();
             });
             it('Test 032 : should call pruneXMLRestore for every config munge with mode \'merge\' or \'overwrite\' it removes from the app', function () {
-                shell.cp('-rf', android_two_project, temp);
-                shell.cp('-rf', editconfigplugin, plugins_dir);
+                fs.copySync(android_two_project, temp);
+                install_plugin(editconfigplugin);
 
                 // Run through an "install"
                 var platformJson = PlatformJson.load(plugins_dir, 'android');

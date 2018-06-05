@@ -19,9 +19,8 @@
 
 'use strict';
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var shell = require('shelljs');
 var minimatch = require('minimatch');
 
 /**
@@ -66,31 +65,24 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     if (sourceStats) {
         var sourceFullPath = path.join(rootDir || '', sourcePath);
 
-        if (targetStats) {
+        if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
             // The target exists. But if the directory status doesn't match the source, delete it.
-            if (targetStats.isDirectory() && !sourceStats.isDirectory()) {
-                log('rmdir  ' + targetPath + ' (source is a file)');
-                shell.rm('-rf', targetFullPath);
-                targetStats = null;
-                updated = true;
-            } else if (!targetStats.isDirectory() && sourceStats.isDirectory()) {
-                log('delete ' + targetPath + ' (source is a directory)');
-                shell.rm('-f', targetFullPath);
-                targetStats = null;
-                updated = true;
-            }
+            log('delete ' + targetPath);
+            fs.removeSync(targetFullPath);
+            targetStats = null;
+            updated = true;
         }
 
         if (!targetStats) {
             if (sourceStats.isDirectory()) {
                 // The target directory does not exist, so it should be created.
                 log('mkdir ' + targetPath);
-                shell.mkdir('-p', targetFullPath);
+                fs.ensureDirSync(targetFullPath);
                 updated = true;
             } else if (sourceStats.isFile()) {
                 // The target file does not exist, so it should be copied from the source.
                 log('copy  ' + sourcePath + ' ' + targetPath + (copyAll ? '' : ' (new file)'));
-                shell.cp('-f', sourceFullPath, targetFullPath);
+                fs.copySync(sourceFullPath, targetFullPath);
                 updated = true;
             }
         } else if (sourceStats.isFile() && targetStats.isFile()) {
@@ -98,7 +90,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
             if (copyAll) {
                 // The caller specified all files should be copied.
                 log('copy  ' + sourcePath + ' ' + targetPath);
-                shell.cp('-f', sourceFullPath, targetFullPath);
+                fs.copySync(sourceFullPath, targetFullPath);
                 updated = true;
             } else {
                 // Copy if the source has been modified since it was copied to the target, or if
@@ -108,20 +100,15 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
                 if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
                         sourceStats.size !== targetStats.size) {
                     log('copy  ' + sourcePath + ' ' + targetPath + ' (updated file)');
-                    shell.cp('-f', sourceFullPath, targetFullPath);
+                    fs.copySync(sourceFullPath, targetFullPath);
                     updated = true;
                 }
             }
         }
     } else if (targetStats) {
         // The target exists but the source is null, so the target should be deleted.
-        if (targetStats.isDirectory()) {
-            log('rmdir  ' + targetPath + (copyAll ? '' : ' (no source)'));
-            shell.rm('-rf', targetFullPath);
-        } else {
-            log('delete ' + targetPath + (copyAll ? '' : ' (no source)'));
-            shell.rm('-f', targetFullPath);
-        }
+        log('delete ' + targetPath + (copyAll ? '' : ' (no source)'));
+        fs.removeSync(targetFullPath);
         updated = true;
     }
 
@@ -150,7 +137,7 @@ function updatePathInternal (sourcePath, targetPath, options, log) {
         // Create the target's parent directory if it doesn't exist.
         var parentDir = path.dirname(targetFullPath);
         if (!fs.existsSync(parentDir)) {
-            shell.mkdir('-p', parentDir);
+            fs.ensureDirSync(parentDir);
         }
     }
 
