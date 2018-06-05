@@ -207,6 +207,8 @@ ConfigParser.prototype = {
             res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
             res.width = +elt.attrib.width || undefined;
             res.height = +elt.attrib.height || undefined;
+            res.background = elt.attrib.background || undefined;
+            res.foreground = elt.attrib.foreground || undefined;
 
             // default icon
             if (!res.width && !res.height && !res.density) {
