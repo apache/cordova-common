@@ -32,7 +32,6 @@
     "plist": "^3.0.1",
     "q": "^1.4.1",
     "shelljs": "^0.8.1",
-    "strip-bom": "^3.0.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
