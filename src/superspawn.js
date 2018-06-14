@@ -35,7 +35,7 @@ function resolveWindowsExe (cmd) {
     if (isValidExe(cmd)) {
         return cmd;
     }
-    cmd = String(shell.which(cmd) || cmd);
+    cmd = shell.which(cmd) || cmd;
     if (!isValidExe(cmd)) {
         winExtensions.some(function (ext) {
             if (fs.existsSync(cmd + ext)) {
