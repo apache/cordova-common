@@ -20,6 +20,12 @@
 -->
 # Cordova-common Release Notes
 
+### 2.2.4 (June 15, 2018)
+
+* Revert change to update dependencies in package.json (needed to resolve issues with cordova-ios@4)
+* Revert change to use strip-bom package to strip BOM
+* Continue to use plist@^3.0.1 in package.json
+
 ### 2.2.3 (June 1, 2018)
 * Revert a minor refactoring that was incompatible with NodeJS 4.x. No change to functionality.
 
