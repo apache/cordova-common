@@ -18,6 +18,8 @@ install:
 script:
   - npm test
   - npm run cover
+  - npm install -g npm@latest
+  - npm audit
 
 after_script:
   - codecov
