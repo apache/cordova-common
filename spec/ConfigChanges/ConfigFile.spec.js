@@ -73,6 +73,12 @@ describe('ConfigFile tests', function () {
     });
 
     it('resolveConfigFilePath should return file path', function () {
+        spyOn(configFile, 'getIOSProjectname').and.returnValue('osxpath');
+        var configPath = path.join('project_dir', 'osxpath', 'config.xml');
+        expect(configFile.resolveConfigFilePath('project_dir', 'osx', 'config.xml')).toBe(configPath);
+    });
+
+    it('resolveConfigFilePath should return file path', function () {
         var configPath = path.join('project_dir', 'config.xml');
         expect(configFile.resolveConfigFilePath('project_dir', 'ubuntu', 'config.xml')).toBe(configPath);
     });
