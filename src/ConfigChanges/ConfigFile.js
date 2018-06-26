@@ -211,9 +211,12 @@ function resolveConfigFilePath (project_dir, platform, file) {
     if (file === 'config.xml') {
         if (platform === 'ubuntu') {
             filepath = path.join(project_dir, 'config.xml');
-        } else if (platform === 'ios') {
-            var iospath = module.exports.getIOSProjectname(project_dir);
-            filepath = path.join(project_dir, iospath, 'config.xml');
+        } else if (platform === 'ios' || platform === 'osx') {
+            filepath = path.join(
+                project_dir,
+                module.exports.getIOSProjectname(project_dir),
+                'config.xml'
+            );
         } else {
             matches = modules.glob.sync(path.join(project_dir, '**', 'config.xml'));
             if (matches.length) filepath = matches[0];
@@ -225,7 +228,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
     return filepath;
 }
 
-// Find out the real name of an iOS project
+// Find out the real name of an iOS or OSX project
 // TODO: glob is slow, need a better way or caching, or avoid using more than once.
 function getIOSProjectname (project_dir) {
     var matches = modules.glob.sync(path.join(project_dir, '*.xcodeproj'));
