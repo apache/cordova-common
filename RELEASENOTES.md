@@ -20,6 +20,9 @@
 -->
 # Cordova-common Release Notes
 
+### 2.2.5 (Jun 26, 2018)
+* Use plist@2 (^2.1.0) to avoid engine warning message on Node.js 4
+
 ### 2.2.4 (June 15, 2018)
 
 * Revert change to update dependencies in package.json (needed to resolve issues with cordova-ios@4)
