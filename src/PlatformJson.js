@@ -17,8 +17,6 @@
 var fs = require('fs-extra');
 var path = require('path');
 var mungeutil = require('./ConfigChanges/munge-util');
-var pluginMappernto = require('cordova-registry-mapper').newToOld;
-var pluginMapperotn = require('cordova-registry-mapper').oldToNew;
 
 function PlatformJson (filePath, platform, root) {
     this.filePath = filePath;
@@ -47,10 +45,7 @@ PlatformJson.prototype.save = function () {
  * @return {Boolean} true if plugin installed as top-level, otherwise false.
  */
 PlatformJson.prototype.isPluginTopLevel = function (pluginId) {
-    var installedPlugins = this.root.installed_plugins;
-    return installedPlugins[pluginId] ||
-        installedPlugins[pluginMappernto[pluginId]] ||
-        installedPlugins[pluginMapperotn[pluginId]];
+    return this.root.installed_plugins[pluginId];
 };
 
 /**
@@ -61,10 +56,7 @@ PlatformJson.prototype.isPluginTopLevel = function (pluginId) {
  * @return {Boolean} true if plugin installed as a dependency, otherwise false.
  */
 PlatformJson.prototype.isPluginDependent = function (pluginId) {
-    var dependentPlugins = this.root.dependent_plugins;
-    return dependentPlugins[pluginId] ||
-        dependentPlugins[pluginMappernto[pluginId]] ||
-        dependentPlugins[pluginMapperotn[pluginId]];
+    return this.root.dependent_plugins[pluginId];
 };
 
 /**
