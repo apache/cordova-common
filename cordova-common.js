@@ -32,6 +32,7 @@ addProperty(module, 'CordovaExternalToolErrorContext', './src/CordovaError/Cordo
 addProperty(module, 'PlatformJson', './src/PlatformJson');
 addProperty(module, 'ConfigParser', './src/ConfigParser/ConfigParser');
 addProperty(module, 'FileUpdater', './src/FileUpdater');
+addProperty(module, 'PackageHelper', './src/PackageHelper');
 
 addProperty(module, 'PluginInfo', './src/PluginInfo/PluginInfo');
 addProperty(module, 'PluginInfoProvider', './src/PluginInfo/PluginInfoProvider');
