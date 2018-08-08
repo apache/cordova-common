@@ -124,13 +124,28 @@ function PluginInfo (dirname) {
     // <config-file> tag
     self.getConfigFiles = getConfigFiles;
     function getConfigFiles (platform) {
-        var configFiles = _getTags(self._et, 'config-file', platform, _parseConfigFile);
+        var configFiles = _getTags(self._et, 'config-file', platform, _parseConfigFile.bind(this, platform));
         return configFiles;
     }
 
-    function _parseConfigFile (tag) {
+    function _parseConfigFile (platform, tag) {
+        var target = tag.attrib['target'];
+        if (platform == 'android') {
+            if (target === 'AndroidManifest.xml') {
+                target = path.join('app', 'src', 'main', 'AndroidManifest.xml');
+            } else if (target.endsWith('config.xml')) {
+                target = path.join('app', 'src', 'main', 'res', 'xml', 'config.xml');
+            } else if (target.endsWith('strings.xml')) {
+                // Plugins really shouldn't mess with strings.xml, since it's able to be localized
+                target = path.join('app', 'src', 'main', 'res', 'values', 'strings.xml');
+            } else if (target.includes(path.join('res', 'xml'))) {
+                // Catch-all for all other stored XML configuration in legacy plugins
+                var config_file = path.basename(target);
+                target = path.join('app', 'src', 'main', 'res', 'xml', config_file);
+            }
+        }
         var configFile =
-            { target: tag.attrib['target'],
+            { target: target,
                 parent: tag.attrib['parent'],
                 after: tag.attrib['after'],
                 xmls: tag.getchildren(),
