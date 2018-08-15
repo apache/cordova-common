@@ -202,7 +202,8 @@ function PluginInfo (dirname) {
             return {
                 itemType: 'header-file',
                 src: tag.attrib.src,
-                targetDir: tag.attrib['target-dir']
+                targetDir: tag.attrib['target-dir'],
+                type: tag.attrib['type']
             };
         });
         return headerFiles;
