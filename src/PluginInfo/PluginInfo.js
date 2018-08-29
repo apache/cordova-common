@@ -246,6 +246,60 @@ function PluginInfo (dirname) {
         return libFiles;
     }
 
+    // <podspec>
+    // Example:
+    // <podspec>
+    //   <config>
+    //     <source url="https://github.com/brightcove/BrightcoveSpecs.git" />
+    //     <source url="https://github.com/CocoaPods/Specs.git"/>
+    //   </config>
+    //   <pods>
+    //   <pod name="PromiseKit" />
+    //   <pod name="Foobar1" spec="~> 2.0.0" />
+    //   <pod name="Foobar2" git="git@github.com:hoge/foobar1.git" />
+    //     <pod name="Foobar3" git="git@github.com:hoge/foobar2.git" branch="next" />
+    //     <pod name="Foobar4" swift-version="4.1" />
+    //     <pod name="Foobar5" swift-version="3.0" />
+    //   </pods>
+    // </podspec>
+    self.getPodSpecs = getPodSpecs;
+    function getPodSpecs (platform) {
+        var podSpecs = _getTagsInPlatform(self._et, 'podspec', platform, function (tag) {
+            var declarations = null;
+            var sources = null;
+            var libraries = null;
+            var config = tag.find('config');
+            var pods = tag.find('pods');
+            if (config != null) {
+                sources = config.findall('source').map(function (t) {
+                    return {
+                        url: t.attrib.url
+                    };
+                }).reduce(function (acc, val) {
+                    return Object.assign({}, acc, {[val.url]: { source: val.url }});
+                }, {});
+            }
+            if (pods != null) {
+                declarations = Object.keys(pods.attrib).reduce(function (acc, key) {
+                    return pods.attrib[key] === undefined ? acc : Object.assign({}, acc, {[key]: pods.attrib[key]});
+                }, {});
+                libraries = pods.findall('pod').map(function (t) {
+                    return Object.keys(t.attrib).reduce(function (acc, key) {
+                        return t.attrib[key] === undefined ? acc : Object.assign({}, acc, {[key]: t.attrib[key]});
+                    }, {});
+                }).reduce(function (acc, val) {
+                    return Object.assign({}, acc, {[val.name]: val});
+                }, {});
+            }
+            return {
+                declarations: declarations,
+                sources: sources,
+                libraries: libraries
+            };
+        });
+        return podSpecs;
+    }
+
     // <hook>
     // Example:
     // <hook type="before_build" src="scripts/beforeBuild.js" />

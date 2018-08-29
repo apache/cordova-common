@@ -70,4 +70,18 @@ describe('PluginInfo', function () {
         var result = p.getFrameworks('android', {});
         expect(result[2].src).toBe('com.google.firebase:firebase-messaging:11.0.1');
     });
+
+    it('Test 005: read podspec', function () {
+        var p = new PluginInfo(path.join(pluginsDir, 'org.test.plugins.withcocoapods'));
+        var result = p.getPodSpecs('ios');
+        expect(result.length).toBe(1);
+        var podSpec = result[0];
+        expect(Object.keys(podSpec.declarations).length).toBe(2);
+        expect(Object.keys(podSpec.sources).length).toBe(1);
+        expect(Object.keys(podSpec.libraries).length).toBe(4);
+        expect(podSpec.declarations['use-frameworks']).toBe('true');
+        expect(podSpec.sources['https://github.com/CocoaPods/Specs.git'].source).toBe('https://github.com/CocoaPods/Specs.git');
+        expect(podSpec.libraries['AFNetworking'].spec).toBe('~> 3.2');
+        expect(podSpec.libraries['Eureka']['swift-version']).toBe('4.1');
+    });
 });
