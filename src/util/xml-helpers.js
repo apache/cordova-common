@@ -61,7 +61,7 @@ module.exports = {
         if (!parent) {
             // Try to create the parent recursively if necessary
             try {
-                var parentToCreate = et.XML('<' + path.basename(selector) + '>');
+                var parentToCreate = et.XML('<' + path.basename(selector) + '/>');
                 var parentSelector = path.dirname(selector);
 
                 this.graftXML(doc, [parentToCreate], parentSelector);

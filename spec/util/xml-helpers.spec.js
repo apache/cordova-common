@@ -209,6 +209,12 @@ describe('xml-helpers', function () {
             xml_helpers.graftXML(config_xml, children, '/*');
             expect(config_xml.findall('access').length).toEqual(3);
         });
+        it('Test 020-1 : should create parent', function () {
+            var config_xml0 = xml_helpers.parseElementtreeSync(path.join(__dirname, '../fixtures/test-config0.xml'));
+            var children = plugin_xml.find('platform[@name="ios"]/config-file').getchildren();
+            xml_helpers.graftXML(config_xml0, children, '/widget/plugins');
+            expect(config_xml0.find('plugins').getchildren().length).toEqual(1);
+        });
     });
 
     describe('graftXMLMerge', function () {
