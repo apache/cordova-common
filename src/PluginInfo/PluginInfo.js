@@ -130,7 +130,7 @@ function PluginInfo (dirname) {
 
     function _parseConfigFile (platform, tag) {
         var target = tag.attrib['target'];
-        if (platform == 'android') {
+        if (platform === 'android') {
             if (target === 'AndroidManifest.xml') {
                 target = path.join('app', 'src', 'main', 'AndroidManifest.xml');
             } else if (target.endsWith('config.xml')) {
