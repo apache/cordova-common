@@ -58,3 +58,35 @@ describe('prunePLIST', function () {
         done();
     });
 });
+
+describe('plistGraft', function () {
+    let doc = {
+        'keychain-access-groups': [
+            '$(AppIdentifierPrefix)io.cordova.hellocordova',
+            '$(AppIdentifierPrefix)com.example.mylib'
+        ]
+    };
+
+    let xml = '<array>' +
+                '<string>$(AppIdentifierPrefix)io.cordova.hellocordova</string>' +
+                '<string>$(AppIdentifierPrefix)com.example.mylib</string>' +
+              '</array>';
+
+    let selector = 'keychain-access-groups';
+
+    it('Test 01: should not mangle existing plist entries', function (done) {
+        var graftStatus = plistHelpers.graftPLIST(doc, xml, selector);
+
+        expect(graftStatus).toBeTruthy();
+        expect(doc).toEqual(
+            {
+                'keychain-access-groups': [
+                    '$(AppIdentifierPrefix)io.cordova.hellocordova',
+                    '$(AppIdentifierPrefix)com.example.mylib'
+                ]
+            }
+        );
+
+        done();
+    });
+});
