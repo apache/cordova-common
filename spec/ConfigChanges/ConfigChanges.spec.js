@@ -451,7 +451,7 @@ describe('config-changes module', function () {
                     expect(activity).toBeNull();
                 });
                 it('should recover AndroidManifest if one of permission tags is removed', function () {
-                    shell.cp('-rf', android_two_no_perms_project, temp);
+                    fs.copySync(android_two_no_perms_project, temp);
                     var configfile2_cfg = new ConfigParser(configfile2_xml);
                     var platformJson = PlatformJson.load(plugins_dir, 'android');
                     var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
@@ -508,7 +508,7 @@ describe('config-changes module', function () {
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).not.toMatch(/(<string>schema-a<\/string>[^]*){2,}/);
                 });
                 it('should recover Info.plist after removing config-file tag', function () {
-                    shell.cp('-rf', ios_config_xml, temp);
+                    fs.copySync(ios_config_xml, temp);
                     var configfile2_cfg = new ConfigParser(configfile2_xml);
                     var platformJson = PlatformJson.load(plugins_dir, 'ios');
                     var munger = new configChanges.PlatformMunger('ios', temp, platformJson, pluginInfoProvider);
