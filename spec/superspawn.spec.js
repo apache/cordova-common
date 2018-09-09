@@ -18,6 +18,7 @@
 */
 
 var Q = require('q');
+var path = require('path');
 var superspawn = require('../src/superspawn');
 
 var LS = process.platform === 'win32' ? 'dir' : 'ls';
@@ -86,6 +87,21 @@ describe('spawn method', function () {
                 expect(err.stderr).toContain('mayday');
                 done();
             });
+    });
+
+    describe('operation on windows', () => {
+        const TEST_SCRIPT = path.join(__dirname, 'fixtures/echo-args.cmd');
+        const TEST_ARGS = [ 'install', 'foo@^1.2.3', 'c o r d o v a' ];
+
+        it('should escape arguments if `cmd` is not an *.exe', () => {
+            if (process.platform !== 'win32') {
+                pending('test should only run on windows');
+            }
+
+            superspawn.spawn(TEST_SCRIPT, TEST_ARGS).then(output => {
+                expect(output.split(/\r?\n/)).toEqual(TEST_ARGS);
+            });
+        });
     });
 
 });
