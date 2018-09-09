@@ -17,40 +17,12 @@
     under the License.
 */
 
-var child_process = require('child_process');
+var crossSpawn = require('cross-spawn');
 var fs = require('fs-extra');
-var path = require('path');
 var _ = require('underscore');
 var Q = require('q');
-var which = require('which');
 var events = require('./events');
 var iswin32 = process.platform === 'win32';
-
-// On Windows, spawn() for batch files requires absolute path & having the extension.
-function resolveWindowsExe (cmd) {
-    var winExtensions = ['.exe', '.bat', '.cmd', '.js', '.vbs'];
-    function isValidExe (c) {
-        return winExtensions.includes(path.extname(c)) && fs.existsSync(c);
-    }
-    if (isValidExe(cmd)) {
-        return cmd;
-    }
-    cmd = which.sync(cmd, { nothrow: true }) || cmd;
-    if (!isValidExe(cmd)) {
-        winExtensions.some(function (ext) {
-            if (fs.existsSync(cmd + ext)) {
-                cmd = cmd + ext;
-                return true;
-            }
-        });
-    }
-    return cmd;
-}
-
-function maybeQuote (a) {
-    if (/^[^"].*[ &].*[^"]/.test(a)) return '"' + a + '"';
-    return a;
-}
 
 /**
  * A special implementation for child_process.spawn that handles
@@ -91,22 +63,6 @@ exports.spawn = function (cmd, args, opts) {
     var spawnOpts = {};
     var d = Q.defer();
 
-    if (iswin32) {
-        cmd = resolveWindowsExe(cmd);
-        // If we couldn't find the file, likely we'll end up failing,
-        // but for things like "del", cmd will do the trick.
-        if (path.extname(cmd) !== '.exe') {
-            var cmdArgs = '"' + [cmd].concat(args).map(maybeQuote).join(' ') + '"';
-            // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
-            args = [['/s', '/c', cmdArgs].join(' ')];
-            cmd = 'cmd';
-            spawnOpts.windowsVerbatimArguments = true;
-        } else if (!fs.existsSync(cmd)) {
-            // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
-            args = ['/s', '/c', cmd].concat(args).map(maybeQuote);
-        }
-    }
-
     if (opts.stdio !== 'default') {
         // Ignore 'default' value for stdio because it corresponds to child_process's default 'pipe' option
         spawnOpts.stdio = opts.stdio;
@@ -129,9 +85,9 @@ exports.spawn = function (cmd, args, opts) {
         }
     }
 
-    events.emit(opts.printCommand ? 'log' : 'verbose', 'Running command: ' + maybeQuote(cmd) + ' ' + args.map(maybeQuote).join(' '));
+    events.emit(opts.printCommand ? 'log' : 'verbose', 'Running command: ' + cmd + ' ' + args.join(' '));
 
-    var child = child_process.spawn(cmd, args, spawnOpts);
+    var child = crossSpawn.spawn(cmd, args, spawnOpts);
     var capturedOut = '';
     var capturedErr = '';
 
