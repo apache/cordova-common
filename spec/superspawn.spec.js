@@ -88,4 +88,25 @@ describe('spawn method', function () {
             });
     });
 
+    describe('operation on windows', () => {
+        const cp = require('child_process');
+
+        beforeEach(() => {
+            spyOn(cp, 'spawn').and.returnValue({ on: _ => _ });
+        });
+
+        it('should escape arguments if `cmd` is not an *.exe', () => {
+            if (process.platform !== 'win32') {
+                pending('test should only run on windows');
+            }
+
+            superspawn.spawn('npm.cmd', [ 'install', 'foo@^1.2.3' ]);
+            expect(cp.spawn).toHaveBeenCalledWith(
+                'cmd.exe',
+                [ '/d', '/s', '/c', '"npm.cmd ^"install^" ^"foo@^^1.2.3^""' ],
+                jasmine.objectContaining({ windowsVerbatimArguments: true })
+            );
+        });
+    });
+
 });
