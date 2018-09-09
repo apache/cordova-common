@@ -31,14 +31,14 @@
 
     <application android:icon="@drawable/icon" android:label="@string/app_name"
     	android:debuggable="true">
-		<activity android:name="ChildApp" android:label="@string/app_name" 
+		<activity android:name="ChildApp" android:label="@string/app_name"
 				  android:configChanges="orientation|keyboardHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
         </activity>
-        <activity android:name="org.test.DroidGap" android:label="@string/app_name" 
+        <activity android:name="org.test.DroidGap" android:label="@string/app_name"
             	  android:configChanges="orientation|keyboardHidden">
         	<intent-filter>
         	</intent-filter>
@@ -46,4 +46,4 @@
     </application>
 
 	<uses-sdk android:minSdkVersion="5" />
-</manifest> 
+</manifest>

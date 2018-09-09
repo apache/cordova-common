@@ -36,7 +36,7 @@
         <access origin="build.phonegap.com" />
         <access origin="s3.amazonaws.com" />
     </config-file>
-    
+
     <info>No matter what platform you are installing to, this notice is very important.</info>
 
     <!-- android -->
@@ -82,7 +82,7 @@
         <config-file target="*-Info.plist" parent="AppId">
             <string>$APP_ID</string>
         </config-file>
-        
+
         <config-file target="*-Info.plist" parent="CFBundleURLTypes">
             <array>
               <dict>
@@ -119,8 +119,8 @@
                      target-dir="Plugins\" />
 
         <!-- modify the project file to include the added files -->
-        <config-file target=".csproj" parent=".">  
-        </config-file> 
+        <config-file target=".csproj" parent=".">
+        </config-file>
 
     </platform>
 </plugin>
