@@ -562,7 +562,8 @@ ConfigParser.prototype = {
                     xmls: tag.getchildren(),
                     // To support demuxing via versions
                     versions: tag.attrib['versions'],
-                    deviceTarget: tag.attrib['device-target']
+                    deviceTarget: tag.attrib['device-target'],
+                    id: 'config.xml'
                 };
             return configFile;
         });
