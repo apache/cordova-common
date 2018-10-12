@@ -24,7 +24,7 @@ install:
 
 script:
   - npm test
-  - npm run cover
+  - if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then npm run cover; fi
 
 after_script:
   - if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then codecov; fi
