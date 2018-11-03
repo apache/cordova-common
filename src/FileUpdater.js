@@ -350,7 +350,7 @@ function mapDirectory (rootDir, subDir, include, exclude) {
 
     function matchGlobArray (path, globs) {
         return globs.some(function (elem) {
-            return minimatch(path, elem, {dot: true});
+            return minimatch(path, elem, { dot: true });
         });
     }
 }

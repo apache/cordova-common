@@ -37,19 +37,19 @@ describe('spawn method', function () {
     });
 
     it('Test 002 : should notify about stdout "data" events', function (done) {
-        superspawn.spawn(LS, [], {stdio: 'pipe'})
+        superspawn.spawn(LS, [], { stdio: 'pipe' })
             .progress(progressSpy)
             .fin(function () {
-                expect(progressSpy).toHaveBeenCalledWith({'stdout': jasmine.any(String)});
+                expect(progressSpy).toHaveBeenCalledWith({ 'stdout': jasmine.any(String) });
                 done();
             });
     });
 
     it('Test 003 : should notify about stderr "data" events', function (done) {
-        superspawn.spawn(LS, ['doesnt-exist'], {stdio: 'pipe'})
+        superspawn.spawn(LS, ['doesnt-exist'], { stdio: 'pipe' })
             .progress(progressSpy)
             .fin(function () {
-                expect(progressSpy).toHaveBeenCalledWith({'stderr': jasmine.any(String)});
+                expect(progressSpy).toHaveBeenCalledWith({ 'stderr': jasmine.any(String) });
                 done();
             });
     });

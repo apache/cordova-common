@@ -35,7 +35,7 @@ PlatformJson.load = function (plugins_dir, platform) {
 };
 
 PlatformJson.prototype.save = function () {
-    fs.outputJsonSync(this.filePath, this.root, {spaces: 2});
+    fs.outputJsonSync(this.filePath, this.root, { spaces: 2 });
 };
 
 /**
@@ -153,11 +153,11 @@ PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
 };
 
 PlatformJson.prototype.addInstalledPluginToPrepareQueue = function (pluginDirName, vars, is_top_level, force) {
-    this.root.prepare_queue.installed.push({'plugin': pluginDirName, 'vars': vars, 'topLevel': is_top_level, 'force': force});
+    this.root.prepare_queue.installed.push({ 'plugin': pluginDirName, 'vars': vars, 'topLevel': is_top_level, 'force': force });
 };
 
 PlatformJson.prototype.addUninstalledPluginToPrepareQueue = function (pluginId, is_top_level) {
-    this.root.prepare_queue.uninstalled.push({'plugin': pluginId, 'id': pluginId, 'topLevel': is_top_level});
+    this.root.prepare_queue.uninstalled.push({ 'plugin': pluginId, 'id': pluginId, 'topLevel': is_top_level });
 };
 
 /**
@@ -207,8 +207,8 @@ PlatformJson.prototype.generateAndSaveMetadata = function (destination) {
 
 // convert a munge from the old format ([file][parent][xml] = count) to the current one
 function fix_munge (root) {
-    root.prepare_queue = root.prepare_queue || {installed: [], uninstalled: []};
-    root.config_munge = root.config_munge || {files: {}};
+    root.prepare_queue = root.prepare_queue || { installed: [], uninstalled: [] };
+    root.config_munge = root.config_munge || { files: {} };
     root.installed_plugins = root.installed_plugins || {};
     root.dependent_plugins = root.dependent_plugins || {};
 

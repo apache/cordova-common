@@ -52,7 +52,7 @@ function PluginInfo (dirname) {
     function _parsePreference (prefTag) {
         var name = prefTag.attrib.name.toUpperCase();
         var def = prefTag.attrib.default || null;
-        return {preference: name, default: def};
+        return { preference: name, default: def };
     }
 
     // <asset>
@@ -276,19 +276,19 @@ function PluginInfo (dirname) {
                         url: t.attrib.url
                     };
                 }).reduce(function (acc, val) {
-                    return Object.assign({}, acc, {[val.url]: { source: val.url }});
+                    return Object.assign({}, acc, { [val.url]: { source: val.url } });
                 }, {});
             }
             if (pods != null) {
                 declarations = Object.keys(pods.attrib).reduce(function (acc, key) {
-                    return pods.attrib[key] === undefined ? acc : Object.assign({}, acc, {[key]: pods.attrib[key]});
+                    return pods.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: pods.attrib[key] });
                 }, {});
                 libraries = pods.findall('pod').map(function (t) {
                     return Object.keys(t.attrib).reduce(function (acc, key) {
-                        return t.attrib[key] === undefined ? acc : Object.assign({}, acc, {[key]: t.attrib[key]});
+                        return t.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: t.attrib[key] });
                     }, {});
                 }).reduce(function (acc, val) {
-                    return Object.assign({}, acc, {[val.name]: val});
+                    return Object.assign({}, acc, { [val.name]: val });
                 }, {});
             }
             return {

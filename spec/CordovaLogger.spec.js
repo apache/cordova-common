@@ -168,19 +168,19 @@ describe('CordovaLogger class', function () {
                 };
 
                 resetLogLevel();
-                expect(logger.adjustLevel({verbose: true}).logLevel).toEqual('verbose');
+                expect(logger.adjustLevel({ verbose: true }).logLevel).toEqual('verbose');
 
                 resetLogLevel();
                 expect(logger.adjustLevel(['--verbose']).logLevel).toEqual('verbose');
 
                 resetLogLevel();
-                expect(logger.adjustLevel({silent: true}).logLevel).toEqual('error');
+                expect(logger.adjustLevel({ silent: true }).logLevel).toEqual('error');
 
                 resetLogLevel();
                 expect(logger.adjustLevel(['--silent']).logLevel).toEqual('error');
 
                 resetLogLevel();
-                expect(logger.adjustLevel({verbose: true, silent: true}).logLevel).toEqual('verbose');
+                expect(logger.adjustLevel({ verbose: true, silent: true }).logLevel).toEqual('verbose');
 
                 resetLogLevel();
                 expect(logger.adjustLevel(['--verbose', '--silent']).logLevel).toEqual('verbose');

@@ -376,7 +376,7 @@ ConfigParser.prototype = {
         if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
             variables = Object.keys(variables)
                 .map(function (variableName) {
-                    return {name: variableName, value: variables[variableName]};
+                    return { name: variableName, value: variables[variableName] };
                 });
         }
 
@@ -570,7 +570,7 @@ ConfigParser.prototype = {
     },
 
     write: function () {
-        fs.writeFileSync(this.path, this.doc.write({indent: 4}), 'utf-8');
+        fs.writeFileSync(this.path, this.doc.write({ indent: 4 }), 'utf-8');
     }
 };
 
