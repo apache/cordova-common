@@ -20,6 +20,17 @@
 -->
 # Cordova-common Release Notes
 
+### 3.0.0 (Nov 05, 2018)
+* [CB-14166](https://issues.apache.org/jira/browse/CB-14166) Use `cross-spawn` for platform-independent spawning
+* add `PluginInfo.getPodSpecs` method
+* [CB-13496](https://issues.apache.org/jira/browse/CB-13496) Fix greedy regex in plist-helpers
+* [CB-14108](https://issues.apache.org/jira/browse/CB-14108) fix incorrect count in config_munge in ios.json and android.json
+* [CB-13685](https://issues.apache.org/jira/browse/CB-13685) **Android**: Update ConfigParser for Adaptive Icons
+* [CB-10071](https://issues.apache.org/jira/browse/CB-10071) Add BridgingHeader type attributes for header-file
+* [CB-12016](https://issues.apache.org/jira/browse/CB-12016) Removed cordova-registry-mapper dependency
+* [CB-14099](https://issues.apache.org/jira/browse/CB-14099) **osx**: Fixed Resolve Config Path for OSX
+* [CB-14140](https://issues.apache.org/jira/browse/CB-14140) Replace shelljs calls with fs-extra & which
+
 ### 2.2.2 (May 30, 2018)
 * [CB-13979](https://issues.apache.org/jira/browse/CB-13979) More consistency for `config.xml` lookups
 * [CB-14064](https://issues.apache.org/jira/browse/CB-14064) Remove Node 4 from CI matrix
