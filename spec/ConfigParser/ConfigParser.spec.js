@@ -175,7 +175,7 @@ describe('config.xml parser', function () {
                 expect(plugin.variables.var).toEqual('varvalue');
             });
             it('Test 025 : should allow adding a new plugin', function () {
-                cfg.addPlugin({name: 'myplugin'});
+                cfg.addPlugin({ name: 'myplugin' });
                 var plugins = cfg.doc.findall('plugin');
                 var pluginNames = plugins.map(function (plugin) {
                     return plugin.attrib.name;
@@ -183,9 +183,9 @@ describe('config.xml parser', function () {
                 expect(pluginNames).toContain('myplugin');
             });
             it('Test 026 : should allow adding features with params', function () {
-                cfg.addPlugin({name: 'aplugin'}, [{name: 'paraname', value: 'paravalue'}]);
+                cfg.addPlugin({ name: 'aplugin' }, [{ name: 'paraname', value: 'paravalue' }]);
                 // Additional check for new parameters syntax
-                cfg.addPlugin({name: 'bplugin'}, {paraname: 'paravalue'});
+                cfg.addPlugin({ name: 'bplugin' }, { paraname: 'paravalue' });
                 var plugins = cfg.doc.findall('plugin')
                     .filter(function (plugin) {
                         return plugin.attrib.name === 'aplugin' || plugin.attrib.name === 'bplugin';

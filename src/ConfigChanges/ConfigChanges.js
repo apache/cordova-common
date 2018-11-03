@@ -291,7 +291,7 @@ function generate_config_xml_munge (config, config_changes, type) {
     config_changes.forEach(function (change) {
         change.xmls.forEach(function (xml) {
             // 1. stringify each xml
-            var stringified = (new et.ElementTree(xml)).write({xml_declaration: false});
+            var stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
             // 2. add into munge
             if (change.mode) {
                 mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id: id });
@@ -320,7 +320,7 @@ function generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
     changes.forEach(function (change) {
         change.xmls.forEach(function (xml) {
             // 1. stringify each xml
-            var stringified = (new et.ElementTree(xml)).write({xml_declaration: false});
+            var stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
             // interp vars
             if (vars) {
                 Object.keys(vars).forEach(function (key) {
@@ -454,7 +454,7 @@ function is_conflicting (editchanges, config_munge, self, force) {
         }
     });
 
-    return {conflictFound: conflictFound,
+    return { conflictFound: conflictFound,
         conflictingPlugin: conflictingPlugin,
         conflictingMunge: conflictingMunge,
         configxmlMunge: configxmlMunge,
@@ -466,7 +466,7 @@ function is_conflicting (editchanges, config_munge, self, force) {
 function changedXmlStrList (editchange) {
     var xmlStrList = [];
     editchange.xmls.forEach(function (xml) {
-        var stringified = (new et.ElementTree(xml)).write({xml_declaration: false});
+        var stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
         xmlStrList.push(stringified);
     });
     return xmlStrList;

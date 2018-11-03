@@ -121,7 +121,7 @@ describe('PluginManager class', function () {
                 var metadataPath = path.join(manager.locations.www, 'cordova_plugins.js');
                 var platformWwwMetadataPath = path.join(manager.locations.platformWww, 'cordova_plugins.js');
 
-                manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {usePlatformWww: true})
+                manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), { usePlatformWww: true })
                     .then(function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
                         expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');

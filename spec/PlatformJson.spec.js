@@ -24,8 +24,8 @@ var ModuleMetadata = PlatformJson.__get__('ModuleMetadata');
 var FAKE_MODULE = {
     name: 'fakeModule',
     src: 'www/fakeModule.js',
-    clobbers: [{target: 'window.fakeClobber'}],
-    merges: [{target: 'window.fakeMerge'}],
+    clobbers: [{ target: 'window.fakeClobber' }],
+    merges: [{ target: 'window.fakeMerge' }],
     runs: true
 };
 
@@ -91,7 +91,7 @@ describe('PlatformJson class', function () {
                     'plugins/otherPlugin/www/module1.js'
                 ];
 
-                platformJson.root.modules = pluginPaths.map(function (p) { return {file: p}; });
+                platformJson.root.modules = pluginPaths.map(function (p) { return { file: p }; });
                 platformJson.removePluginMetadata(fakePlugin);
                 var resultantPaths = platformJson.root.modules
                     .map(function (p) { return p.file; })
@@ -111,7 +111,7 @@ describe('PlatformJson class', function () {
         function evaluateCordovaDefineStatement (str) {
             expect(typeof str).toBe('string');
             const fnString = str.replace(/^\s*cordova\.define\('cordova\/plugin_list',\s*([\s\S]+)\);\s*$/, '($1)');
-            const mod = {exports: {}};
+            const mod = { exports: {} };
             global.eval(fnString)(null, mod.exports, mod); // eslint-disable-line no-eval
             return mod;
         }
@@ -154,7 +154,7 @@ describe('ModuleMetadata class', function () {
     it('Test 010 : should be constructable', function () {
         var meta;
         expect(function () {
-            meta = new ModuleMetadata('fakePlugin', {src: 'www/fakeModule.js'});
+            meta = new ModuleMetadata('fakePlugin', { src: 'www/fakeModule.js' });
         }).not.toThrow();
         expect(meta instanceof ModuleMetadata).toBeTruthy();
     });
@@ -165,26 +165,26 @@ describe('ModuleMetadata class', function () {
     });
 
     it('Test 012 : should guess module id either from name property of from module src', function () {
-        expect(new ModuleMetadata('fakePlugin', {name: 'fakeModule'}).id).toMatch(/fakeModule$/);
-        expect(new ModuleMetadata('fakePlugin', {src: 'www/fakeModule.js'}).id).toMatch(/fakeModule$/);
+        expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).id).toMatch(/fakeModule$/);
+        expect(new ModuleMetadata('fakePlugin', { src: 'www/fakeModule.js' }).id).toMatch(/fakeModule$/);
     });
 
     it('Test 013 : should read "clobbers" property from module', function () {
-        expect(new ModuleMetadata('fakePlugin', {name: 'fakeModule'}).clobbers).not.toBeDefined();
+        expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).clobbers).not.toBeDefined();
         var metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
         expect(metadata.clobbers).toEqual(jasmine.any(Array));
         expect(metadata.clobbers[0]).toBe(FAKE_MODULE.clobbers[0].target);
     });
 
     it('Test 014 : should read "merges" property from module', function () {
-        expect(new ModuleMetadata('fakePlugin', {name: 'fakeModule'}).merges).not.toBeDefined();
+        expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).merges).not.toBeDefined();
         var metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
         expect(metadata.merges).toEqual(jasmine.any(Array));
         expect(metadata.merges[0]).toBe(FAKE_MODULE.merges[0].target);
     });
 
     it('Test 015 : should read "runs" property from module', function () {
-        expect(new ModuleMetadata('fakePlugin', {name: 'fakeModule'}).runs).not.toBeDefined();
+        expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).runs).not.toBeDefined();
         expect(new ModuleMetadata('fakePlugin', FAKE_MODULE).runs).toBe(true);
     });
 });

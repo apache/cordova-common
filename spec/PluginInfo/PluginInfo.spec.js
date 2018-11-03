@@ -61,7 +61,7 @@ describe('PluginInfo', function () {
 
     it('Test 003: replace framework src', function () {
         var p = new PluginInfo(path.join(pluginsDir, 'org.test.src'));
-        var result = p.getFrameworks('android', {cli_variables: { FCM_VERSION: '9.0.0' }});
+        var result = p.getFrameworks('android', { cli_variables: { FCM_VERSION: '9.0.0' } });
         expect(result[2].src).toBe('com.google.firebase:firebase-messaging:9.0.0');
     });
 

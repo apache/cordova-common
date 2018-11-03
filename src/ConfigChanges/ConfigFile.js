@@ -90,7 +90,7 @@ function ConfigFile_load () {
 ConfigFile.prototype.save = function ConfigFile_save () {
     var self = this;
     if (self.type === 'xml') {
-        fs.writeFileSync(self.filepath, self.data.write({indent: 4}), 'utf-8');
+        fs.writeFileSync(self.filepath, self.data.write({ indent: 4 }), 'utf-8');
     } else {
         // plist
         var regExp = new RegExp('<string>[ \t\r\n]+?</string>', 'g');
