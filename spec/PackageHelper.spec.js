@@ -159,12 +159,14 @@ describe('PackageHelper', function () {
 
             expect(pkgHelper.cordovaPlatforms).toContain('android');
             expect(stub).not.toHaveBeenCalled();
+            expect(pkgHelper.modified).toBe(false);
         });
 
         it('should add a platform', function () {
             pkgHelper.addPlatform('windows');
 
             expect(pkgHelper.cordovaPlatforms).toEqual(['android', 'cordova-amiga', 'ios', 'windows']);
+            expect(pkgHelper.modified).toBe(true);
         });
 
         it('should add a duplicate plugin with no vars', function () {
@@ -192,20 +194,21 @@ describe('PackageHelper', function () {
             };
 
             expect(pkgHelper.pkgfile.cordova.plugins).toEqual(expected);
+            expect(pkgHelper.modified).toBe(true);
         });
 
         it('should add a duplicate plugin with non-conflicting vars', function () {
-            pkgHelper.addPlugin('cordova-plugin-push', { foo: 'bar' });
+            pkgHelper.addPlugin('cordova-plugin-push', { FCM_TOKEN: '1234567890abcdef' });
 
             const expected = {
                 'cordova-plugin-device': {},
                 'cordova-plugin-push': {
-                    'FCM_TOKEN': '1234567890abcdef',
-                    'foo': 'bar'
+                    'FCM_TOKEN': '1234567890abcdef'
                 }
             };
 
             expect(pkgHelper.pkgfile.cordova.plugins).toEqual(expected);
+            expect(pkgHelper.modified).toBe(false);
         });
 
         it('should add a duplicate plugin with conflicting vars', function () {
@@ -219,6 +222,7 @@ describe('PackageHelper', function () {
             };
 
             expect(pkgHelper.pkgfile.cordova.plugins).toEqual(expected);
+            expect(pkgHelper.modified).toBe(true);
         });
 
         it('should write and preserve indentation and newlines', function () {
@@ -234,7 +238,7 @@ describe('PackageHelper', function () {
             })(function () {
                 pkgHelper.pkgfile.cordova.plugins['cordova-plugin-push']['FCM_TOKEN'] = 'hello_world';
 
-                return pkgHelper.write();
+                return pkgHelper.write(true);
             });
         });
     });

@@ -18,6 +18,7 @@
 */
 
 const fs = require('fs-extra');
+const deepEqual = require('fast-deep-equal');
 const deepFreeze = require('deep-freeze');
 const detectIndent = require('detect-indent');
 const detectNewline = require('detect-newline');
@@ -59,6 +60,12 @@ class PackageHelper {
         /** @private @type {string} The path to the package file. */
         this.filepath = path;
 
+        /**
+         * @private
+         * @type {boolean} Whether the package file has been modified.
+         */
+        this.modified = false;
+
         if (fs.existsSync(path)) {
             const fileData = fs.readFileSync(path, 'utf8');
 
@@ -68,6 +75,9 @@ class PackageHelper {
             this.newline = detectNewline(fileData);
 
             this.pkgfile = JSON.parse(fileData);
+        } else {
+            // If we're creating a package.json, it's being modified
+            this.modified = true;
         }
     }
 
@@ -161,6 +171,7 @@ class PackageHelper {
             this.pkgfile.cordova.platforms = this.pkgfile.cordova.platforms || [];
 
             this.pkgfile.cordova.platforms.push(platform);
+            this.modified = true;
         }
     }
 
@@ -172,25 +183,35 @@ class PackageHelper {
      */
     addPlugin (plugin, vars = {}) {
         if (this.cordovaPlugins.includes(plugin)) {
-            // Already have the plugin installed, but might need to merge vars
+            // Already have the plugin installed, overwrite the vars
             let existing_vars = this.pkgfile.cordova.plugins[plugin];
 
-            this.pkgfile.cordova.plugins[plugin] = Object.assign({}, existing_vars, vars);
+            if (!deepEqual(existing_vars, vars)) {
+                // Make a copy of vars for immutability
+                this.pkgfile.cordova.plugins[plugin] = Object.assign({}, vars);
+                this.modified = true;
+            }
         } else {
             this.pkgfile.cordova = this.pkgfile.cordova || {};
             this.pkgfile.cordova.plugins = this.pkgfile.cordova.plugins || {};
 
             // Make a copy of vars for immutability
             this.pkgfile.cordova.plugins[plugin] = Object.assign({}, vars);
+            this.modified = true;
         }
     }
 
     /**
      * Writes the modified package file to disk.
      *
+     * @param {boolean} force - Force writing the file, even if not modified.
      * @returns {Promise<this>} The instance, for chaining.
      */
-    write () {
+    write (force = false) {
+        if (!force && !this.modified) {
+            return Promise.resolve(this);
+        }
+
         return new Promise((resolve) => {
             writeFileAtomic(this.filepath, stringifyPackage(this.pkgfile, this.indent, this.newline), () => resolve(this));
         });
@@ -198,9 +219,13 @@ class PackageHelper {
 
     /**
      * Writes the modified package file to disk synchronously.
+     *
+     * @param {boolean} force - Force writing the file, even if not modified.
      */
-    writeSync () {
-        writeFileAtomic.sync(this.filepath, stringifyPackage(this.pkgfile, this.indent, this.newline));
+    writeSync (force = false) {
+        if (force || this.modified) {
+            writeFileAtomic.sync(this.filepath, stringifyPackage(this.pkgfile, this.indent, this.newline));
+        }
     }
 }
 
