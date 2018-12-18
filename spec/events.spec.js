@@ -19,30 +19,32 @@
 
 var events = require('../src/events');
 
-describe('forwardEventsTo method', function () {
-    afterEach(function () {
-        events.forwardEventsTo(null);
-    });
-    it('Test 001 : should not go to infinite loop when trying to forward to self', function () {
-        expect(function () {
+describe('Cordova events', function () {
+    describe('forwardEventsTo method', function () {
+        afterEach(function () {
+            events.forwardEventsTo(null);
+        });
+        it('Test 001 : should not go to infinite loop when trying to forward to self', function () {
+            expect(function () {
+                events.forwardEventsTo(events);
+                events.emit('log', 'test message');
+            }).not.toThrow();
+        });
+        it('Test 002 : should reset forwarding after trying to forward to self', function () {
+            var EventEmitter = require('events').EventEmitter;
+            var anotherEventEmitter = new EventEmitter();
+            var logSpy = jasmine.createSpy('logSpy');
+            anotherEventEmitter.on('log', logSpy);
+
+            events.forwardEventsTo(anotherEventEmitter);
+            events.emit('log', 'test message #1');
+            expect(logSpy).toHaveBeenCalled();
+
+            logSpy.calls.reset();
+
             events.forwardEventsTo(events);
-            events.emit('log', 'test message');
-        }).not.toThrow();
-    });
-    it('Test 002 : should reset forwarding after trying to forward to self', function () {
-        var EventEmitter = require('events').EventEmitter;
-        var anotherEventEmitter = new EventEmitter();
-        var logSpy = jasmine.createSpy('logSpy');
-        anotherEventEmitter.on('log', logSpy);
-
-        events.forwardEventsTo(anotherEventEmitter);
-        events.emit('log', 'test message #1');
-        expect(logSpy).toHaveBeenCalled();
-
-        logSpy.calls.reset();
-
-        events.forwardEventsTo(events);
-        events.emit('log', 'test message #2');
-        expect(logSpy).not.toHaveBeenCalled();
+            events.emit('log', 'test message #2');
+            expect(logSpy).not.toHaveBeenCalled();
+        });
     });
 });
