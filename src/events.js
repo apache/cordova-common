@@ -19,6 +19,10 @@
 
 const EventEmitter = require('events').EventEmitter;
 
+const MAX_LISTENERS = 20;
+
+const INSTANCE_KEY = Symbol.for('org.apache.cordova.common.CordovaEvents');
+
 let EVENTS_RECEIVER = null;
 
 class CordovaEventEmitter extends EventEmitter {
@@ -66,7 +70,12 @@ class CordovaEventEmitter extends EventEmitter {
     }
 }
 
-const INSTANCE = new CordovaEventEmitter();
-INSTANCE.setMaxListeners(20);
+// This singleton instance pattern is based on the ideas from
+// https://derickbailey.com/2016/03/09/creating-a-true-singleton-in-node-js-with-es6-symbols/
+if (Object.getOwnPropertySymbols(global).indexOf(INSTANCE_KEY) === -1) {
+    const events = new CordovaEventEmitter();
+    events.setMaxListeners(MAX_LISTENERS);
+    global[INSTANCE_KEY] = events;
+}
 
-module.exports = INSTANCE;
+module.exports = global[INSTANCE_KEY];
