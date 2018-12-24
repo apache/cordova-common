@@ -20,6 +20,10 @@
 -->
 # Cordova-common Release Notes
 
+### 3.1.0 (Dec 24, 2018)
+* Update Cordova events into a real singleton class ([#60](https://github.com/apache/cordova-common/pull/60))
+* Refactor CordovaLogger to singleton class ([#53](https://github.com/apache/cordova-common/pull/53))
+
 ### 3.0.0 (Nov 05, 2018)
 * [CB-14166](https://issues.apache.org/jira/browse/CB-14166) Use `cross-spawn` for platform-independent spawning
 * add `PluginInfo.getPodSpecs` method
