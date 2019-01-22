@@ -108,6 +108,14 @@ describe('config.xml parser', function () {
             it('Test 012 : should return an empty string for a non-existing preference', function () {
                 expect(cfg.getPreference('zimzooo!')).toEqual('');
             });
+            it('should allow setting the preference', function () {
+                cfg.setPreference('orientation', 'landscape');
+                expect(cfg.getPreference('orientation')).toEqual('landscape');
+            });
+            it('should allow setting the platform specific preference', function () {
+                cfg.setPreference('android-minSdkVersion', 'android', '11');
+                expect(cfg.getPreference('android-minSdkVersion', 'android')).toEqual('11');
+            });
         });
         describe('global preference', function () {
             it('Test 013 : should return the value of a global preference', function () {
@@ -126,6 +134,13 @@ describe('config.xml parser', function () {
             });
             it('Test 017 : should return an empty string when querying with unsupported platform', function () {
                 expect(cfg.getPlatformPreference('orientation', 'foobar')).toEqual('');
+            });
+            it('should allow setting the platform specific preference', function () {
+                cfg.setPlatformPreference('orientation', 'android', 'foobar');
+                expect(cfg.getPlatformPreference('orientation', 'android')).toEqual('foobar');
+            });
+            it('should throw when setting a preference for unsupported platform', function () {
+                expect(function () { cfg.setPlatformPreference('orientation', 'foobar', 'landscape'); }).toThrow();
             });
         });
         describe('plugin', function () {
