@@ -168,6 +168,23 @@ ConfigParser.prototype = {
     getPlatformPreference: function (name, platform) {
         return findElementAttributeValue(name, this.doc.findall('./platform[@name="' + platform + '"]/preference'));
     },
+    setPlatformPreference: function (name, platform, value) {
+        const platformEl = this.doc.find('./platform[@name="' + platform + '"]');
+        if (!platformEl) {
+            throw new CordovaError('platform does not exist (received platform: ' + platform + ')');
+        }
+        const elems = this.doc.findall('./platform[@name="' + platform + '"]/preference');
+        let pref = elems.filter(function (elem) {
+            return elem.attrib.name.toLowerCase() === name.toLowerCase();
+        }).pop();
+
+        if (!pref) {
+            pref = new et.Element('preference');
+            pref.attrib.name = name;
+            platformEl.append(pref);
+        }
+        pref.attrib.value = value;
+    },
     getPreference: function (name, platform) {
 
         var platformPreference = '';
@@ -178,6 +195,18 @@ ConfigParser.prototype = {
 
         return platformPreference || this.getGlobalPreference(name);
 
+    },
+    setPreference: function (name, platform, value) {
+        if (!value) {
+            value = platform;
+            platform = undefined;
+        }
+
+        if (platform) {
+            this.setPlatformPreference(name, platform, value);
+        } else {
+            this.setGlobalPreference(name, value);
+        }
     },
     /**
      * Returns all resources for the platform specified.
