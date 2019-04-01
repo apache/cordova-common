@@ -98,7 +98,7 @@ describe('spawn method', function () {
                 pending('test should only run on windows');
             }
 
-            superspawn.spawn(TEST_SCRIPT, TEST_ARGS).then(output => {
+            return superspawn.spawn(TEST_SCRIPT, TEST_ARGS).then(output => {
                 expect(output.split(/\r?\n/)).toEqual(TEST_ARGS);
             });
         });
