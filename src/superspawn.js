@@ -87,7 +87,15 @@ exports.spawn = function (cmd, args, opts) {
 
     events.emit(opts.printCommand ? 'log' : 'verbose', 'Running command: ' + cmd + ' ' + args.join(' '));
 
-    var child = crossSpawn.spawn(cmd, args, spawnOpts);
+    // At least until Node.js 8, child_process.spawn will throw exceptions
+    // instead of emitting error events in certain cases (like EACCES), Thus we
+    // have to wrap the execution in try/catch to convert them into rejections.
+    try {
+        var child = crossSpawn.spawn(cmd, args, spawnOpts);
+    } catch (e) {
+        whenDone(e);
+        return d.promise;
+    }
     var capturedOut = '';
     var capturedErr = '';
 
@@ -110,8 +118,10 @@ exports.spawn = function (cmd, args, opts) {
     child.on('close', whenDone);
     child.on('error', whenDone);
     function whenDone (arg) {
-        child.removeListener('close', whenDone);
-        child.removeListener('error', whenDone);
+        if (child) {
+            child.removeListener('close', whenDone);
+            child.removeListener('error', whenDone);
+        }
         var code = typeof arg === 'number' ? arg : arg && arg.code;
 
         events.emit('verbose', 'Command finished with error code ' + code + ': ' + cmd + ' ' + args);
