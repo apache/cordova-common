@@ -89,6 +89,25 @@ describe('spawn method', function () {
             });
     });
 
+    it('Test 005 : should not throw but reject', () => {
+        if (process.platform === 'win32') {
+            pending('Test should not run on Windows');
+        }
+
+        // Our non-executable (as in no execute permission) script
+        const TEST_SCRIPT = path.join(__dirname, 'fixtures/echo-args.cmd');
+
+        let promise;
+        expect(() => { promise = superspawn.spawn(TEST_SCRIPT, []); }).not.toThrow();
+
+        return Promise.resolve(promise).then(_ => {
+            fail('Expected promise to be rejected');
+        }, err => {
+            expect(err).toEqual(jasmine.any(Error));
+            expect(err.code).toBe('EACCES');
+        });
+    });
+
     describe('operation on windows', () => {
         const TEST_SCRIPT = path.join(__dirname, 'fixtures/echo-args.cmd');
         const TEST_ARGS = [ 'install', 'foo@^1.2.3', 'c o r d o v a' ];
