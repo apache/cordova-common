@@ -253,10 +253,10 @@ function PluginInfo (dirname) {
     //     <source url="https://github.com/brightcove/BrightcoveSpecs.git" />
     //     <source url="https://github.com/CocoaPods/Specs.git"/>
     //   </config>
-    //   <pods>
-    //   <pod name="PromiseKit" />
-    //   <pod name="Foobar1" spec="~> 2.0.0" />
-    //   <pod name="Foobar2" git="git@github.com:hoge/foobar1.git" />
+    //   <pods use-frameworks="true" inhibit-all-warnings="true">
+    //     <pod name="PromiseKit" />
+    //     <pod name="Foobar1" spec="~> 2.0.0" />
+    //     <pod name="Foobar2" git="git@github.com:hoge/foobar1.git" />
     //     <pod name="Foobar3" git="git@github.com:hoge/foobar2.git" branch="next" />
     //     <pod name="Foobar4" swift-version="4.1" />
     //     <pod name="Foobar5" swift-version="3.0" />
