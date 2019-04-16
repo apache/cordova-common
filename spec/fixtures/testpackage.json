@@ -1,0 +1,28 @@
+{
+    "name": "TestProject",
+    "version": "1.0.0",
+    "author": "Apache Software Foundation",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "cordova-amiga": "^0.0.1",
+        "cordova-android": "^7.0.0"
+    },
+    "devDependencies": {
+        "cordova-amiga": "0.0.5",
+        "cordova-ios": "~4.5.0",
+        "cordova-plugin-device": "*"
+    },
+    "cordova": {
+        "platforms": [
+            "android",
+            "cordova-amiga",
+            "ios"
+        ],
+        "plugins": {
+            "cordova-plugin-device": {},
+            "cordova-plugin-push": {
+                "FCM_TOKEN": "1234567890abcdef"
+            }
+        }
+    }
+}
