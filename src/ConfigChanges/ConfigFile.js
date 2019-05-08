@@ -94,7 +94,7 @@ ConfigFile.prototype.save = function ConfigFile_save () {
     } else {
         // plist
         var regExp = new RegExp('<string>[ \t\r\n]+?</string>', 'g');
-        fs.writeFileSync(self.filepath, modules.plist.build(self.data).replace(regExp, '<string></string>'));
+        fs.writeFileSync(self.filepath, modules.plist.build(self.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
     }
     self.is_changed = false;
 };
