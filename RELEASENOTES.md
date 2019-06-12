@@ -20,6 +20,13 @@
 -->
 # Cordova-common Release Notes
 
+### 3.2.0 (Jun 12, 2019)
+* (ios) plist document not indented with tabs ([#69](https://github.com/apache/cordova-common/pull/69))
+* Update fs-extra to v8 ([#70](https://github.com/apache/cordova-common/pull/70))
+* Add example usage of podspec declarations ([#67](https://github.com/apache/cordova-common/pull/67))
+* implement setPreference and setPlatformPreference ([#63](https://github.com/apache/cordova-common/pull/63))
+* Catch leaked exceptions in superspawn and convert them to rejections ([#66](https://github.com/apache/cordova-common/pull/66))
+
 ### 3.1.0 (Dec 24, 2018)
 * Update Cordova events into a real singleton class ([#60](https://github.com/apache/cordova-common/pull/60))
 * Refactor CordovaLogger to singleton class ([#53](https://github.com/apache/cordova-common/pull/53))
