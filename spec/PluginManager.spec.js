@@ -20,7 +20,6 @@
 // Promise-matchers do not work with jasmine 2.0.
 // require('promise-matchers');
 
-var Q = require('q');
 var fs = require('fs-extra');
 var path = require('path');
 var rewire = require('rewire');
@@ -58,14 +57,14 @@ describe('PluginManager class', function () {
     describe('instance', function () {
         var actions, manager;
         var FAKE_PROJECT;
-        var fail = jasmine.createSpy('fail');
+        var failed = jasmine.createSpy('failed');
         var ActionStackOrig = PluginManager.__get__('ActionStack');
 
         beforeEach(function () {
             FAKE_PROJECT = jasmine.createSpyObj('project', ['getInstaller', 'getUninstaller', 'write']);
             manager = new PluginManager('windows', FAKE_LOCATIONS, FAKE_PROJECT);
             actions = jasmine.createSpyObj('actions', ['createAction', 'push', 'process']);
-            actions.process.and.returnValue(Q.resolve());
+            actions.process.and.returnValue(Promise.resolve());
             PluginManager.__set__('ActionStack', function () { return actions; });
         });
 
@@ -74,17 +73,31 @@ describe('PluginManager class', function () {
         });
 
         describe('addPlugin method', function () {
-            it('should return a promise', function () {
-                expect(Q.isPromise(manager.addPlugin(null, {}))).toBe(true);
-            });
-            // Promise-matchers do not work with jasmine 2.0.
-            xit('Test 003 : should reject if "plugin" parameter is not specified or not a PluginInfo instance', function (done) {
-                expect(manager.addPlugin(null, {})).toHaveBeenRejected(done);
-                expect(manager.addPlugin({}, {})).toHaveBeenRejected(done);
-                expect(manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})).not.toHaveBeenRejected(done);
+            it('Test 003 : should reject if "plugin" parameter is not specified', function (done) {
+                manager.addPlugin(null, {})
+                    .then(function () {
+                        done.fail('promise should not have resolved for no valid PluginInfo instance');
+                    })
+                    .catch(err => {
+                        expect(err).toBeDefined();
+                        expect(err).toMatch(/first parameter should be a PluginInfo instance/);
+                        done();
+                    });
             });
 
-            it('Test 004 : should iterate through all plugin\'s files and frameworks', function (done) {
+            it('Test 004 : should reject if "plugin" parameter is not a PluginInfo instance', function (done) {
+                manager.addPlugin({}, {})
+                    .then(function () {
+                        done.fail('promise should not have resolved for no valid PluginInfo instance');
+                    })
+                    .catch(err => {
+                        expect(err).toBeDefined();
+                        expect(err).toMatch(/first parameter should be a PluginInfo instance/);
+                        done();
+                    });
+            });
+
+            it('Test 005 : should return a promise, iterate through all plugin\'s files and frameworks, then resolve the promise', function (done) {
                 manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
                     .then(function () {
                         expect(FAKE_PROJECT.getInstaller.calls.count()).toBe(16);
@@ -94,14 +107,14 @@ describe('PluginManager class', function () {
                         expect(actions.process).toHaveBeenCalled();
                         expect(FAKE_PROJECT.write).toHaveBeenCalled();
                     })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
+                    .catch(failed)
+                    .then(function () {
+                        expect(failed).not.toHaveBeenCalled();
                         done();
                     });
             });
 
-            it('Test 005 : should save plugin metadata to www directory', function (done) {
+            it('Test 006 : should save plugin metadata to www directory', function (done) {
                 var metadataPath = path.join(manager.locations.www, 'cordova_plugins.js');
                 var platformWwwMetadataPath = path.join(manager.locations.platformWww, 'cordova_plugins.js');
 
@@ -110,14 +123,14 @@ describe('PluginManager class', function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
                         expect(fs.writeFileSync).not.toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
                     })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
+                    .catch(failed)
+                    .then(function () {
+                        expect(failed).not.toHaveBeenCalled();
                         done();
                     });
             });
 
-            it('Test 006 : should save plugin metadata to both www ans platform_www directories when options.usePlatformWww is specified', function (done) {
+            it('Test 007 : should save plugin metadata to both www ans platform_www directories when options.usePlatformWww is specified', function (done) {
                 var metadataPath = path.join(manager.locations.www, 'cordova_plugins.js');
                 var platformWwwMetadataPath = path.join(manager.locations.platformWww, 'cordova_plugins.js');
 
@@ -126,9 +139,9 @@ describe('PluginManager class', function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
                         expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
                     })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
+                    .catch(failed)
+                    .then(function () {
+                        expect(failed).not.toHaveBeenCalled();
                         done();
                     });
             });

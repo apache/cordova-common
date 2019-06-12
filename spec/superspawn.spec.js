@@ -21,22 +21,39 @@ var Q = require('q');
 var path = require('path');
 var superspawn = require('../src/superspawn');
 
-var LS = process.platform === 'win32' ? 'dir' : 'ls';
+var isWin32 = process.platform === 'win32';
+
+var LS = isWin32 ? 'dir' : 'ls';
 
 describe('spawn method', function () {
-    var progressSpy, failSpy;
+    var progressSpy, errorSpy;
 
     beforeEach(function () {
         progressSpy = jasmine.createSpy('progress');
-        failSpy = jasmine.createSpy('fail'); /* eslint no-unused-vars : 0 */
+        errorSpy = jasmine.createSpy('error');
     });
 
-    it('Test 001 : should return a promise', function () {
+    it('Test 001 : should return a promise for a valid command', function () {
         expect(Q.isPromise(superspawn.spawn(LS))).toBe(true);
-        expect(Q.isPromise(superspawn.spawn('invalid_command'))).toBe(true);
     });
 
-    it('Test 002 : should notify about stdout "data" events', function (done) {
+    it('Test 002 : should return a promise that reports error for invalid command', function (done) {
+        const promise = superspawn.spawn('invalid_command');
+        expect(Q.isPromise(promise)).toBe(true);
+
+        promise
+            .progress(progressSpy)
+            .catch(errorSpy)
+            .fin(function () {
+                if (!isWin32) {
+                    expect(progressSpy).not.toHaveBeenCalled();
+                }
+                expect(errorSpy).toHaveBeenCalledWith(jasmine.any(Error));
+                done();
+            });
+    });
+
+    it('Test 003 : should notify about stdout "data" events', function (done) {
         superspawn.spawn(LS, [], { stdio: 'pipe' })
             .progress(progressSpy)
             .fin(function () {
@@ -45,18 +62,25 @@ describe('spawn method', function () {
             });
     });
 
-    it('Test 003 : should notify about stderr "data" events', function (done) {
+    it('Test 004 : should notify about stderr "data" events', function (done) {
         superspawn.spawn(LS, ['doesnt-exist'], { stdio: 'pipe' })
             .progress(progressSpy)
+            .catch(errorSpy)
             .fin(function () {
                 expect(progressSpy).toHaveBeenCalledWith({ 'stderr': jasmine.any(String) });
+                expect(errorSpy).toHaveBeenCalledWith(jasmine.any(Error));
                 done();
             });
     });
 
-    it('Test 004 : reject handler should pass in Error object with stdout and stderr properties', function (done) {
+    it('Test 005 : reject handler should pass in Error object with stdout and stderr properties', function (done) {
         var cp = require('child_process');
+
         spyOn(cp, 'spawn').and.callFake(function (cmd, args, opts) {
+            expect(cmd).toBeDefined();
+            expect(args).toBeDefined();
+            expect(opts).toBeDefined();
+
             return {
                 stdout: {
                     setEncoding: function () {},
@@ -80,6 +104,7 @@ describe('spawn method', function () {
                 removeListener: function () {}
             };
         });
+
         superspawn.spawn('this aggression', ['will', 'not', 'stand', 'man'], {})
             .catch(function (err) {
                 expect(err).toBeDefined();
@@ -89,8 +114,8 @@ describe('spawn method', function () {
             });
     });
 
-    it('Test 005 : should not throw but reject', () => {
-        if (process.platform === 'win32') {
+    it('Test 006 : inavlid cmd script should not throw but reject with error on non-Windows host', () => {
+        if (isWin32) {
             pending('Test should not run on Windows');
         }
 
@@ -100,20 +125,20 @@ describe('spawn method', function () {
         let promise;
         expect(() => { promise = superspawn.spawn(TEST_SCRIPT, []); }).not.toThrow();
 
-        return Promise.resolve(promise).then(_ => {
+        return promise.then(() => {
             fail('Expected promise to be rejected');
-        }, err => {
+        }).catch(err => {
             expect(err).toEqual(jasmine.any(Error));
             expect(err.code).toBe('EACCES');
         });
     });
 
-    describe('operation on windows', () => {
+    describe('cmd operation on windows', () => {
         const TEST_SCRIPT = path.join(__dirname, 'fixtures/echo-args.cmd');
         const TEST_ARGS = [ 'install', 'foo@^1.2.3', 'c o r d o v a' ];
 
         it('should escape arguments if `cmd` is not an *.exe', () => {
-            if (process.platform !== 'win32') {
+            if (!isWin32) {
                 pending('test should only run on windows');
             }
 
