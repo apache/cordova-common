@@ -20,7 +20,6 @@
 /* jshint quotmark:false */
 
 var events = require('./events');
-var Q = require('q');
 
 function ActionStack () {
     this.stack = [];
@@ -72,13 +71,13 @@ ActionStack.prototype = {
                     }
                 }
                 e.message = issue + e.message;
-                return Q.reject(e);
+                return Promise.reject(e);
             }
             this.completed.push(action);
         }
         events.emit('verbose', 'Action stack processing complete.');
 
-        return Q();
+        return Promise.resolve();
     }
 };
 

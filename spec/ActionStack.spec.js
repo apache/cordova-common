@@ -62,7 +62,7 @@ describe('action-stack', function () {
             stack.process('android', android_one_project)
                 .then(function () {
                     expect(false).toBe(true);
-                }).fail(function (err) {
+                }).catch(function (err) {
                     error = err;
                     expect(error).toEqual(process_err);
                     // first two actions should have been called, but not the third
@@ -71,7 +71,7 @@ describe('action-stack', function () {
                     expect(third_spy).not.toHaveBeenCalledWith(third_args[0]);
                     // first reverter should have been called after second action exploded
                     expect(first_reverter).toHaveBeenCalledWith(first_reverter_args[0]);
-                }).fin(done);
+                }).then(done);
         });
     });
 });
