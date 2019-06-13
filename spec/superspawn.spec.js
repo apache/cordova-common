@@ -127,7 +127,7 @@ describe('spawn method', function () {
 
         return promise.then(() => {
             fail('Expected promise to be rejected');
-        }).catch(err => {
+        }, err => {
             expect(err).toEqual(jasmine.any(Error));
             expect(err.code).toBe('EACCES');
         });
