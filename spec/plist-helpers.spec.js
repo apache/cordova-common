@@ -43,7 +43,7 @@ describe('prunePLIST', function () {
 
     var selector = 'FirstConfigKey';
 
-    it('Test 01: should remove property from plist file using provided selector', function (done) {
+    it('Test 01: should remove property from plist file using provided selector', () => {
         var pruneStatus = plistHelpers.prunePLIST(doc, xml, selector);
 
         expect(pruneStatus).toBeTruthy();
@@ -54,8 +54,6 @@ describe('prunePLIST', function () {
                 }
             }
         );
-
-        done();
     });
 });
 
@@ -74,7 +72,7 @@ describe('plistGraft', function () {
 
     let selector = 'keychain-access-groups';
 
-    it('Test 01: should not mangle existing plist entries', function (done) {
+    it('Test 01: should not mangle existing plist entries', () => {
         var graftStatus = plistHelpers.graftPLIST(doc, xml, selector);
 
         expect(graftStatus).toBeTruthy();
@@ -86,7 +84,5 @@ describe('plistGraft', function () {
                 ]
             }
         );
-
-        done();
     });
 });
