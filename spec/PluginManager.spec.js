@@ -74,13 +74,13 @@ describe('PluginManager class', function () {
 
         describe('addPlugin method', function () {
             it('should return a promise', function () {
-                expect(Q.isPromise(manager.addPlugin(null, {}))).toBe(true);
+                return expectAsync(manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})).toBeResolved();
             });
-            // Promise-matchers do not work with jasmine 2.0.
-            xit('Test 003 : should reject if "plugin" parameter is not specified or not a PluginInfo instance', function (done) {
-                expect(manager.addPlugin(null, {})).toHaveBeenRejected(done);
-                expect(manager.addPlugin({}, {})).toHaveBeenRejected(done);
-                expect(manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})).not.toHaveBeenRejected(done);
+
+            it('Test 003 : should reject if "plugin" parameter is not specified or not a PluginInfo instance', () => {
+                return Promise.resolve()
+                    .then(() => expectAsync(manager.addPlugin(null, {})).toBeRejected())
+                    .then(() => expectAsync(manager.addPlugin({}, {})).toBeRejected());
             });
 
             it('Test 004 : should iterate through all plugin\'s files and frameworks', () => {

@@ -17,7 +17,6 @@
     under the License.
 */
 
-var Q = require('q');
 var path = require('path');
 var superspawn = require('../src/superspawn');
 
@@ -31,9 +30,12 @@ describe('spawn method', function () {
         failSpy = jasmine.createSpy('fail'); /* eslint no-unused-vars : 0 */
     });
 
-    it('Test 001 : should return a promise', function () {
-        expect(Q.isPromise(superspawn.spawn(LS))).toBe(true);
-        expect(Q.isPromise(superspawn.spawn('invalid_command'))).toBe(true);
+    it('should resolve on success', () => {
+        return expectAsync(superspawn.spawn(LS)).toBeResolved();
+    });
+
+    it('should reject on failure', () => {
+        return expectAsync(superspawn.spawn('invalid_command')).toBeRejected();
     });
 
     it('Test 002 : should notify about stdout "data" events', () => {
@@ -101,7 +103,7 @@ describe('spawn method', function () {
         let promise;
         expect(() => { promise = superspawn.spawn(TEST_SCRIPT, []); }).not.toThrow();
 
-        return Promise.resolve(promise).then(_ => {
+        return promise.then(() => {
             fail('Expected promise to be rejected');
         }, err => {
             expect(err).toEqual(jasmine.any(Error));
