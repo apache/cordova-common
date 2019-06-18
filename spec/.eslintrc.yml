@@ -1,2 +1,6 @@
 env:
     jasmine: true
+
+# Not covered by jasmine env as of writing
+globals:
+    expectAsync: false
