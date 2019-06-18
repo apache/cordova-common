@@ -161,7 +161,7 @@ describe('ModuleMetadata class', function () {
 
     it('Test 011 : should throw if either pluginId or jsModule argument isn\'t specified', function () {
         expect(ModuleMetadata).toThrow();
-        expect(function () { new ModuleMetadata('fakePlugin', {}); }).toThrow(); /* eslint no-new : 0 */
+        expect(() => new ModuleMetadata('fakePlugin', {})).toThrow();
     });
 
     it('Test 012 : should guess module id either from name property of from module src', function () {

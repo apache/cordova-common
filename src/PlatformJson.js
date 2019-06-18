@@ -246,7 +246,7 @@ function ModuleMetadata (pluginId, jsModule) {
     if (!pluginId) throw new TypeError('pluginId argument must be a valid plugin id');
     if (!jsModule.src && !jsModule.name) throw new TypeError('jsModule argument must contain src or/and name properties');
 
-    this.id = pluginId + '.' + (jsModule.name || jsModule.src.match(/([^\/]+)\.js/)[1]); /* eslint no-useless-escape: 0 */
+    this.id = pluginId + '.' + (jsModule.name || jsModule.src.match(/([^/]+)\.js/)[1]);
     this.file = ['plugins', pluginId, jsModule.src].join('/');
     this.pluginId = pluginId;
 

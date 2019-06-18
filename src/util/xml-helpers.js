@@ -27,10 +27,8 @@ var _ = require('underscore');
 var et = require('elementtree');
 var stripBom = require('strip-bom');
 
-/* eslint-disable no-useless-escape */
-var ROOT = /^\/([^\/]*)/;
-var ABSOLUTE = /^\/([^\/]*)\/(.*)/;
-/* eslint-enable no-useless-escape */
+var ROOT = /^\/([^/]*)/;
+var ABSOLUTE = /^\/([^/]*)\/(.*)/;
 
 module.exports = {
     // compare two et.XML nodes, see if they match

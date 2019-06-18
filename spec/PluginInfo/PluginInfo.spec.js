@@ -23,40 +23,28 @@ var pluginsDir = path.join(__dirname, '../fixtures/plugins');
 
 describe('PluginInfo', function () {
     it('Test 001 : should read a plugin.xml file', function () {
-        /* eslint-disable no-unused-vars */
-        var p;
-        var prefs;
-        var assets;
-        var deps;
-        var configFiles;
-        var infos;
-        var srcFiles;
-        var headerFiles;
-        var libFiles;
-        var resourceFiles;
-        var getFrameworks;
+        let p;
         expect(function () {
             p = new PluginInfo(path.join(pluginsDir, 'ChildBrowser'));
-            prefs = p.getPreferences('android');
-            assets = p.getAssets('android');
-            deps = p.getDependencies('android');
-            configFiles = p.getConfigFiles('android');
-            infos = p.getInfo('android');
-            srcFiles = p.getSourceFiles('android');
-            headerFiles = p.getHeaderFiles('android');
-            libFiles = p.getLibFiles('android');
-            getFrameworks = p.getFrameworks('android');
-            resourceFiles = p.getResourceFiles('android');
         }).not.toThrow();
+
         expect(p).toBeDefined();
         expect(p.name).toEqual('Child Browser');
-        // TODO: Add some expectations for results of getSomething.
-        /* eslint-enable no-unused-vars */
+
+        expect(p.getInfo('android').length).toBe(2);
+        expect(p.getAssets('android').length).toBe(2);
+        expect(p.getConfigFiles('android').length).toBe(4);
+        expect(p.getSourceFiles('android').length).toBe(1);
+        expect(p.getPreferences('android')).toEqual({});
+        expect(p.getDependencies('android')).toEqual([]);
+        expect(p.getHeaderFiles('android')).toEqual([]);
+        expect(p.getLibFiles('android')).toEqual([]);
+        expect(p.getFrameworks('android')).toEqual([]);
+        expect(p.getResourceFiles('android')).toEqual([]);
     });
+
     it('Test 002 : should throw when there is no plugin.xml file', function () {
-        expect(function () {
-            new PluginInfo('/non/existent/dir'); /* eslint no-new : 0 */
-        }).toThrow();
+        expect(() => new PluginInfo('/non/existent/dir')).toThrow();
     });
 
     it('Test 003: replace framework src', function () {

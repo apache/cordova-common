@@ -16,7 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* eslint no-useless-escape: 0 */
 
 // contains PLIST utility functions
 var __ = require('underscore');
@@ -92,5 +91,5 @@ function nodeEqual (node1, node2) {
 
 // escape string for use in regex
 function escapeRE (str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+    return str.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
 }

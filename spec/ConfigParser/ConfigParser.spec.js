@@ -24,9 +24,8 @@ var xml = path.join(__dirname, '../fixtures/test-config.xml');
 var xml_contents = fs.readFileSync(xml, 'utf-8');
 
 describe('config.xml parser', function () {
-    var readFile; /* eslint no-unused-vars : 0 */
     beforeEach(function () {
-        readFile = spyOn(fs, 'readFileSync').and.returnValue(xml_contents);
+        spyOn(fs, 'readFileSync').and.returnValue(xml_contents);
     });
 
     it('Test 001 : should create an instance based on an xml file', function () {

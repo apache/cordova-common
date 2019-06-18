@@ -17,13 +17,13 @@
     under the License.
 */
 var path = require('path');
-var action_stack = require('../src/ActionStack');
+var ActionStack = require('../src/ActionStack');
 var android_one_project = path.join(__dirname, '..', 'projects', 'android_one');
 
 describe('action-stack', function () {
     var stack;
     beforeEach(function () {
-        stack = new action_stack(); /* eslint new-cap : 0 */
+        stack = new ActionStack();
     });
     describe('processing of actions', function () {
         it('Test 001 : should process actions one at a time until all are done', function () {

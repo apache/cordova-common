@@ -23,11 +23,10 @@ var superspawn = require('../src/superspawn');
 var LS = process.platform === 'win32' ? 'dir' : 'ls';
 
 describe('spawn method', function () {
-    var progressSpy, failSpy;
+    var progressSpy;
 
     beforeEach(function () {
         progressSpy = jasmine.createSpy('progress');
-        failSpy = jasmine.createSpy('fail'); /* eslint no-unused-vars : 0 */
     });
 
     it('should resolve on success', () => {
@@ -58,7 +57,7 @@ describe('spawn method', function () {
 
     it('Test 004 : reject handler should pass in Error object with stdout and stderr properties', () => {
         var cp = require('child_process');
-        spyOn(cp, 'spawn').and.callFake(function (cmd, args, opts) {
+        spyOn(cp, 'spawn').and.callFake(() => {
             return {
                 stdout: {
                     setEncoding: function () {},

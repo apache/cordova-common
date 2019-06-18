@@ -14,8 +14,6 @@
  *
 */
 
-/* eslint no-control-regex: 0 */
-
 var fs = require('fs-extra');
 var path = require('path');
 
@@ -93,7 +91,7 @@ ConfigFile.prototype.save = function ConfigFile_save () {
         fs.writeFileSync(self.filepath, self.data.write({ indent: 4 }), 'utf-8');
     } else {
         // plist
-        var regExp = new RegExp('<string>[ \t\r\n]+?</string>', 'g');
+        var regExp = /<string>[ \t\r\n]+?<\/string>/g;
         fs.writeFileSync(self.filepath, modules.plist.build(self.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
     }
     self.is_changed = false;
