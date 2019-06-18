@@ -36,25 +36,25 @@ describe('spawn method', function () {
         expect(Q.isPromise(superspawn.spawn('invalid_command'))).toBe(true);
     });
 
-    it('Test 002 : should notify about stdout "data" events', function (done) {
-        superspawn.spawn(LS, [], { stdio: 'pipe' })
+    it('Test 002 : should notify about stdout "data" events', () => {
+        return superspawn.spawn(LS, [], { stdio: 'pipe' })
             .progress(progressSpy)
-            .fin(function () {
+            .then(function () {
                 expect(progressSpy).toHaveBeenCalledWith({ 'stdout': jasmine.any(String) });
-                done();
             });
     });
 
-    it('Test 003 : should notify about stderr "data" events', function (done) {
-        superspawn.spawn(LS, ['doesnt-exist'], { stdio: 'pipe' })
+    it('Test 003 : should notify about stderr "data" events', () => {
+        return superspawn.spawn(LS, ['doesnt-exist'], { stdio: 'pipe' })
             .progress(progressSpy)
-            .fin(function () {
+            .then(() => {
+                fail('Expected promise to be rejected');
+            }, () => {
                 expect(progressSpy).toHaveBeenCalledWith({ 'stderr': jasmine.any(String) });
-                done();
             });
     });
 
-    it('Test 004 : reject handler should pass in Error object with stdout and stderr properties', function (done) {
+    it('Test 004 : reject handler should pass in Error object with stdout and stderr properties', () => {
         var cp = require('child_process');
         spyOn(cp, 'spawn').and.callFake(function (cmd, args, opts) {
             return {
@@ -80,12 +80,13 @@ describe('spawn method', function () {
                 removeListener: function () {}
             };
         });
-        superspawn.spawn('this aggression', ['will', 'not', 'stand', 'man'], {})
-            .catch(function (err) {
+        return superspawn.spawn('this aggression', ['will', 'not', 'stand', 'man'], {})
+            .then(() => {
+                fail('Expected promise to be rejected');
+            }, err => {
                 expect(err).toBeDefined();
                 expect(err.stdout).toContain('usual');
                 expect(err.stderr).toContain('mayday');
-                done();
             });
     });
 
