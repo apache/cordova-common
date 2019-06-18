@@ -58,7 +58,6 @@ describe('PluginManager class', function () {
     describe('instance', function () {
         var actions, manager;
         var FAKE_PROJECT;
-        var fail = jasmine.createSpy('fail');
         var ActionStackOrig = PluginManager.__get__('ActionStack');
 
         beforeEach(function () {
@@ -84,8 +83,8 @@ describe('PluginManager class', function () {
                 expect(manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})).not.toHaveBeenRejected(done);
             });
 
-            it('Test 004 : should iterate through all plugin\'s files and frameworks', function (done) {
-                manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
+            it('Test 004 : should iterate through all plugin\'s files and frameworks', () => {
+                return manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
                     .then(function () {
                         expect(FAKE_PROJECT.getInstaller.calls.count()).toBe(16);
                         expect(FAKE_PROJECT.getUninstaller.calls.count()).toBe(16);
@@ -93,43 +92,28 @@ describe('PluginManager class', function () {
                         expect(actions.push.calls.count()).toBe(16);
                         expect(actions.process).toHaveBeenCalled();
                         expect(FAKE_PROJECT.write).toHaveBeenCalled();
-                    })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
-                        done();
                     });
             });
 
-            it('Test 005 : should save plugin metadata to www directory', function (done) {
+            it('Test 005 : should save plugin metadata to www directory', () => {
                 var metadataPath = path.join(manager.locations.www, 'cordova_plugins.js');
                 var platformWwwMetadataPath = path.join(manager.locations.platformWww, 'cordova_plugins.js');
 
-                manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
+                return manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
                     .then(function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
                         expect(fs.writeFileSync).not.toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
-                    })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
-                        done();
                     });
             });
 
-            it('Test 006 : should save plugin metadata to both www ans platform_www directories when options.usePlatformWww is specified', function (done) {
+            it('Test 006 : should save plugin metadata to both www ans platform_www directories when options.usePlatformWww is specified', () => {
                 var metadataPath = path.join(manager.locations.www, 'cordova_plugins.js');
                 var platformWwwMetadataPath = path.join(manager.locations.platformWww, 'cordova_plugins.js');
 
-                manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), { usePlatformWww: true })
+                return manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), { usePlatformWww: true })
                     .then(function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
                         expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
-                    })
-                    .fail(fail)
-                    .done(function () {
-                        expect(fail).not.toHaveBeenCalled();
-                        done();
                     });
             });
         });
