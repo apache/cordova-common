@@ -153,11 +153,11 @@ PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
 };
 
 PlatformJson.prototype.addInstalledPluginToPrepareQueue = function (pluginDirName, vars, is_top_level, force) {
-    this.root.prepare_queue.installed.push({ 'plugin': pluginDirName, 'vars': vars, 'topLevel': is_top_level, 'force': force });
+    this.root.prepare_queue.installed.push({ plugin: pluginDirName, vars: vars, topLevel: is_top_level, force: force });
 };
 
 PlatformJson.prototype.addUninstalledPluginToPrepareQueue = function (pluginId, is_top_level) {
-    this.root.prepare_queue.uninstalled.push({ 'plugin': pluginId, 'id': pluginId, 'topLevel': is_top_level });
+    this.root.prepare_queue.uninstalled.push({ plugin: pluginId, id: pluginId, topLevel: is_top_level });
 };
 
 /**

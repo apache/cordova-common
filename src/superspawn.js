@@ -103,7 +103,7 @@ exports.spawn = function (cmd, args, opts) {
         child.stdout.setEncoding('utf8');
         child.stdout.on('data', function (data) {
             capturedOut += data;
-            d.notify({ 'stdout': data });
+            d.notify({ stdout: data });
         });
     }
 
@@ -111,7 +111,7 @@ exports.spawn = function (cmd, args, opts) {
         child.stderr.setEncoding('utf8');
         child.stderr.on('data', function (data) {
             capturedErr += data;
-            d.notify({ 'stderr': data });
+            d.notify({ stderr: data });
         });
     }
 

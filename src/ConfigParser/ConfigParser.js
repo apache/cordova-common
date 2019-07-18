@@ -75,7 +75,7 @@ function getCordovaNamespacePrefix (doc) {
  */
 function findElementAttributeValue (attributeName, elems) {
 
-    elems = Array.isArray(elems) ? elems : [ elems ];
+    elems = Array.isArray(elems) ? elems : [elems];
 
     var value = elems.filter(function (elem) {
         return elem.attrib.name.toLowerCase() === attributeName.toLowerCase();
@@ -505,8 +505,8 @@ ConfigParser.prototype = {
         return engines.map(function (engine) {
             var spec = engine.attrib.spec || engine.attrib.version;
             return {
-                'name': engine.attrib.name,
-                'spec': spec || null
+                name: engine.attrib.name,
+                spec: spec || null
             };
         });
     },
@@ -523,14 +523,14 @@ ConfigParser.prototype = {
             var allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
 
             return {
-                'origin': access.attrib.origin,
-                'minimum_tls_version': minimum_tls_version,
-                'requires_forward_secrecy': requires_forward_secrecy,
-                'requires_certificate_transparency': requires_certificate_transparency,
-                'allows_arbitrary_loads_in_web_content': allows_arbitrary_loads_in_web_content,
-                'allows_arbitrary_loads_in_media': allows_arbitrary_loads_in_media,
-                'allows_arbitrary_loads_for_media': allows_arbitrary_loads_for_media,
-                'allows_local_networking': allows_local_networking
+                origin: access.attrib.origin,
+                minimum_tls_version: minimum_tls_version,
+                requires_forward_secrecy: requires_forward_secrecy,
+                requires_certificate_transparency: requires_certificate_transparency,
+                allows_arbitrary_loads_in_web_content: allows_arbitrary_loads_in_web_content,
+                allows_arbitrary_loads_in_media: allows_arbitrary_loads_in_media,
+                allows_arbitrary_loads_for_media: allows_arbitrary_loads_for_media,
+                allows_local_networking: allows_local_networking
             };
         });
     },
@@ -543,10 +543,10 @@ ConfigParser.prototype = {
             var requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
 
             return {
-                'href': allow_navigation.attrib.href,
-                'minimum_tls_version': minimum_tls_version,
-                'requires_forward_secrecy': requires_forward_secrecy,
-                'requires_certificate_transparency': requires_certificate_transparency
+                href: allow_navigation.attrib.href,
+                minimum_tls_version: minimum_tls_version,
+                requires_forward_secrecy: requires_forward_secrecy,
+                requires_certificate_transparency: requires_certificate_transparency
             };
         });
     },
@@ -555,7 +555,7 @@ ConfigParser.prototype = {
         var allow_intents = this.doc.findall('./allow-intent');
         return allow_intents.map(function (allow_intent) {
             return {
-                'href': allow_intent.attrib.href
+                href: allow_intent.attrib.href
             };
         });
     },

@@ -37,10 +37,15 @@ const INSTANCE_KEY = Symbol.for('org.apache.cordova.common.CordovaLogger');
 class CordovaLogger {
     // Encapsulate the default logging level values with constants:
     static get VERBOSE () { return 'verbose'; }
+
     static get NORMAL () { return 'normal'; }
+
     static get WARN () { return 'warn'; }
+
     static get INFO () { return 'info'; }
+
     static get ERROR () { return 'error'; }
+
     static get RESULTS () { return 'results'; }
 
     /**

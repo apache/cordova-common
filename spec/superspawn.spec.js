@@ -41,7 +41,7 @@ describe('spawn method', function () {
         return superspawn.spawn(LS, [], { stdio: 'pipe' })
             .progress(progressSpy)
             .then(function () {
-                expect(progressSpy).toHaveBeenCalledWith({ 'stdout': jasmine.any(String) });
+                expect(progressSpy).toHaveBeenCalledWith({ stdout: jasmine.any(String) });
             });
     });
 
@@ -51,7 +51,7 @@ describe('spawn method', function () {
             .then(() => {
                 fail('Expected promise to be rejected');
             }, () => {
-                expect(progressSpy).toHaveBeenCalledWith({ 'stderr': jasmine.any(String) });
+                expect(progressSpy).toHaveBeenCalledWith({ stderr: jasmine.any(String) });
             });
     });
 
@@ -112,7 +112,7 @@ describe('spawn method', function () {
 
     describe('operation on windows', () => {
         const TEST_SCRIPT = path.join(__dirname, 'fixtures/echo-args.cmd');
-        const TEST_ARGS = [ 'install', 'foo@^1.2.3', 'c o r d o v a' ];
+        const TEST_ARGS = ['install', 'foo@^1.2.3', 'c o r d o v a'];
 
         it('should escape arguments if `cmd` is not an *.exe', () => {
             if (process.platform !== 'win32') {
