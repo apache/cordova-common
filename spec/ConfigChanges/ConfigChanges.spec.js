@@ -413,7 +413,6 @@ describe('config-changes module', function () {
                     expect(sdk.attrib['android:targetSdkVersion']).toEqual('24');
                     expect(sdk.attrib['android:minSdkVersion']).toEqual('14');
                     expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
-
                 });
                 it('should append new children to XML document tree', function () {
                     var configfile_cfg = new ConfigParser(configfile_xml);
@@ -484,7 +483,6 @@ describe('config-changes module', function () {
                     var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.add_config_changes(cfg, true);
                     expect(function () { munger.process(plugins_dir); }).toThrow(new Error('org.test.editconfigtest_two cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.'));
-
                 });
             });
             describe('of plist config files', function () {

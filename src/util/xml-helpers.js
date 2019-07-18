@@ -172,7 +172,6 @@ module.exports = {
         });
 
         return true;
-
     },
 
     parseElementtreeSync: function (filename) {

@@ -43,7 +43,6 @@ describe('CordovaLogger class', function () {
     });
 
     describe('instance', function () {
-
         var logger;
 
         beforeEach(function () {
@@ -92,7 +91,6 @@ describe('CordovaLogger class', function () {
             });
 
             it('Test 009 : should attach corresponding listeners to supplied emitter', function () {
-
                 var eventNamesExclusions = {
                     log: 'normal',
                     warning: 'warn'
@@ -110,7 +108,6 @@ describe('CordovaLogger class', function () {
         });
 
         describe('log method', function () {
-
             function CursorSpy (name) {
                 var cursorMethods = ['reset', 'write'];
                 var spy = jasmine.createSpyObj(name, cursorMethods);

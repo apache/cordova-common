@@ -120,7 +120,6 @@ var testFileStats3 = mockFileStats(now);
 var nullLogger = function () {};
 
 describe('FileUpdater class', function () {
-
     beforeEach(function () {
         FileUpdater.updatePathWithStatsCalls = [];
         FileUpdater.updatePathWithStatsResult = true;
@@ -759,6 +758,5 @@ describe('FileUpdater class', function () {
                 testTargetDir,
                 null);
         });
-
     });
 });

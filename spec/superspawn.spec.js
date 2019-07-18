@@ -124,5 +124,4 @@ describe('spawn method', function () {
             });
         });
     });
-
 });

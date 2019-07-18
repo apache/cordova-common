@@ -74,7 +74,6 @@ function getCordovaNamespacePrefix (doc) {
  * @return {String}
  */
 function findElementAttributeValue (attributeName, elems) {
-
     elems = Array.isArray(elems) ? elems : [elems];
 
     var value = elems.filter(function (elem) {
@@ -186,7 +185,6 @@ ConfigParser.prototype = {
         pref.attrib.value = value;
     },
     getPreference: function (name, platform) {
-
         var platformPreference = '';
 
         if (platform) {
@@ -194,7 +192,6 @@ ConfigParser.prototype = {
         }
 
         return platformPreference || this.getGlobalPreference(name);
-
     },
     setPreference: function (name, platform, value) {
         if (!value) {
