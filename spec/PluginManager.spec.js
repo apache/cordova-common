@@ -20,7 +20,9 @@
 var Q = require('q');
 var fs = require('fs-extra');
 var path = require('path');
+
 var rewire = require('rewire');
+
 var PluginManager = rewire('../src/PluginManager');
 var PluginInfo = require('../src/PluginInfo/PluginInfo');
 var ConfigChanges = require('../src/ConfigChanges/ConfigChanges');
