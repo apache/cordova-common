@@ -17,8 +17,6 @@
     under the License.
 */
 
-/* eslint no-proto: 0 */
-
 var EOL = require('os').EOL;
 
 /**
@@ -37,6 +35,9 @@ function CordovaError (message, code, context) {
     this.code = code || CordovaError.UNKNOWN_ERROR;
     this.context = context;
 }
+
+// FIXME __proto__ property has been deprecated as of ECMAScript 3.1
+// eslint-disable-next-line no-proto
 CordovaError.prototype.__proto__ = Error.prototype;
 
 // TODO: Extend error codes according the projects specifics

@@ -56,7 +56,7 @@ var cfg = new ConfigParser(xml);
 var pluginInfoProvider = new PluginInfoProvider();
 
 function innerXML (xmltext) {
-    return xmltext.replace(/^<[\w\s\-=\/"\.]+>/, '').replace(/<\/[\w\s\-=\/"\.]+>$/, ''); /* eslint no-useless-escape : 0 */
+    return xmltext.replace(/^<[\w\s\-=/".]+>/, '').replace(/<\/[\w\s\-=/".]+>$/, '');
 }
 
 function get_munge_change () {
