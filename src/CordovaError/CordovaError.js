@@ -36,9 +36,7 @@ function CordovaError (message, code, context) {
     this.context = context;
 }
 
-// FIXME __proto__ property has been deprecated as of ECMAScript 3.1
-// eslint-disable-next-line no-proto
-CordovaError.prototype.__proto__ = Error.prototype;
+Object.setPrototypeOf(CordovaError.prototype, Error.prototype);
 
 // TODO: Extend error codes according the projects specifics
 CordovaError.UNKNOWN_ERROR = 0;
