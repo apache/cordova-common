@@ -6,7 +6,6 @@ rules:
     - 4
   camelcase: off
   padded-blocks: off
-  operator-linebreak: off
   no-unused-vars:
     - error
     - args: after-used

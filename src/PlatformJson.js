@@ -72,9 +72,9 @@ PlatformJson.prototype.isPluginInstalled = function (pluginId) {
 };
 
 PlatformJson.prototype.addPlugin = function (pluginId, variables, isTopLevel) {
-    var pluginsList = isTopLevel ?
-        this.root.installed_plugins :
-        this.root.dependent_plugins;
+    var pluginsList = isTopLevel
+        ? this.root.installed_plugins
+        : this.root.dependent_plugins;
 
     pluginsList[pluginId] = variables;
 
@@ -114,9 +114,9 @@ PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
 };
 
 PlatformJson.prototype.removePlugin = function (pluginId, isTopLevel) {
-    var pluginsList = isTopLevel ?
-        this.root.installed_plugins :
-        this.root.dependent_plugins;
+    var pluginsList = isTopLevel
+        ? this.root.installed_plugins
+        : this.root.dependent_plugins;
 
     delete pluginsList[pluginId];
 
