@@ -182,6 +182,7 @@ class PlatformMunger {
                         this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                     }
                 }
+
                 if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
                     events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
