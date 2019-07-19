@@ -37,7 +37,6 @@ var FAKE_LOCATIONS = {
 };
 
 describe('PluginManager class', function () {
-
     beforeEach(function () {
         spyOn(ConfigChanges, 'PlatformMunger');
         spyOn(fs, 'outputJsonSync');

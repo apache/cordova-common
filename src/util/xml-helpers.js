@@ -172,7 +172,6 @@ module.exports = {
         });
 
         return true;
-
     },
 
     parseElementtreeSync: function (filename) {
@@ -293,7 +292,7 @@ function mergeXml (src, dest, platform, clobber) {
     function removeDuplicatePreferences (xml) {
         // reduce preference tags to a hashtable to remove dupes
         var prefHash = xml.findall('preference[@name][@value]').reduce(function (previousValue, currentValue) {
-            previousValue[ currentValue.attrib.name ] = currentValue.attrib.value;
+            previousValue[currentValue.attrib.name] = currentValue.attrib.value;
             return previousValue;
         }, {});
 
