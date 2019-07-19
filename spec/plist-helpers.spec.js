@@ -58,19 +58,19 @@ describe('prunePLIST', function () {
 });
 
 describe('plistGraft', function () {
-    let doc = {
+    const doc = {
         'keychain-access-groups': [
             '$(AppIdentifierPrefix)io.cordova.hellocordova',
             '$(AppIdentifierPrefix)com.example.mylib'
         ]
     };
 
-    let xml = '<array>' +
+    const xml = '<array>' +
                 '<string>$(AppIdentifierPrefix)io.cordova.hellocordova</string>' +
                 '<string>$(AppIdentifierPrefix)com.example.mylib</string>' +
               '</array>';
 
-    let selector = 'keychain-access-groups';
+    const selector = 'keychain-access-groups';
 
     it('Test 01: should not mangle existing plist entries', () => {
         var graftStatus = plistHelpers.graftPLIST(doc, xml, selector);

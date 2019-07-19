@@ -220,7 +220,6 @@ function add_config_changes (config, should_increment) {
                 // skip no chnages
                 return changes.filter(function (x) { return isConflictingInfo.noChanges.indexOf(x) === -1; });
             }
-
         }
         return changes;
     })(changes);
@@ -443,11 +442,9 @@ function is_conflicting (editchanges, config_munge, self, force) {
                                 mungeutil.deep_add(conflictingMunge, change_file, conflictingParent, target_elem);
                             });
                         }
-
                     } else {
                         // plugin cannot overwrite other plugin changes without --force
                         conflictingPlugin = target[0].plugin;
-
                     }
                 }
             }

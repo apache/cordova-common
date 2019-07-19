@@ -22,7 +22,6 @@ var path = require('path');
 var projectDir = path.join('project_dir', 'app', 'src', 'main');
 
 describe('ConfigFile tests', function () {
-
     beforeEach(function () {
         spyOn(configFile, 'isBinaryPlist').and.callThrough();
     });

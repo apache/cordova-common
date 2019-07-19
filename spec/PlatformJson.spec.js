@@ -84,7 +84,6 @@ describe('PlatformJson class', function () {
             });
 
             it('Test 007 : should remove plugin modules from "root.modules" array based on file path', function () {
-
                 var pluginPaths = [
                     'plugins/fakeId/www/fakeModule.js',
                     'plugins/otherPlugin/www/module1.js',

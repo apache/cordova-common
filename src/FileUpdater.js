@@ -244,7 +244,7 @@ function updatePaths (pathMap, options, log) {
  */
 function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     if (sourceDirs && typeof sourceDirs === 'string') {
-        sourceDirs = [ sourceDirs ];
+        sourceDirs = [sourceDirs];
     } else if (!Array.isArray(sourceDirs)) {
         throw new Error('A source directory path or array of paths is required.');
     }
@@ -257,16 +257,16 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
 
     var rootDir = (options && options.rootDir) || '';
 
-    var include = (options && options.include) || [ '**' ];
+    var include = (options && options.include) || ['**'];
     if (typeof include === 'string') {
-        include = [ include ];
+        include = [include];
     } else if (!Array.isArray(include)) {
         throw new Error('Include parameter must be a glob string or array of glob strings.');
     }
 
     var exclude = (options && options.exclude) || [];
     if (typeof exclude === 'string') {
-        exclude = [ exclude ];
+        exclude = [exclude];
     } else if (!Array.isArray(exclude)) {
         throw new Error('Exclude parameter must be a glob string or array of glob strings.');
     }

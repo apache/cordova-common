@@ -434,7 +434,6 @@ describe('xml-helpers', function () {
             xml_helpers.mergeXml(testXml, dstXml, '', true);
             testElements = dstXml.findall('access');
             expect(testElements.length).toEqual(2);
-
         });
 
         it('Test 042 : should remove duplicate preferences (by name attribute value)', function () {

@@ -89,7 +89,6 @@ PlatformJson.prototype.addPlugin = function (pluginId, variables, isTopLevel) {
  * @returns {this} Current PlatformJson instance to allow calls chaining
  */
 PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
-
     var installedModules = this.root.modules || [];
 
     var installedPaths = installedModules.map(function (installedModule) {
@@ -153,11 +152,11 @@ PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
 };
 
 PlatformJson.prototype.addInstalledPluginToPrepareQueue = function (pluginDirName, vars, is_top_level, force) {
-    this.root.prepare_queue.installed.push({ 'plugin': pluginDirName, 'vars': vars, 'topLevel': is_top_level, 'force': force });
+    this.root.prepare_queue.installed.push({ plugin: pluginDirName, vars: vars, topLevel: is_top_level, force: force });
 };
 
 PlatformJson.prototype.addUninstalledPluginToPrepareQueue = function (pluginId, is_top_level) {
-    this.root.prepare_queue.uninstalled.push({ 'plugin': pluginId, 'id': pluginId, 'topLevel': is_top_level });
+    this.root.prepare_queue.uninstalled.push({ plugin: pluginId, id: pluginId, topLevel: is_top_level });
 };
 
 /**
@@ -242,7 +241,6 @@ function fix_munge (root) {
  * @param (JsModule|Object)  jsModule  A js-module entry from PluginInfo class to generate metadata for
  */
 function ModuleMetadata (pluginId, jsModule) {
-
     if (!pluginId) throw new TypeError('pluginId argument must be a valid plugin id');
     if (!jsModule.src && !jsModule.name) throw new TypeError('jsModule argument must contain src or/and name properties');
 
