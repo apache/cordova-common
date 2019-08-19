@@ -188,7 +188,6 @@ function resolveConfigFilePath (project_dir, platform, file) {
     // only if none of the options above are satisfied does this get called
     // TODO: Move this out of cordova-common and into the platforms somehow
     if (platform === 'android' && !fs.existsSync(filepath)) {
-        var config_file;
         if (file === 'AndroidManifest.xml') {
             filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
         } else if (file.endsWith('config.xml')) {
@@ -196,12 +195,9 @@ function resolveConfigFilePath (project_dir, platform, file) {
         } else if (file.endsWith('strings.xml')) {
             // Plugins really shouldn't mess with strings.xml, since it's able to be localized
             filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', 'strings.xml');
-        } else if (file.includes(path.join('res', 'values'))) {
-            config_file = path.basename(file);
-            filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'values', config_file);
         } else if (file.includes(path.join('res', 'xml'))) {
             // Catch-all for all other stored XML configuration in legacy plugins
-            config_file = path.basename(file);
+            var config_file = path.basename(file);
             filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', config_file);
         }
         return filepath;
