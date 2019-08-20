@@ -396,7 +396,8 @@ function is_conflicting (editchanges, config_munge, self, force) {
         conflictingPlugin: conflictingPlugin,
         conflictingMunge: conflictingMunge,
         configxmlMunge: configxmlMunge,
-        conflictWithConfigxml: conflictWithConfigxml};
+        conflictWithConfigxml: conflictWithConfigxml
+    };
 }
 
 // Go over the prepare queue and apply the config munges for each plugin
