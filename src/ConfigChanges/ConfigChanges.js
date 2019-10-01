@@ -392,7 +392,8 @@ function is_conflicting (editchanges, config_munge, self, force) {
         }
     });
 
-    return { conflictFound: conflictFound,
+    return {
+        conflictFound: conflictFound,
         conflictingPlugin: conflictingPlugin,
         conflictingMunge: conflictingMunge,
         configxmlMunge: configxmlMunge,

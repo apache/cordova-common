@@ -1,10 +1,2 @@
 root: true
-extends: semistandard
-rules:
-  indent:
-    - error
-    - 4
-  camelcase: off
-  no-unused-vars:
-    - error
-    - args: after-used
+extends: '@cordova/eslint-config/node'

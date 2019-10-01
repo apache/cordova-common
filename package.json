@@ -17,9 +17,9 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "npm run eslint && npm run cover",
+    "test": "npm run lint && npm run cover",
     "test:unit": "jasmine \"spec/**/*.spec.js\"",
-    "eslint": "eslint src spec",
+    "lint": "eslint .",
     "cover": "nyc npm run test:unit"
   },
   "dependencies": {
@@ -37,13 +37,7 @@
     "underscore": "^1.9.1"
   },
   "devDependencies": {
-    "eslint": "^5.0.0",
-    "eslint-config-semistandard": "^14.0.0",
-    "eslint-config-standard": "^13.0.1",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^8.0.0",
-    "eslint-plugin-promise": "^4.0.0",
-    "eslint-plugin-standard": "^4.0.0",
+    "@cordova/eslint-config": "^2.0.0",
     "jasmine": "^3.5.0",
     "jasmine-spec-reporter": "^4.2.1",
     "nyc": "^14.1.1",
