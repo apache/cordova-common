@@ -31,7 +31,6 @@
     "lodash.isobject": "^3.0.2",
     "lodash.zip": "^4.2.0",
     "plist": "^3.0.6",
-    "q": "^1.5.1",
     "read-chunk": "^3.2.0",
     "strip-bom": "^4.0.0"
   },
