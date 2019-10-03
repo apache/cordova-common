@@ -59,7 +59,6 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
 
     const rootDir = (options && options.rootDir) || '';
     const copyAll = (options && options.all) || false;
-
     const targetFullPath = path.join(rootDir || '', targetPath);
 
     if (sourceStats) {
@@ -282,14 +281,11 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     });
 
     // Scan the files in the target directory, if it exists.
-    let targetMap = {};
     const targetFullPath = path.join(rootDir, targetDir);
-    if (fs.existsSync(targetFullPath)) {
-        targetMap = mapDirectory(rootDir, targetDir, include, exclude);
-    }
-
+    const targetMap = fs.existsSync(targetFullPath)
+        ? mapDirectory(rootDir, targetDir, include, exclude)
+        : {};
     const pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
-
     let updated = false;
 
     // Iterate in sorted order to ensure directories are created before files under them.
@@ -362,9 +358,11 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Entries in later source maps override those in earlier source maps.
     // Target stats will be filled in below for targets that exist.
     const pathMap = {};
+
     sourceMaps.forEach(sourceMap => {
         Object.keys(sourceMap).forEach(sourceSubPath => {
             const sourceEntry = sourceMap[sourceSubPath];
+
             pathMap[sourceSubPath] = {
                 targetPath: path.join(targetDir, sourceSubPath),
                 targetStats: null,
@@ -378,6 +376,7 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // for targets that don't have any corresponding sources.
     Object.keys(targetMap).forEach(subPath => {
         const entry = pathMap[subPath];
+
         if (entry) {
             entry.targetStats = targetMap[subPath].stats;
         } else {
