@@ -28,10 +28,10 @@ class PlatformJson {
 
     static load (plugins_dir, platform) {
         const filePath = path.join(plugins_dir, `${platform}.json`);
-        let root = null;
-        if (fs.existsSync(filePath)) {
-            root = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        }
+        const root = fs.existsSync(filePath)
+            ? JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+            : null;
+
         return new PlatformJson(filePath, platform, root);
     }
 
@@ -91,16 +91,13 @@ class PlatformJson {
      */
     addPluginMetadata (pluginInfo) {
         const installedModules = this.root.modules || [];
-
         const installedPaths = installedModules.map(m => m.file);
-
         const modulesToInstall = pluginInfo.getJsModules(this.platform)
             .map(module => new ModuleMetadata(pluginInfo.id, module))
             // Filter out modules which are already added to metadata
             .filter(metadata => !installedPaths.includes(metadata.file));
 
         this.root.modules = installedModules.concat(modulesToInstall);
-
         this.root.plugin_metadata = this.root.plugin_metadata || {};
         this.root.plugin_metadata[pluginInfo.id] = pluginInfo.version;
 
@@ -127,12 +124,12 @@ class PlatformJson {
      * @returns {this} Current PlatformJson instance to allow calls chaining
      */
     removePluginMetadata (pluginInfo) {
+        const installedModules = this.root.modules || [];
         const modulesToRemove = pluginInfo.getJsModules(this.platform)
             .map(jsModule => ['plugins', pluginInfo.id, jsModule.src].join('/'));
 
-        const installedModules = this.root.modules || [];
+        // Leave only those metadatas which 'file' is not in removed modules
         this.root.modules = installedModules
-            // Leave only those metadatas which 'file' is not in removed modules
             .filter(m => !modulesToRemove.includes(m.file));
 
         if (this.root.plugin_metadata) {
@@ -159,10 +156,12 @@ class PlatformJson {
      */
     makeTopLevel (pluginId) {
         const plugin = this.root.dependent_plugins[pluginId];
+
         if (plugin) {
             delete this.root.dependent_plugins[pluginId];
             this.root.installed_plugins[pluginId] = plugin;
         }
+
         return this;
     }
 
@@ -206,6 +205,7 @@ function fix_munge (root) {
     const munge = root.config_munge;
     if (!munge.files) {
         const new_munge = { files: {} };
+
         for (const file in munge) {
             for (const selector in munge[file]) {
                 for (const xml_child in munge[file][selector]) {
@@ -216,17 +216,18 @@ function fix_munge (root) {
                 }
             }
         }
+
         root.config_munge = new_munge;
     }
 
     return root;
 }
 
-/**
- * Run-time representation of a module entry in 'cordova_plugins.js'
- */
 class ModuleMetadata {
     /**
+     * Creates a ModuleMetadata object that represents module entry in 'cordova_plugins.js'
+     * file at run time
+     *
      * @param {String}  pluginId  Plugin id where this module installed from
      * @param (JsModule|Object)  jsModule  A js-module entry from PluginInfo class to generate metadata for
      */
@@ -241,9 +242,11 @@ class ModuleMetadata {
         if (jsModule.clobbers && jsModule.clobbers.length > 0) {
             this.clobbers = jsModule.clobbers.map(o => o.target);
         }
+
         if (jsModule.merges && jsModule.merges.length > 0) {
             this.merges = jsModule.merges.map(o => o.target);
         }
+
         if (jsModule.runs) {
             this.runs = true;
         }
