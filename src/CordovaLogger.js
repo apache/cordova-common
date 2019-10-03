@@ -18,8 +18,8 @@
  */
 
 const ansi = require('ansi');
-const EventEmitter = require('events').EventEmitter;
-const EOL = require('os').EOL;
+const { EventEmitter } = require('events');
+const { EOL } = require('os');
 const formatError = require('./util/formatError');
 
 const INSTANCE_KEY = Symbol.for('org.apache.cordova.common.CordovaLogger');
