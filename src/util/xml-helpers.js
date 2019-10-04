@@ -56,6 +56,7 @@ module.exports = {
     // adds node to doc at selector, creating parent if it doesn't exist
     graftXML: function (doc, nodes, selector, after) {
         let parent = module.exports.resolveParent(doc, selector);
+
         if (!parent) {
             // Try to create the parent recursively if necessary
             try {
@@ -66,7 +67,9 @@ module.exports = {
             } catch (e) {
                 return false;
             }
+
             parent = module.exports.resolveParent(doc, selector);
+
             if (!parent) return false;
         }
 
@@ -229,6 +232,7 @@ function findInsertIdx (children, after) {
 
 const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
 const SINGLETONS = ['content', 'author', 'name'];
+
 function mergeXml (src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
     if (BLACKLIST.includes(src.tag)) return;
@@ -314,8 +318,9 @@ function mergeXml (src, dest, platform, clobber) {
 module.exports.mergeXml = mergeXml;
 
 function textMatch (elm1, elm2) {
-    const text1 = elm1.text ? elm1.text.replace(/\s+/, '') : '';
-    const text2 = elm2.text ? elm2.text.replace(/\s+/, '') : '';
+    const format = text => text ? text.replace(/\s+/, '') : '';
+    const text1 = format(elm1.text);
+    const text2 = format(elm2.text);
     return (text1 === '' || text1 === text2);
 }
 
