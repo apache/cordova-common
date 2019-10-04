@@ -90,46 +90,13 @@ module.exports = {
     // adds new attributes to doc at selector
     // Will only merge if attribute has not been modified already or --force is used
     graftXMLMerge: function (doc, nodes, selector, xml) {
-        const target = module.exports.resolveParent(doc, selector);
-        if (!target) return false;
-
-        // saves the attributes of the original xml before making changes
-        xml.oldAttrib = _.extend({}, target.attrib);
-
-        nodes.forEach(node => {
-            const attributes = node.attrib;
-            for (const attribute in attributes) {
-                target.attrib[attribute] = node.attrib[attribute];
-            }
-        });
-
-        return true;
+        return graftXMLAttrs(doc, nodes, selector, xml);
     },
 
     // overwrite all attributes to doc at selector with new attributes
     // Will only overwrite if attribute has not been modified already or --force is used
     graftXMLOverwrite: function (doc, nodes, selector, xml) {
-        const target = module.exports.resolveParent(doc, selector);
-        if (!target) return false;
-
-        // saves the attributes of the original xml before making changes
-        xml.oldAttrib = _.extend({}, target.attrib);
-
-        // remove old attributes from target
-        const targetAttributes = target.attrib;
-        for (const targetAttribute in targetAttributes) {
-            delete targetAttributes[targetAttribute];
-        }
-
-        // add new attributes to target
-        nodes.forEach(node => {
-            const attributes = node.attrib;
-            for (const attribute in attributes) {
-                target.attrib[attribute] = node.attrib[attribute];
-            }
-        });
-
-        return true;
+        return graftXMLAttrs(doc, nodes, selector, xml, { overwrite: true });
     },
 
     // removes node from doc at selector
@@ -206,6 +173,30 @@ module.exports = {
         return parent;
     }
 };
+
+function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
+    const target = module.exports.resolveParent(doc, selector);
+
+    if (!target) return false;
+
+    // saves the attributes of the original xml before making changes
+    xml.oldAttrib = _.extend({}, target.attrib);
+
+    if (overwrite) {
+        // remove old attributes from target
+        for (const targetAttribute in target.attrib) {
+            delete target.attrib[targetAttribute];
+        }
+    }
+
+    nodes.forEach(node => {
+        for (const attribute in node.attrib) {
+            target.attrib[attribute] = node.attrib[attribute];
+        }
+    });
+
+    return true;
+}
 
 function findChild (node, parent) {
     const matches = parent.findall(node.tag);
