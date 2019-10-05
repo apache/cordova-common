@@ -25,15 +25,17 @@ const plist = require('plist');
 module.exports.graftPLIST = graftPLIST;
 function graftPLIST (doc, xml, selector) {
     const obj = plist.parse(`<plist>${xml}</plist>`);
-
     let node = doc[selector];
+
     if (node && Array.isArray(node) && Array.isArray(obj)) {
         node = node.concat(obj);
+
         for (let i = 0; i < node.length; i++) {
             for (let j = i + 1; j < node.length; ++j) {
                 if (nodeEqual(node[i], node[j])) { node.splice(j--, 1); }
             }
         }
+
         doc[selector] = node;
     } else {
         // plist uses objects for <dict>. If we have two dicts we merge them instead of
@@ -41,6 +43,7 @@ function graftPLIST (doc, xml, selector) {
         if (node && _.isObject(node) && _.isObject(obj) && !_.isDate(node) && !_.isDate(obj)) { // arrays checked above
             _.extend(obj, node);
         }
+
         doc[selector] = obj;
     }
 
@@ -60,11 +63,13 @@ function prunePLIST (doc, xml, selector) {
 function pruneObject (doc, selector, fragment) {
     if (Array.isArray(fragment) && Array.isArray(doc[selector])) {
         let empty = true;
+
         for (const i in fragment) {
             for (const j in doc[selector]) {
                 empty = pruneObject(doc[selector], j, fragment[i]) && empty;
             }
         }
+
         if (empty) {
             delete doc[selector];
             return true;
@@ -78,13 +83,16 @@ function pruneObject (doc, selector, fragment) {
 }
 
 function nodeEqual (node1, node2) {
-    if (typeof node1 !== typeof node2) { return false; } else if (typeof node1 === 'string') {
+    if (typeof node1 !== typeof node2) {
+        return false;
+    } else if (typeof node1 === 'string') {
         node2 = escapeRE(node2).replace(/\\\$\(\S+\)/gm, '(.*?)');
         return new RegExp(`^${node2}$`).test(node1);
     } else {
         for (const key in node2) {
             if (!nodeEqual(node1[key], node2[key])) return false;
         }
+
         return true;
     }
 }
