@@ -29,7 +29,7 @@ const CordovaError = require('../CordovaError/CordovaError');
  * @returns {string} The formatted error message.
  */
 module.exports = function formatError (error, isVerbose) {
-    var message = '';
+    let message = '';
 
     if (error instanceof CordovaError) {
         message = error.toString(isVerbose);
