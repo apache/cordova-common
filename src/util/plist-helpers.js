@@ -18,7 +18,7 @@
 */
 
 // contains PLIST utility functions
-const __ = require('underscore');
+const _ = require('underscore');
 const plist = require('plist');
 
 // adds node to doc at selector
@@ -38,8 +38,8 @@ function graftPLIST (doc, xml, selector) {
     } else {
         // plist uses objects for <dict>. If we have two dicts we merge them instead of
         // overriding the old one. See CB-6472
-        if (node && __.isObject(node) && __.isObject(obj) && !__.isDate(node) && !__.isDate(obj)) { // arrays checked above
-            __.extend(obj, node);
+        if (node && _.isObject(node) && _.isObject(obj) && !_.isDate(node) && !_.isDate(obj)) { // arrays checked above
+            _.extend(obj, node);
         }
         doc[selector] = obj;
     }
