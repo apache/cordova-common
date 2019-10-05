@@ -52,17 +52,17 @@ module.exports.prunePLIST = prunePLIST;
 function prunePLIST (doc, xml, selector) {
     const obj = plist.parse(`<plist>${xml}</plist>`);
 
-    pruneOBJECT(doc, selector, obj);
+    pruneObject(doc, selector, obj);
 
     return true;
 }
 
-function pruneOBJECT (doc, selector, fragment) {
+function pruneObject (doc, selector, fragment) {
     if (Array.isArray(fragment) && Array.isArray(doc[selector])) {
         let empty = true;
         for (const i in fragment) {
             for (const j in doc[selector]) {
-                empty = pruneOBJECT(doc[selector], j, fragment[i]) && empty;
+                empty = pruneObject(doc[selector], j, fragment[i]) && empty;
             }
         }
         if (empty) {
