@@ -33,7 +33,6 @@ const path = require('path');
 const et = require('elementtree');
 const ConfigKeeper = require('./ConfigKeeper');
 const events = require('../events');
-
 const mungeutil = require('./munge-util');
 const xml_helpers = require('../util/xml-helpers');
 
@@ -71,6 +70,7 @@ class PlatformMunger {
             for (const xml_child in munge.parents[selector]) {
                 // this xml child is new, graft it (only if config file exists)
                 const config_file = this.config_keeper.get(this.project_dir, this.platform, file);
+
                 if (config_file.exists) {
                     if (remove) config_file.prune_child(selector, munge.parents[selector][xml_child]);
                     else config_file.graft_child(selector, munge.parents[selector][xml_child]);
@@ -87,6 +87,7 @@ class PlatformMunger {
             ? platform_config.installed_plugins[pluginInfo.id]
             : platform_config.dependent_plugins[pluginInfo.id];
         let edit_config_changes = null;
+
         if (pluginInfo.getEditConfigs) {
             edit_config_changes = pluginInfo.getEditConfigs(this.platform);
         }
@@ -103,18 +104,18 @@ class PlatformMunger {
 
         // Remove from installed_plugins
         this.platformJson.removePlugin(pluginInfo.id, is_top_level);
+
         return this;
     }
 
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
         const platform_config = this.platformJson.root;
-
+        let config_munge;
         let edit_config_changes = null;
+
         if (pluginInfo.getEditConfigs) {
             edit_config_changes = pluginInfo.getEditConfigs(this.platform);
         }
-
-        let config_munge;
 
         if (!edit_config_changes || edit_config_changes.length === 0) {
             // get config munge, aka how should this plugin change various config files
@@ -148,13 +149,13 @@ class PlatformMunger {
 
         // Move to installed/dependent_plugins
         this.platformJson.addPlugin(pluginInfo.id, plugin_vars || {}, is_top_level);
+
         return this;
     }
 
     // Handle edit-config changes from config.xml
     add_config_changes (config, should_increment) {
         const platform_config = this.platformJson.root;
-
         let changes = [];
 
         if (config.getEditConfigs) {
@@ -207,11 +208,12 @@ class PlatformMunger {
     /** @private */
     _munge_helper (should_increment, platform_config, config_munge) {
         // global munge looks at all changes to config files
-
         // TODO: The should_increment param is only used by cordova-cli and is going away soon.
         // If should_increment is set to false, avoid modifying the global_munge (use clone)
         // and apply the entire config_munge because it's already a proper subset of the global_munge.
-        let munge, global_munge;
+        let munge;
+        let global_munge;
+
         if (should_increment) {
             global_munge = platform_config.config_munge;
             munge = mungeutil.increment_munge(global_munge, config_munge);
@@ -240,21 +242,14 @@ class PlatformMunger {
         return this;
     }
 
-    // generate_plugin_config_munge
+    // generate_config_xml_munge
     // Generate the munge object from config.xml
     generate_config_xml_munge (config, config_changes, type) {
         const munge = { files: {} };
-        let id;
 
-        if (!config_changes) {
-            return munge;
-        }
+        if (!config_changes) return munge;
 
-        if (type === 'config.xml') {
-            id = type;
-        } else {
-            id = config.id;
-        }
+        const id = type === 'config.xml' ? type : config.id;
 
         config_changes.forEach(change => {
             change.xmls.forEach(xml => {
@@ -268,6 +263,7 @@ class PlatformMunger {
                 }
             });
         });
+
         return munge;
     }
 
@@ -303,6 +299,7 @@ class PlatformMunger {
                 }
             });
         });
+
         return munge;
     }
 
