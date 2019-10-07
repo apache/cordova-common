@@ -59,6 +59,7 @@ class ConfigFile {
             this.exists = false;
             return;
         }
+
         this.exists = true;
         this.mtime = fs.statSync(this.filepath).mtime;
 
@@ -93,10 +94,10 @@ class ConfigFile {
     }
 
     graft_child (selector, xml_child) {
-        const filepath = this.filepath;
         let result;
         if (this.type === 'xml') {
             const xml_to_graft = [modules.et.XML(xml_child.xml)];
+
             switch (xml_child.mode) {
             case 'merge':
                 result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
@@ -110,24 +111,27 @@ class ConfigFile {
             default:
                 result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
             }
+
             if (!result) {
-                throw new Error(`Unable to graft xml at selector "${selector}" from "${filepath}" during config install`);
+                throw new Error(`Unable to graft xml at selector "${selector}" from "${this.filepath}" during config install`);
             }
         } else {
             // plist file
             result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
+
             if (!result) {
-                throw new Error(`Unable to graft plist "${filepath}" during config install`);
+                throw new Error(`Unable to graft plist "${this.filepath}" during config install`);
             }
         }
         this.is_changed = true;
     }
 
     prune_child (selector, xml_child) {
-        const filepath = this.filepath;
         let result;
+
         if (this.type === 'xml') {
             const xml_to_graft = [modules.et.XML(xml_child.xml)];
+
             switch (xml_child.mode) {
             case 'merge':
             case 'overwrite':
@@ -144,8 +148,9 @@ class ConfigFile {
             result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
         }
         if (!result) {
-            throw new Error(`Pruning at selector "${selector}" from "${filepath}" went bad.`);
+            throw new Error(`Pruning at selector "${selector}" from "${this.filepath}" went bad.`);
         }
+
         this.is_changed = true;
     }
 }
@@ -215,6 +220,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
             matches = modules.glob.sync(path.join(project_dir, '**', 'config.xml'));
             if (matches.length) filepath = matches[0];
         }
+
         return filepath;
     }
 
@@ -233,8 +239,10 @@ function getIOSProjectname (project_dir) {
         const msg = matches.length === 0
             ? 'Does not appear to be an xcode project, no xcode project file'
             : 'There are multiple *.xcodeproj dirs';
+
         throw new Error(`${msg} in ${project_dir}`);
     }
+
     return iospath;
 }
 
