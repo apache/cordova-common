@@ -40,14 +40,17 @@ class ConfigKeeper {
         if (file === 'config.xml' && platform === 'android') {
             file = 'res/xml/config.xml';
         }
+
         const fake_path = path.join(project_dir, platform, file);
 
         if (this._cached[fake_path]) {
             return this._cached[fake_path];
         }
+
         // File was not cached, need to load.
         const config_file = new ConfigFile(project_dir, platform, file);
         this._cached[fake_path] = config_file;
+
         return config_file;
     }
 
