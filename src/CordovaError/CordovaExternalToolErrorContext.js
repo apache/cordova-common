@@ -17,30 +17,29 @@
  under the License.
  */
 
-var path = require('path');
+const path = require('path');
 
-/**
- * @param {String} cmd Command full path
- * @param {String[]} args Command args
- * @param {String} [cwd] Command working directory
- * @constructor
- */
-function CordovaExternalToolErrorContext (cmd, args, cwd) {
-    this.cmd = cmd;
-    // Helper field for readability
-    this.cmdShortName = path.basename(cmd);
-    this.args = args;
-    this.cwd = cwd;
-}
-
-CordovaExternalToolErrorContext.prototype.toString = function (isVerbose) {
-    if (isVerbose) {
-        return 'External tool \'' + this.cmdShortName + '\'' +
-            '\nCommand full path: ' + this.cmd + '\nCommand args: ' + this.args +
-            (typeof this.cwd !== 'undefined' ? '\nCommand cwd: ' + this.cwd : '');
+class CordovaExternalToolErrorContext {
+    /**
+     * @param {String} cmd Command full path
+     * @param {String[]} args Command args
+     * @param {String} [cwd] Command working directory
+     * @constructor
+     */
+    constructor (cmd, args, cwd) {
+        this.cmd = cmd;
+        // Helper field for readability
+        this.cmdShortName = path.basename(cmd);
+        this.args = args;
+        this.cwd = cwd;
     }
 
-    return this.cmdShortName;
-};
+    toString (isVerbose) {
+        const cmdCwd = typeof this.cwd !== 'undefined' ? `\nCommand cwd:${this.cwd}` : '';
+        return isVerbose
+            ? `External tool '${this.cmdShortName}'\nCommand full path: ${this.cmd}\nCommand args: ${this.args}${cmdCwd}`
+            : this.cmdShortName;
+    }
+}
 
 module.exports = CordovaExternalToolErrorContext;
