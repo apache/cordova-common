@@ -25,12 +25,14 @@ exports.deep_add = function deep_add (obj, keys /* or key1, key2 .... */) {
 
     return process_munge(obj, true/* createParents */, (parentArray, k) => {
         const found = _.find(parentArray, element => element.xml === k.xml);
+
         if (found) {
             found.after = found.after || k.after;
             found.count += k.count;
         } else {
             parentArray.push(k);
         }
+
         return !found;
     }, keys);
 };
@@ -144,6 +146,4 @@ function mungeItems (base, munge, mungeOperation) {
 }
 
 // For better readability where used
-exports.clone_munge = function clone_munge (munge) {
-    return exports.increment_munge({}, munge);
-};
+exports.clone_munge = munge => exports.increment_munge({}, munge);
