@@ -109,7 +109,19 @@ function process_munge (obj, createParents, func, keys /* or key1, key2 .... */)
 // base[file][selector][child] += munge[file][selector][child]
 // Returns a munge object containing values that exist in munge
 // but not in base.
-exports.increment_munge = function increment_munge (base, munge) {
+exports.increment_munge = (base, munge) => {
+    return mungeItems(base, munge, exports.deep_add);
+};
+
+// Update the base munge object as
+// base[file][selector][child] -= munge[file][selector][child]
+// nodes that reached zero value are removed from base and added to the returned munge
+// object.
+exports.decrement_munge = (base, munge) => {
+    return mungeItems(base, munge, exports.deep_remove);
+};
+
+function mungeItems (base, munge, mungeOperation) {
     const diff = { files: {} };
 
     for (const file in munge.files) {
@@ -118,38 +130,18 @@ exports.increment_munge = function increment_munge (base, munge) {
                 const val = munge.files[file].parents[selector][xml_child];
                 // if node not in base, add it to diff and base
                 // else increment it's value in base without adding to diff
-                const newlyAdded = exports.deep_add(base, [file, selector, val]);
-                if (newlyAdded) {
+
+                const hasChanges = mungeOperation(base, [file, selector, element]);
+
+                if (hasChanges) {
                     exports.deep_add(diff, file, selector, val);
                 }
             }
         }
     }
+
     return diff;
-};
-
-// Update the base munge object as
-// base[file][selector][child] -= munge[file][selector][child]
-// nodes that reached zero value are removed from base and added to the returned munge
-// object.
-exports.decrement_munge = function decrement_munge (base, munge) {
-    const zeroed = { files: {} };
-
-    for (const file in munge.files) {
-        for (const selector in munge.files[file].parents) {
-            for (const xml_child in munge.files[file].parents[selector]) {
-                const val = munge.files[file].parents[selector][xml_child];
-                // if node not in base, add it to diff and base
-                // else increment it's value in base without adding to diff
-                const removed = exports.deep_remove(base, [file, selector, val]);
-                if (removed) {
-                    exports.deep_add(zeroed, file, selector, val);
-                }
-            }
-        }
-    }
-    return zeroed;
-};
+}
 
 // For better readability where used
 exports.clone_munge = function clone_munge (munge) {
