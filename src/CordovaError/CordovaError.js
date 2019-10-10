@@ -28,64 +28,62 @@ var EOL = require('os').EOL;
  * @param {CordovaExternalToolErrorContext} [context] External tool error context object
  * @constructor
  */
-function CordovaError (message, code, context) {
-    Error.captureStackTrace(this, this.constructor);
-    this.name = this.constructor.name;
-    this.message = message;
-    this.code = code || CordovaError.UNKNOWN_ERROR;
-    this.context = context;
-}
+class CordovaError extends Error {
+    constructor (message, code, context) {
+        super(message);
+        Error.captureStackTrace(this, this.constructor);
+        this.name = this.constructor.name;
+        this.code = code || CordovaError.UNKNOWN_ERROR;
+        this.context = context;
+    }
 
-// FIXME __proto__ property has been deprecated as of ECMAScript 3.1
-// eslint-disable-next-line no-proto
-CordovaError.prototype.__proto__ = Error.prototype;
+    /**
+     * Translates instance's error code number into error code name, e.g. 0 -> UNKNOWN_ERROR
+     * @returns {string} Error code string name
+     */
+    getErrorCodeName () {
+        for (const key of Object.keys(CordovaError)) {
+            if (CordovaError[key] === this.code) {
+                return key;
+            }
+        }
+    }
+
+    /**
+     * Converts CordovaError instance to string representation
+     * @param   {Boolean}  [isVerbose]  Set up verbose mode. Used to provide more
+     *   details including information about error code name and context
+     * @return  {String}              Stringified error representation
+     */
+    toString (isVerbose) {
+        var message = '';
+        var codePrefix = '';
+
+        if (this.code !== CordovaError.UNKNOWN_ERROR) {
+            codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
+        }
+
+        if (this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
+            if (typeof this.context !== 'undefined') {
+                if (isVerbose) {
+                    message = codePrefix + EOL + this.context.toString(isVerbose) + '\n failed with an error: ' +
+                        this.message + EOL + 'Stack trace: ' + this.stack;
+                } else {
+                    message = codePrefix + '\'' + this.context.toString(isVerbose) + '\' ' + this.message;
+                }
+            } else {
+                message = 'External tool failed with an error: ' + this.message;
+            }
+        } else {
+            message = isVerbose ? codePrefix + this.stack : codePrefix + this.message;
+        }
+
+        return message;
+    }
+}
 
 // TODO: Extend error codes according the projects specifics
 CordovaError.UNKNOWN_ERROR = 0;
 CordovaError.EXTERNAL_TOOL_ERROR = 1;
-
-/**
- * Translates instance's error code number into error code name, e.g. 0 -> UNKNOWN_ERROR
- * @returns {string} Error code string name
- */
-CordovaError.prototype.getErrorCodeName = function () {
-    for (const key of Object.keys(CordovaError)) {
-        if (CordovaError[key] === this.code) {
-            return key;
-        }
-    }
-};
-
-/**
- * Converts CordovaError instance to string representation
- * @param   {Boolean}  [isVerbose]  Set up verbose mode. Used to provide more
- *   details including information about error code name and context
- * @return  {String}              Stringified error representation
- */
-CordovaError.prototype.toString = function (isVerbose) {
-    var message = '';
-    var codePrefix = '';
-
-    if (this.code !== CordovaError.UNKNOWN_ERROR) {
-        codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
-    }
-
-    if (this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
-        if (typeof this.context !== 'undefined') {
-            if (isVerbose) {
-                message = codePrefix + EOL + this.context.toString(isVerbose) + '\n failed with an error: ' +
-                    this.message + EOL + 'Stack trace: ' + this.stack;
-            } else {
-                message = codePrefix + '\'' + this.context.toString(isVerbose) + '\' ' + this.message;
-            }
-        } else {
-            message = 'External tool failed with an error: ' + this.message;
-        }
-    } else {
-        message = isVerbose ? codePrefix + this.stack : codePrefix + this.message;
-    }
-
-    return message;
-};
 
 module.exports = CordovaError;
