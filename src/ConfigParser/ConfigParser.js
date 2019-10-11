@@ -27,6 +27,7 @@ const events = require('../events');
 class ConfigParser {
     constructor (path) {
         this.path = path;
+
         try {
             this.doc = xml.parseElementtreeSync(path);
             this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
@@ -35,9 +36,10 @@ class ConfigParser {
             events.emit('error', `Parsing ${path} failed`);
             throw e;
         }
-        const r = this.doc.getroot();
-        if (r.tag !== 'widget') {
-            throw new CordovaError(`${path} has incorrect root node name (expected "widget", was "${r.tag}")`);
+
+        const root = this.doc.getroot();
+        if (root.tag !== 'widget') {
+            throw new CordovaError(`${path} has incorrect root node name (expected "widget", was "${root.tag}")`);
         }
     }
 
@@ -334,19 +336,17 @@ class ConfigParser {
         const plugins = this.doc.findall('plugin');
         const result = plugins.map(plugin => plugin.attrib.name);
         const features = this.doc.findall('feature');
+
         features.forEach(element => {
             const idTag = element.find('./param[@name="id"]');
-            if (idTag) {
-                result.push(idTag.attrib.value);
-            }
+            if (idTag) result.push(idTag.attrib.value);
         });
+
         return result;
     }
 
     getPlugins () {
-        return this.getPluginIdList().map(function (pluginId) {
-            return this.getPlugin(pluginId);
-        }, this);
+        return this.getPluginIdList().map(pluginId => this.getPlugin(pluginId));
     }
 
     /**
@@ -427,6 +427,7 @@ class ConfigParser {
      */
     removePlugin (id) {
         if (!id) return;
+
         const root = this.doc.getroot();
         removeChildren(root, `./plugin/[@name="${id}"]`);
         removeChildren(root, `./feature/param[@name="id"][@value="${id}"]/..`);
@@ -435,9 +436,11 @@ class ConfigParser {
     // Add any element to the root
     addElement (name, attributes) {
         const el = et.Element(name);
+
         for (const a in attributes) {
             el.attrib[a] = attributes[a];
         }
+
         this.doc.getroot().append(el);
     }
 
@@ -448,11 +451,14 @@ class ConfigParser {
      */
     addEngine (name, spec) {
         if (!name) return;
+
         const el = et.Element('engine');
         el.attrib.name = name;
+
         if (spec) {
             el.attrib.spec = spec;
         }
+
         this.doc.getroot().append(el);
     }
 
@@ -572,10 +578,12 @@ function getNodeTextSafe (el) {
 
 function findOrCreate (doc, name) {
     let ret = doc.find(name);
+
     if (!ret) {
         ret = new et.Element(name);
         doc.getroot().append(ret);
     }
+
     return ret;
 }
 
@@ -611,9 +619,9 @@ function findElementAttributeValue (attributeName, elems) {
     return value || '';
 }
 
+// remove child from element for each match
 function removeChildren (el, selector) {
-    const matches = el.findall(selector);
-    matches.forEach(child => el.remove(child));
+    el.findall(selector).forEach(child => el.remove(child));
 }
 
 function featureToPlugin (featureElement) {
@@ -625,6 +633,7 @@ function featureToPlugin (featureElement) {
     nodes.forEach(element => {
         const n = element.attrib.name;
         const v = element.attrib.value;
+
         if (n === 'id') {
             plugin.name = v;
         } else if (n === 'version') {
