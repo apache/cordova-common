@@ -21,6 +21,7 @@ var fs = require('fs-extra');
 var path = require('path');
 var PluginInfo = require('./PluginInfo');
 var events = require('../events');
+const glob = require('glob');
 
 function PluginInfoProvider () {
     this._cache = {};
@@ -62,19 +63,21 @@ function getAllHelper (absPath, provider) {
     if (fs.existsSync(path.join(absPath, 'plugin.xml'))) {
         return [provider.get(absPath)];
     }
-    var subdirs = fs.readdirSync(absPath);
-    var plugins = [];
-    subdirs.forEach(function (subdir) {
-        var d = path.join(absPath, subdir);
-        if (fs.existsSync(path.join(d, 'plugin.xml'))) {
-            try {
-                plugins.push(provider.get(d));
-            } catch (e) {
-                events.emit('warn', 'Error parsing ' + path.join(d, 'plugin.xml.\n' + e.stack));
-            }
-        }
+
+    // Match normal and scoped plugins
+    const pluginXmlPaths = glob.sync('{,@*/}*/plugin.xml', {
+        cwd: absPath,
+        nodir: true,
+        absolute: true
     });
-    return plugins;
+
+    return pluginXmlPaths.map(pluginXmlPath => {
+        try {
+            return provider.get(path.dirname(pluginXmlPath));
+        } catch (err) {
+            events.emit('warn', `Error parsing ${pluginXmlPath}:\n${err.stack}`);
+        }
+    }).filter(p => p);
 }
 
 module.exports = PluginInfoProvider;
