@@ -17,8 +17,6 @@
     under the License.
 */
 
-/* jshint quotmark:false */
-
 var events = require('./events');
 var Q = require('q');
 

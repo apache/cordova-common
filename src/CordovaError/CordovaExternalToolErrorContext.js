@@ -17,8 +17,6 @@
  under the License.
  */
 
-/* jshint proto:true */
-
 var path = require('path');
 
 /**
