@@ -13,7 +13,6 @@
  * under the License.
  *
 */
-/* jshint sub:true  */
 
 var _ = require('underscore');
 

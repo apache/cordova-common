@@ -17,8 +17,6 @@
     under the License.
 */
 
-/* jshint sub:true, laxcomma:true, laxbreak:true */
-
 var fs = require('fs-extra');
 var path = require('path');
 var PluginInfo = require('./PluginInfo');
