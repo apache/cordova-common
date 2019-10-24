@@ -28,6 +28,10 @@ describe('PluginInfoProvider', function () {
             var pluginInfoProvider = new PluginInfoProvider();
             var plugins = pluginInfoProvider.getAllWithinSearchPath(pluginsDir);
             expect(plugins.length).not.toBe(0);
+            expect(plugins).toContain(jasmine.objectContaining({
+                id: 'org.test.scoped',
+                dir: path.join(pluginsDir, '@scope/test')
+            }));
         });
     });
 });
