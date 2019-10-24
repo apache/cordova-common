@@ -69,7 +69,7 @@ function getAllHelper (absPath, provider) {
         cwd: absPath,
         nodir: true,
         absolute: true
-    });
+    }).map(path.normalize);
 
     return pluginXmlPaths.map(pluginXmlPath => {
         try {
