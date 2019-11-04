@@ -42,11 +42,8 @@ class CordovaError extends Error {
      * @returns {string} Error code string name
      */
     getErrorCodeName () {
-        for (const key of Object.keys(CordovaError)) {
-            if (CordovaError[key] === this.code) {
-                return key;
-            }
-        }
+        return Object.keys(CordovaError)
+            .find(key => CordovaError[key] === this.code);
     }
 
     /**
