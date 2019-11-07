@@ -17,17 +17,16 @@
 var fs = require('fs-extra');
 var path = require('path');
 
-var modules = {};
-var addProperty = require('../util/addProperty');
-
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
-addProperty(module, 'bplist', 'bplist-parser', modules);
-addProperty(module, 'et', 'elementtree', modules);
-addProperty(module, 'glob', 'glob', modules);
-addProperty(module, 'plist', 'plist', modules);
-addProperty(module, 'plist_helpers', '../util/plist-helpers', modules);
-addProperty(module, 'xml_helpers', '../util/xml-helpers', modules);
+const modules = {
+    get bplist () { return require('bplist-parser'); },
+    get et () { return require('elementtree'); },
+    get glob () { return require('glob'); },
+    get plist () { return require('plist'); },
+    get plist_helpers () { return require('../util/plist-helpers'); },
+    get xml_helpers () { return require('../util/xml-helpers'); }
+};
 
 /******************************************************************************
 * ConfigFile class
