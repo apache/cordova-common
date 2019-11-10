@@ -17,10 +17,10 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "test": "npm run eslint && npm run jasmine",
+    "test": "npm run eslint && npm run test:unit",
+    "test:unit": "jasmine \"spec/**/*.spec.js\"",
     "eslint": "eslint src spec",
-    "jasmine": "jasmine JASMINE_CONFIG_PATH=spec/support/jasmine.json",
-    "cover": "nyc npm run jasmine"
+    "cover": "nyc npm run test:unit"
   },
   "dependencies": {
     "ansi": "^0.3.1",
@@ -44,7 +44,7 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.0",
     "eslint-plugin-standard": "^4.0.0",
-    "jasmine": "^3.4.0",
+    "jasmine": "^3.5.0",
     "jasmine-spec-reporter": "^4.2.1",
     "nyc": "^14.1.1",
     "rewire": "^4.0.1"
