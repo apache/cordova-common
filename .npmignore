@@ -2,4 +2,3 @@
 appveyor.yml
 spec
 coverage
-.nyc_output
