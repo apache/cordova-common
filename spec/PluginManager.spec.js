@@ -17,9 +17,6 @@
     under the License.
 */
 
-// Promise-matchers do not work with jasmine 2.0.
-// require('promise-matchers');
-
 var Q = require('q');
 var fs = require('fs-extra');
 var path = require('path');

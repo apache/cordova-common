@@ -20,7 +20,7 @@
 var configChanges = require('../../src/ConfigChanges/ConfigChanges');
 var xml_helpers = require('../../src/util/xml-helpers');
 var fs = require('fs-extra');
-var os = require('osenv');
+var os = require('os');
 var et = require('elementtree');
 var path = require('path');
 var temp = path.join(os.tmpdir(), 'plugman');
