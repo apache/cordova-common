@@ -20,7 +20,7 @@
     "test": "npm run eslint && npm run test:unit",
     "test:unit": "jasmine \"spec/**/*.spec.js\"",
     "eslint": "eslint src spec",
-    "test:coverage": "nyc npm run test:unit"
+    "cover": "nyc npm run test:unit"
   },
   "dependencies": {
     "ansi": "^0.3.1",
