@@ -1,2 +1,4 @@
+.*
+appveyor.yml
 spec
 coverage
