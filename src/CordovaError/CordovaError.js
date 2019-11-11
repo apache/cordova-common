@@ -17,7 +17,7 @@
     under the License.
 */
 
-var EOL = require('os').EOL;
+const EOL = require('os').EOL;
 
 /**
  * A derived exception class. See usage example in cli.js
@@ -53,8 +53,8 @@ class CordovaError extends Error {
      * @return  {String}              Stringified error representation
      */
     toString (isVerbose) {
-        var message = '';
-        var codePrefix = '';
+        let message = '';
+        let codePrefix = '';
 
         if (this.code !== CordovaError.UNKNOWN_ERROR) {
             codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
