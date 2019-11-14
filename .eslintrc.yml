@@ -1,2 +1,7 @@
 root: true
 extends: '@cordova/eslint-config/node'
+
+rules:
+  no-unused-vars:
+    - error
+    - args: after-used
