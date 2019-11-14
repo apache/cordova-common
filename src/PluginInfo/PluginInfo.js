@@ -101,14 +101,13 @@ function PluginInfo (dirname) {
     }
 
     function _parseDependency (tag) {
-        var dep =
-            {
-                id: tag.attrib.id,
-                version: tag.attrib.version || '',
-                url: tag.attrib.url || '',
-                subdir: tag.attrib.subdir || '',
-                commit: tag.attrib.commit
-            };
+        var dep = {
+            id: tag.attrib.id,
+            version: tag.attrib.version || '',
+            url: tag.attrib.url || '',
+            subdir: tag.attrib.subdir || '',
+            commit: tag.attrib.commit
+        };
 
         dep.git_ref = dep.commit;
 
