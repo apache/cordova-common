@@ -562,14 +562,13 @@ ConfigParser.prototype = {
         var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
         return edit_configs.map(function (tag) {
-            var editConfig =
-                {
-                    file: tag.attrib.file,
-                    target: tag.attrib.target,
-                    mode: tag.attrib.mode,
-                    id: 'config.xml',
-                    xmls: tag.getchildren()
-                };
+            var editConfig = {
+                file: tag.attrib.file,
+                target: tag.attrib.target,
+                mode: tag.attrib.mode,
+                id: 'config.xml',
+                xmls: tag.getchildren()
+            };
             return editConfig;
         });
     },
@@ -580,16 +579,15 @@ ConfigParser.prototype = {
         var config_files = this.doc.findall('config-file').concat(platform_config_files);
 
         return config_files.map(function (tag) {
-            var configFile =
-                {
-                    target: tag.attrib.target,
-                    parent: tag.attrib.parent,
-                    after: tag.attrib.after,
-                    xmls: tag.getchildren(),
-                    // To support demuxing via versions
-                    versions: tag.attrib.versions,
-                    deviceTarget: tag.attrib['device-target']
-                };
+            var configFile = {
+                target: tag.attrib.target,
+                parent: tag.attrib.parent,
+                after: tag.attrib.after,
+                xmls: tag.getchildren(),
+                // To support demuxing via versions
+                versions: tag.attrib.versions,
+                deviceTarget: tag.attrib['device-target']
+            };
             return configFile;
         });
     },
