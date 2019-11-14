@@ -5,3 +5,5 @@ rules:
   no-unused-vars:
     - error
     - args: after-used
+      vars: all
+      ignoreRestSiblings: true
