@@ -99,7 +99,7 @@ ConfigParser.prototype = {
         return this.getAttribute('id');
     },
     setPackageName: function (id) {
-        this.doc.getroot().attrib['id'] = id;
+        this.doc.getroot().attrib.id = id;
     },
     android_packageName: function () {
         return this.getAttribute('android-packageName');
@@ -118,14 +118,14 @@ ConfigParser.prototype = {
         el.text = name;
     },
     shortName: function () {
-        return this.doc.find('name').attrib['short'] || this.name();
+        return this.doc.find('name').attrib.short || this.name();
     },
     setShortName: function (shortname) {
         var el = findOrCreate(this.doc, 'name');
         if (!el.text) {
             el.text = shortname;
         }
-        el.attrib['short'] = shortname;
+        el.attrib.short = shortname;
     },
     description: function () {
         return getNodeTextSafe(this.doc.find('description'));
@@ -147,7 +147,7 @@ ConfigParser.prototype = {
         return this.getAttribute('ios-CFBundleVersion');
     },
     setVersion: function (value) {
-        this.doc.getroot().attrib['version'] = value;
+        this.doc.getroot().attrib.version = value;
     },
     author: function () {
         return getNodeTextSafe(this.doc.find('author'));
@@ -229,7 +229,7 @@ ConfigParser.prototype = {
             var res = {};
             res.src = elt.attrib.src;
             res.target = elt.attrib.target || undefined;
-            res.density = elt.attrib['density'] || elt.attrib[that.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
+            res.density = elt.attrib.density || elt.attrib[that.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
             res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
             res.width = +elt.attrib.width || undefined;
             res.height = +elt.attrib.height || undefined;
@@ -562,14 +562,13 @@ ConfigParser.prototype = {
         var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
         return edit_configs.map(function (tag) {
-            var editConfig =
-                {
-                    file: tag.attrib['file'],
-                    target: tag.attrib['target'],
-                    mode: tag.attrib['mode'],
-                    id: 'config.xml',
-                    xmls: tag.getchildren()
-                };
+            var editConfig = {
+                file: tag.attrib.file,
+                target: tag.attrib.target,
+                mode: tag.attrib.mode,
+                id: 'config.xml',
+                xmls: tag.getchildren()
+            };
             return editConfig;
         });
     },
@@ -580,16 +579,15 @@ ConfigParser.prototype = {
         var config_files = this.doc.findall('config-file').concat(platform_config_files);
 
         return config_files.map(function (tag) {
-            var configFile =
-                {
-                    target: tag.attrib['target'],
-                    parent: tag.attrib['parent'],
-                    after: tag.attrib['after'],
-                    xmls: tag.getchildren(),
-                    // To support demuxing via versions
-                    versions: tag.attrib['versions'],
-                    deviceTarget: tag.attrib['device-target']
-                };
+            var configFile = {
+                target: tag.attrib.target,
+                parent: tag.attrib.parent,
+                after: tag.attrib.after,
+                xmls: tag.getchildren(),
+                // To support demuxing via versions
+                versions: tag.attrib.versions,
+                deviceTarget: tag.attrib['device-target']
+            };
             return configFile;
         });
     },

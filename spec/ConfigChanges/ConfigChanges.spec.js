@@ -476,7 +476,7 @@ describe('config-changes module', function () {
 
                 expect(platformJson.root.prepare_queue.installed.length).toEqual(0);
                 expect(platformJson.root.installed_plugins['com.adobe.vars']).toBeDefined();
-                expect(platformJson.root.installed_plugins['com.adobe.vars']['API_KEY']).toEqual('hi');
+                expect(platformJson.root.installed_plugins['com.adobe.vars'].API_KEY).toEqual('hi');
             });
         });
 
@@ -517,7 +517,7 @@ describe('config-changes module', function () {
                 var munge_params = spy.calls.argsFor(0);
                 expect(munge_params[0]).toEqual(jasmine.any(PluginInfo));
                 expect(munge_params[0].dir).toEqual(path.join(plugins_dir, 'com.adobe.vars'));
-                expect(munge_params[1]['API_KEY']).toEqual('canucks');
+                expect(munge_params[1].API_KEY).toEqual('canucks');
             });
             it('Test 029 : should not call pruneXML for a config munge that another plugin depends on', function () {
                 fs.copySync(android_two_no_perms_project, temp);

@@ -1,6 +1,5 @@
-env:
-    jasmine: true
+root: true
+extends: '@cordova/eslint-config/node-tests'
 
-# Not covered by jasmine env as of writing
 globals:
-    expectAsync: false
+  expectAsync: false
