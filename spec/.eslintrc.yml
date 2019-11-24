@@ -1,5 +1,2 @@
 root: true
 extends: '@cordova/eslint-config/node-tests'
-
-globals:
-  expectAsync: false
