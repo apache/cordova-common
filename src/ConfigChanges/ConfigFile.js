@@ -227,10 +227,8 @@ function resolveConfigFilePath (project_dir, platform, file) {
 // TODO: glob is slow, need a better way or caching, or avoid using more than once.
 function getIOSProjectname (project_dir) {
     const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir });
-    let iospath;
-    if (matches.length === 1) {
-        iospath = path.basename(matches[0], '.xcodeproj');
-    } else {
+
+    if (matches.length !== 1) {
         const msg = matches.length === 0
             ? 'Does not appear to be an xcode project, no xcode project file'
             : 'There are multiple *.xcodeproj dirs';
@@ -238,7 +236,7 @@ function getIOSProjectname (project_dir) {
         throw new Error(`${msg} in ${project_dir}`);
     }
 
-    return iospath;
+    return path.basename(matches[0], '.xcodeproj');
 }
 
 // determine if a plist file is binary
