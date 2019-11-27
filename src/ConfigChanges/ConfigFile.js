@@ -211,9 +211,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
     // be resolved to the real location of the file.
     // TODO: Move this out of cordova-common into platforms
     if (file === 'config.xml') {
-        if (platform === 'ubuntu') {
-            filepath = path.join(project_dir, 'config.xml');
-        } else if (platform === 'ios' || platform === 'osx') {
+        if (platform === 'ios' || platform === 'osx') {
             filepath = path.join(
                 project_dir,
                 module.exports.getIOSProjectname(project_dir),

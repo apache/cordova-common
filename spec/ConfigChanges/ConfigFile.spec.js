@@ -78,11 +78,6 @@ describe('ConfigFile tests', function () {
     });
 
     it('resolveConfigFilePath should return file path', function () {
-        var configPath = path.join('project_dir', 'config.xml');
-        expect(configFile.resolveConfigFilePath('project_dir', 'ubuntu', 'config.xml')).toBe(configPath);
-    });
-
-    it('resolveConfigFilePath should return file path', function () {
         var file = path.join('res', 'xml');
         var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
         expect(configFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
