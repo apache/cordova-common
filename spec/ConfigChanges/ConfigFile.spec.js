@@ -19,7 +19,6 @@ var rewire = require('rewire');
 var configFile = rewire('../../src/ConfigChanges/ConfigFile');
 var fs = require('fs-extra');
 var path = require('path');
-var projectDir = path.join('project_dir', 'app', 'src', 'main');
 
 describe('ConfigFile tests', function () {
     describe('instance methods', () => {
@@ -52,6 +51,8 @@ describe('ConfigFile tests', function () {
         });
 
         describe('resolveConfigFilePath', () => {
+            const projectDir = path.join('project_dir', 'app', 'src', 'main');
+
             it('should return file path', function () {
                 var filePath = path.join('project_dir', 'file');
                 expect(configFile.resolveConfigFilePath('project_dir', 'platform', 'file')).toBe(filePath);
