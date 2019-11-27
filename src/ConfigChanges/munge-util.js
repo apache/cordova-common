@@ -14,8 +14,39 @@
  *
 */
 
-// add the count of [key1][key2]...[keyN] to obj
-// return true if it didn't exist before
+// @ts-check
+
+/**
+ * @typedef {Object} MungeElement
+ * @property {String} xml
+ * @property {Number} count
+ * @property {import('elementtree').Attributes} [oldAttrib]
+ *
+ * @property {'merge' | 'overwrite' | 'remove'} [mode] edit-config only
+ *
+ * @property {String} [id] 'config.xml' or the id of the plugin from whose
+ * plugin.xml this was taken; edit-config only
+ * @property {String} [after] a ;-separated priority list of tags after which
+ * the insertion should be made. E.g. if we need to insert an element C, and the
+ * order of children has to be As, Bs, Cs then `after` will be equal to "C;B;A".
+ * config-file only
+ */
+
+/**
+ * @typedef {Object} FileMunge
+ * @property {Object.<string, MungeElement[]>} parents
+ */
+
+/**
+ * @typedef {Object} Munge
+ * @property {Object.<string, FileMunge>} files
+ */
+
+/**
+ * Adds element.count to obj[file][selector][element]
+ *
+ * @return {Boolean} true iff it didn't exist before
+ */
 exports.deep_add = (...args) => {
     const { element, siblings } = processArgs(...args, { create: true });
     const matchingSibling = siblings.find(sibling => sibling.xml === element.xml);
@@ -30,8 +61,11 @@ exports.deep_add = (...args) => {
     return !matchingSibling;
 };
 
-// decrement the count of [key1][key2]...[keyN] from obj and remove if it reaches 0
-// return true if it was removed or not found
+/**
+ * Subtracts element.count from obj[file][selector][element]
+ *
+ * @return {Boolean} true iff element was removed or not found
+ */
 exports.deep_remove = (...args) => {
     const { element, siblings } = processArgs(...args);
     const index = siblings.findIndex(sibling => sibling.xml === element.xml);
@@ -51,8 +85,11 @@ exports.deep_remove = (...args) => {
     return true;
 };
 
-// search for [key1][key2]...[keyN]
-// return the object or undefined if not found
+/**
+ * Find element with given key in obj
+ *
+ * @return {MungeElement} the sought-after object or undefined if not found
+ */
 exports.deep_find = (...args) => {
     const { element, siblings } = processArgs(...args);
 
@@ -70,8 +107,16 @@ function processArgs (obj, fileName, selector, element, opts) {
     return { element, siblings };
 }
 
-// Get the element array for given keys
-// If a key entry is missing, create it if opts.create is true else return []
+/**
+ * Get the element array for given keys
+ *
+ * If a key entry is missing, create it if opts.create is true else return []
+ *
+ * @param {Munge} obj
+ * @param {String[]} keys [fileName, selector]
+ * @param {{create: Boolean}} [opts]
+ * @return {MungeElement[]}
+ */
 function getElements ({ files }, [fileName, selector], opts = { create: false }) {
     if (!files[fileName] && !opts.create) return [];
 
@@ -81,22 +126,42 @@ function getElements ({ files }, [fileName, selector], opts = { create: false })
     return (fileChanges[selector] = fileChanges[selector] || []);
 }
 
-// All values from munge are added to base as
-// base[file][selector][child] += munge[file][selector][child]
-// Returns a munge object containing values that exist in munge
-// but not in base.
+/**
+ * All values from munge are added to base as
+ *   base[file][selector][child] += munge[file][selector][child]
+ *
+ * @param {Munge} base
+ * @param {Munge} munge
+ * @return {Munge} A munge object containing values that exist in munge but not
+ * in base.
+ */
 exports.increment_munge = (base, munge) => {
     return mungeItems(base, munge, exports.deep_add);
 };
 
-// Update the base munge object as
-// base[file][selector][child] -= munge[file][selector][child]
-// nodes that reached zero value are removed from base and added to the returned munge
-// object.
+/**
+ * Update the base munge object as
+ *   base[file][selector][child] -= munge[file][selector][child]
+ *
+ * @param {Munge} base
+ * @param {Munge} munge
+ * @return {Munge} nodes that reached zero value are removed from base and added
+ * to the returned munge object
+ */
 exports.decrement_munge = (base, munge) => {
     return mungeItems(base, munge, exports.deep_remove);
 };
 
+/**
+ * For every key [file, selector, element] in munge run mungeOperation on base.
+ *
+ * @param {Munge} base
+ * @param {Munge} munge
+ * @param {typeof exports.deep_add} mungeOperation - TODO how can I constrain
+ * that to an enum of functions
+ * @return {Munge} - the union of all changes for which mungeOperation returned
+ * true
+ */
 function mungeItems (base, { files }, mungeOperation) {
     const diff = { files: {} };
 
@@ -115,5 +180,10 @@ function mungeItems (base, { files }, mungeOperation) {
     return diff;
 }
 
-// For better readability where used
-exports.clone_munge = munge => exports.increment_munge({}, munge);
+/**
+ * Clones given munge
+ *
+ * @param {Munge} munge
+ * @return {Munge} clone of munge
+ */
+exports.clone_munge = munge => exports.increment_munge({ files: {} }, munge);
