@@ -226,7 +226,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
 // Find out the real name of an iOS or OSX project
 // TODO: glob is slow, need a better way or caching, or avoid using more than once.
 function getIOSProjectname (project_dir) {
-    const matches = modules.glob.sync(path.join(project_dir, '*.xcodeproj'));
+    const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir });
     let iospath;
     if (matches.length === 1) {
         iospath = path.basename(matches[0], '.xcodeproj');
