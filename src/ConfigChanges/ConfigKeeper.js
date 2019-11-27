@@ -31,7 +31,7 @@ class ConfigKeeper {
     constructor (project_dir, plugins_dir) {
         this.project_dir = project_dir;
         this.plugins_dir = plugins_dir;
-        this._cached = {};
+        this._cache = new Map();
     }
 
     get (project_dir, platform, file) {
@@ -43,20 +43,19 @@ class ConfigKeeper {
 
         const fake_path = path.join(project_dir, platform, file);
 
-        if (this._cached[fake_path]) {
-            return this._cached[fake_path];
+        if (this._cache.has(fake_path)) {
+            return this._cache.get(fake_path);
         }
 
         // File was not cached, need to load.
         const config_file = new ConfigFile(project_dir, platform, file);
-        this._cached[fake_path] = config_file;
+        this._cache.set(fake_path, config_file);
 
         return config_file;
     }
 
     save_all () {
-        Object.keys(this._cached).forEach(fake_path => {
-            const config_file = this._cached[fake_path];
+        this._cache.forEach(config_file => {
             if (config_file.is_changed) config_file.save();
         });
     }
