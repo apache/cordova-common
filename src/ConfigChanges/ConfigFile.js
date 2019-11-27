@@ -16,6 +16,7 @@
 
 const fs = require('fs-extra');
 const path = require('path');
+const readChunk = require('read-chunk');
 
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
@@ -240,12 +241,9 @@ function getIOSProjectname (project_dir) {
 }
 
 // determine if a plist file is binary
+// i.e. they start with the magic header "bplist"
 function isBinaryPlist (filename) {
-    // I wish there was a synchronous way to read only the first 6 bytes of a
-    // file. This is wasteful :/
-    const buf = '' + fs.readFileSync(filename, 'utf8');
-    // binary plists start with a magic header, "bplist"
-    return buf.substring(0, 6) === 'bplist';
+    return readChunk.sync(filename, 0, 6).toString() === 'bplist';
 }
 
 module.exports = ConfigFile;
