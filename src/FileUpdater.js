@@ -59,10 +59,10 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
 
     const rootDir = (options && options.rootDir) || '';
     const copyAll = (options && options.all) || false;
-    const targetFullPath = path.join(rootDir || '', targetPath);
+    const targetFullPath = path.join(rootDir, targetPath);
 
     if (sourceStats) {
-        const sourceFullPath = path.join(rootDir || '', sourcePath);
+        const sourceFullPath = path.join(rootDir, sourcePath);
 
         if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
             // The target exists. But if the directory status doesn't match the source, delete it.
