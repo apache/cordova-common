@@ -275,12 +275,10 @@ class PlatformMunger {
                 // 1. stringify each xml
                 let stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
                 // interp vars
-                if (vars) {
-                    Object.keys(vars).forEach(key => {
-                        const regExp = new RegExp(`\\$${key}`, 'g');
-                        stringified = stringified.replace(regExp, vars[key]);
-                    });
-                }
+                Object.keys(vars).forEach(key => {
+                    const regExp = new RegExp(`\\$${key}`, 'g');
+                    stringified = stringified.replace(regExp, vars[key]);
+                });
                 // 2. add into munge
                 if (change.mode) {
                     if (change.mode !== 'remove') {
