@@ -37,7 +37,6 @@ module.exports = {
     get ConfigChanges () { return require('./src/ConfigChanges/ConfigChanges'); },
     get ConfigKeeper () { return require('./src/ConfigChanges/ConfigKeeper'); },
     get ConfigFile () { return require('./src/ConfigChanges/ConfigFile'); },
-    get mungeUtil () { return require('./src/ConfigChanges/munge-util'); },
 
     get xmlHelpers () { return require('./src/util/xml-helpers'); }
 };
