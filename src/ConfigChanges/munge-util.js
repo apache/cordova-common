@@ -19,46 +19,47 @@ const _ = require('underscore');
 // add the count of [key1][key2]...[keyN] to obj
 // return true if it didn't exist before
 exports.deep_add = (...args) => {
-    const { element: k, siblings: parentArray } = processArgs(...args, { create: true });
-    const found = _.find(parentArray, element => element.xml === k.xml);
+    const { element, siblings } = processArgs(...args, { create: true });
+    const matchingSibling = _.find(siblings, sibling => sibling.xml === element.xml);
 
-    if (found) {
-        found.after = found.after || k.after;
-        found.count += k.count;
+    if (matchingSibling) {
+        matchingSibling.after = matchingSibling.after || element.after;
+        matchingSibling.count += element.count;
     } else {
-        parentArray.push(k);
+        siblings.push(element);
     }
 
-    return !found;
+    return !matchingSibling;
 };
 
 // decrement the count of [key1][key2]...[keyN] from obj and remove if it reaches 0
 // return true if it was removed or not found
 exports.deep_remove = (...args) => {
-    const { element: k, siblings: parentArray } = processArgs(...args);
-    const index = _.findIndex(parentArray, element => element.xml === k.xml);
+    const { element, siblings } = processArgs(...args);
+    const index = _.findIndex(siblings, sibling => sibling.xml === element.xml);
 
     if (index < 0) return true;
 
-    const found = parentArray[index];
+    const matchingSibling = siblings[index];
 
-    if (found.oldAttrib) {
-        k.oldAttrib = _.extend({}, found.oldAttrib);
+    if (matchingSibling.oldAttrib) {
+        element.oldAttrib = _.extend({}, matchingSibling.oldAttrib);
     }
-    found.count -= k.count;
+    matchingSibling.count -= element.count;
 
-    if (found.count > 0) return false;
+    if (matchingSibling.count > 0) return false;
 
-    parentArray.splice(index, 1);
+    siblings.splice(index, 1);
     return true;
 };
 
 // search for [key1][key2]...[keyN]
 // return the object or undefined if not found
 exports.deep_find = (...args) => {
-    const { element: k, siblings: parentArray } = processArgs(...args);
+    const { element, siblings } = processArgs(...args);
 
-    return _.find(parentArray, element => element.xml === (k.xml || k));
+    const elementXml = (element.xml || element);
+    return _.find(siblings, sibling => sibling.xml === elementXml);
 };
 
 function processArgs (obj, fileName, selector, element, opts) {
