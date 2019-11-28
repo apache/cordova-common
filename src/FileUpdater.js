@@ -116,7 +116,6 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
 
 /**
  * Helper for updatePath and updatePaths functions. Queries stats for source and target
- * and ensures target directory exists before copying a file.
  */
 function updatePathInternal (sourcePath, targetPath, options, log) {
     const rootDir = (options && options.rootDir) || '';
@@ -132,12 +131,6 @@ function updatePathInternal (sourcePath, targetPath, options, log) {
         }
 
         sourceStats = fs.statSync(sourceFullPath);
-
-        // Create the target's parent directory if it doesn't exist.
-        const parentDir = path.dirname(targetFullPath);
-        if (!fs.existsSync(parentDir)) {
-            fs.ensureDirSync(parentDir);
-        }
     }
 
     return updatePathWithStats(sourcePath, sourceStats, targetPath, targetStats, options, log);
@@ -203,7 +196,7 @@ function updatePaths (pathMap, options, log) {
 
     let updated = false;
 
-    // Iterate in sorted order to ensure directories are created before files under them.
+    // Iterate in sorted order for nicer logs
     Object.keys(pathMap).sort().forEach(targetPath => {
         const sourcePath = pathMap[targetPath];
         updated = updatePathInternal(sourcePath, targetPath, options, log) || updated;
@@ -288,7 +281,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     const pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
     let updated = false;
 
-    // Iterate in sorted order to ensure directories are created before files under them.
+    // Iterate in sorted order for nicer logs
     Object.keys(pathMap).sort().forEach(subPath => {
         const entry = pathMap[subPath];
         updated = updatePathWithStats(

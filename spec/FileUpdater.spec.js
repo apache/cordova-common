@@ -612,21 +612,6 @@ describe('FileUpdater class', function () {
             expect(FileUpdater.updatePathWithStatsCalls[0][3]).toBeNull();
             expect(FileUpdater.updatePathWithStatsCalls[0][4]).toBeUndefined();
         });
-        it('Test 035 : should create the target\'s parent directory if it doesn\'t exist',
-            function () {
-                mockFs.statMap[path.join(testRootDir, testSourceFile)] = testFileStats2;
-                var updated = FileUpdater.updatePath(
-                    testSourceFile, testTargetFile, { rootDir: testRootDir });
-                expect(updated).toBe(true);
-                expect(FileUpdater.updatePathWithStatsCalls.length).toBe(1);
-                expect(FileUpdater.updatePathWithStatsCalls[0][0]).toBe(testSourceFile);
-                expect(FileUpdater.updatePathWithStatsCalls[0][1]).toEqual(testFileStats2);
-                expect(FileUpdater.updatePathWithStatsCalls[0][2]).toBe(testTargetFile);
-                expect(FileUpdater.updatePathWithStatsCalls[0][3]).toBeNull();
-                expect(FileUpdater.updatePathWithStatsCalls[0][4]).toEqual({ rootDir: testRootDir });
-                expect(mockFs.mkdirPaths.length).toBe(1);
-                expect(mockFs.mkdirPaths[0]).toBe(testRootDir);
-            });
     });
 
     describe('mergeAndUpdateDir method', function () {
