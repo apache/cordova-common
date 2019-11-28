@@ -208,14 +208,11 @@ class PlatformMunger {
         // TODO: The should_increment param is only used by cordova-cli and is going away soon.
         // If should_increment is set to false, avoid modifying the global_munge (use clone)
         // and apply the entire config_munge because it's already a proper subset of the global_munge.
-        let munge;
 
-        if (should_increment) {
-            const global_munge = platform_config.config_munge;
-            munge = mungeutil.increment_munge(global_munge, config_munge);
-        } else {
-            munge = config_munge;
-        }
+        const global_munge = platform_config.config_munge;
+        const munge = should_increment
+            ? mungeutil.increment_munge(global_munge, config_munge)
+            : config_munge;
 
         for (const file in munge.files) {
             this.apply_file_munge(file, munge.files[file]);
