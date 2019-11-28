@@ -23,7 +23,7 @@ exports.deep_add = function deep_add (obj, keys /* or key1, key2 .... */) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, true/* createParents */, (parentArray, k) => {
+    return process_munge(obj, true/* createParents */, (parentArray, k) => {
         const found = _.find(parentArray, element => element.xml === k.xml);
         if (found) {
             found.after = found.after || k.after;
@@ -42,7 +42,7 @@ exports.deep_remove = function deep_remove (obj, keys /* or key1, key2 .... */) 
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    const result = exports.process_munge(obj, false/* createParents */, (parentArray, k) => {
+    const result = process_munge(obj, false/* createParents */, (parentArray, k) => {
         let index = -1;
         const found = _.find(parentArray, element => {
             index++;
@@ -72,7 +72,7 @@ exports.deep_find = function deep_find (obj, keys /* or key1, key2 .... */) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, false/* createParents? */, (parentArray, k) => {
+    return process_munge(obj, false/* createParents? */, (parentArray, k) => {
         return _.find(parentArray, element => element.xml === (k.xml || k));
     }, keys);
 };
@@ -81,7 +81,7 @@ exports.deep_find = function deep_find (obj, keys /* or key1, key2 .... */) {
 // When createParents is true, add the file and parent items  they are missing
 // When createParents is false, stop and return undefined if the file and/or parent items are missing
 
-exports.process_munge = function process_munge (obj, createParents, func, keys /* or key1, key2 .... */) {
+function process_munge (obj, createParents, func, keys /* or key1, key2 .... */) {
     if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
@@ -93,17 +93,17 @@ exports.process_munge = function process_munge (obj, createParents, func, keys /
             return undefined;
         }
         obj.parents[k] = obj.parents[k] || [];
-        return exports.process_munge(obj.parents[k], createParents, func, keys.slice(1));
+        return process_munge(obj.parents[k], createParents, func, keys.slice(1));
     } else if (keys.length === 3) {
         if (!obj.files[k] && !createParents) {
             return undefined;
         }
         obj.files[k] = obj.files[k] || { parents: {} };
-        return exports.process_munge(obj.files[k], createParents, func, keys.slice(1));
+        return process_munge(obj.files[k], createParents, func, keys.slice(1));
     } else {
         throw new Error('Invalid key format. Must contain at most 3 elements (file, parent, xmlChild).');
     }
-};
+}
 
 // All values from munge are added to base as
 // base[file][selector][child] += munge[file][selector][child]
