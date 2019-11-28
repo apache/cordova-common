@@ -14,13 +14,11 @@
  *
 */
 
-const _ = require('underscore');
-
 // add the count of [key1][key2]...[keyN] to obj
 // return true if it didn't exist before
 exports.deep_add = (...args) => {
     const { element, siblings } = processArgs(...args, { create: true });
-    const matchingSibling = _.find(siblings, sibling => sibling.xml === element.xml);
+    const matchingSibling = siblings.find(sibling => sibling.xml === element.xml);
 
     if (matchingSibling) {
         matchingSibling.after = matchingSibling.after || element.after;
@@ -36,14 +34,14 @@ exports.deep_add = (...args) => {
 // return true if it was removed or not found
 exports.deep_remove = (...args) => {
     const { element, siblings } = processArgs(...args);
-    const index = _.findIndex(siblings, sibling => sibling.xml === element.xml);
+    const index = siblings.findIndex(sibling => sibling.xml === element.xml);
 
     if (index < 0) return true;
 
     const matchingSibling = siblings[index];
 
     if (matchingSibling.oldAttrib) {
-        element.oldAttrib = _.extend({}, matchingSibling.oldAttrib);
+        element.oldAttrib = Object.assign({}, matchingSibling.oldAttrib);
     }
     matchingSibling.count -= element.count;
 
@@ -59,7 +57,7 @@ exports.deep_find = (...args) => {
     const { element, siblings } = processArgs(...args);
 
     const elementXml = (element.xml || element);
-    return _.find(siblings, sibling => sibling.xml === elementXml);
+    return siblings.find(sibling => sibling.xml === elementXml);
 };
 
 function processArgs (obj, fileName, selector, element, opts) {
