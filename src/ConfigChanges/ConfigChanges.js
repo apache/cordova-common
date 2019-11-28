@@ -175,13 +175,10 @@ class PlatformMunger {
         if (changes && changes.length > 0) {
             const isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
             if (isConflictingInfo.conflictFound) {
-                let conflict_munge;
-                let conflict_file;
-
                 if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
                     // silently remove conflicting config.xml munges so new munges can be added
-                    conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
-                    for (conflict_file in conflict_munge.files) {
+                    const conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
+                    for (const conflict_file in conflict_munge.files) {
                         this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                     }
                 }
@@ -189,8 +186,8 @@ class PlatformMunger {
                     events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
                     // remove conflicting plugin.xml munges
-                    conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
-                    for (conflict_file in conflict_munge.files) {
+                    const conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
+                    for (const conflict_file in conflict_munge.files) {
                         this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                     }
                 }
