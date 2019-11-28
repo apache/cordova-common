@@ -17,40 +17,50 @@
     under the License.
 */
 
-var configChanges = require('../../src/ConfigChanges/ConfigChanges');
-var xml_helpers = require('../../src/util/xml-helpers');
-var fs = require('fs-extra');
-var os = require('os');
-var et = require('elementtree');
-var path = require('path');
-var temp = path.join(os.tmpdir(), 'plugman');
-var dummyplugin = path.join(__dirname, '../fixtures/plugins/org.test.plugins.dummyplugin');
-var cbplugin = path.join(__dirname, '../fixtures/plugins/org.test.plugins.childbrowser');
-var childrenplugin = path.join(__dirname, '../fixtures/plugins/org.test.multiple-children');
-var shareddepsplugin = path.join(__dirname, '../fixtures/plugins/org.test.shareddeps');
-var configplugin = path.join(__dirname, '../fixtures/plugins/org.test.configtest');
-var editconfigplugin = path.join(__dirname, '../fixtures/plugins/org.test.editconfigtest');
-var editconfigplugin_two = path.join(__dirname, '../fixtures/plugins/org.test.editconfigtest_two');
-var varplugin = path.join(__dirname, '../fixtures/plugins/com.adobe.vars');
-var plistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.plist');
-var bplistplugin = path.join(__dirname, '../fixtures/plugins/org.apache.bplist');
-var android_two_project = path.join(__dirname, '../fixtures/projects/android_two/');
-var android_two_no_perms_project = path.join(__dirname, '../fixtures/projects/android_two_no_perms');
-var ios_config_xml = path.join(__dirname, '../fixtures/projects/ios-config-xml/');
-var plugins_dir = path.join(temp, 'cordova', 'plugins');
-var mungeutil = require('../../src/ConfigChanges/munge-util');
-var PlatformJson = require('../../src/PlatformJson');
-var PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider');
-var PluginInfo = require('../../src/PluginInfo/PluginInfo');
-var ConfigParser = require('../../src/ConfigParser/ConfigParser');
-var xml = path.join(__dirname, '../fixtures/test-config.xml');
-var editconfig_xml = path.join(__dirname, '../fixtures/test-editconfig.xml');
-var configfile_xml = path.join(__dirname, '../fixtures/test-configfile.xml');
-var cfg = new ConfigParser(xml);
+const fs = require('fs-extra');
+const os = require('os');
+const path = require('path');
+const et = require('elementtree');
+
+const configChanges = require('../../src/ConfigChanges/ConfigChanges');
+const mungeutil = require('../../src/ConfigChanges/munge-util');
+const xml_helpers = require('../../src/util/xml-helpers');
+const PlatformJson = require('../../src/PlatformJson');
+const PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider');
+const PluginInfo = require('../../src/PluginInfo/PluginInfo');
+const ConfigParser = require('../../src/ConfigParser/ConfigParser');
+
+const fixturePath = path.join(__dirname, '../fixtures');
+
+// XML fixtures
+const xml = path.join(fixturePath, 'test-config.xml');
+const editconfig_xml = path.join(fixturePath, 'test-editconfig.xml');
+const configfile_xml = path.join(fixturePath, 'test-configfile.xml');
+
+// Project fixtures
+const android_two_project = path.join(fixturePath, 'projects/android_two/');
+const android_two_no_perms_project = path.join(fixturePath, 'projects/android_two_no_perms');
+const ios_config_xml = path.join(fixturePath, 'projects/ios-config-xml/');
+
+// Plugin fixtures
+const dummyplugin = path.join(fixturePath, 'plugins/org.test.plugins.dummyplugin');
+const cbplugin = path.join(fixturePath, 'plugins/org.test.plugins.childbrowser');
+const childrenplugin = path.join(fixturePath, 'plugins/org.test.multiple-children');
+const shareddepsplugin = path.join(fixturePath, 'plugins/org.test.shareddeps');
+const configplugin = path.join(fixturePath, 'plugins/org.test.configtest');
+const editconfigplugin = path.join(fixturePath, 'plugins/org.test.editconfigtest');
+const editconfigplugin_two = path.join(fixturePath, 'plugins/org.test.editconfigtest_two');
+const varplugin = path.join(fixturePath, 'plugins/com.adobe.vars');
+const plistplugin = path.join(fixturePath, 'plugins/org.apache.plist');
+const bplistplugin = path.join(fixturePath, 'plugins/org.apache.bplist');
+
+const temp = path.join(os.tmpdir(), 'plugman');
+const plugins_dir = path.join(temp, 'cordova', 'plugins');
+
+const cfg = new ConfigParser(xml);
+const pluginInfoProvider = new PluginInfoProvider();
 
 // TODO: dont do fs so much
-
-var pluginInfoProvider = new PluginInfoProvider();
 
 function innerXML (xmltext) {
     return xmltext.replace(/^<[\w\s\-=/".]+>/, '').replace(/<\/[\w\s\-=/".]+>$/, '');
