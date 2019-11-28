@@ -209,13 +209,11 @@ class PlatformMunger {
         // If should_increment is set to false, avoid modifying the global_munge (use clone)
         // and apply the entire config_munge because it's already a proper subset of the global_munge.
         let munge;
-        let global_munge;
 
         if (should_increment) {
-            global_munge = platform_config.config_munge;
+            const global_munge = platform_config.config_munge;
             munge = mungeutil.increment_munge(global_munge, config_munge);
         } else {
-            global_munge = mungeutil.clone_munge(platform_config.config_munge);
             munge = config_munge;
         }
 
