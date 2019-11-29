@@ -54,7 +54,7 @@ const fastGlob = require('fast-glob');
  * @return {boolean} true if any changes were made, or false if the force flag is not set
  *     and everything was up to date
  */
-function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log) {
+function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log = () => {}) {
     let updated = false;
 
     const rootDir = (options && options.rootDir) || '';
@@ -165,8 +165,6 @@ function updatePath (sourcePath, targetPath, options, log) {
         throw new Error('A target path is required.');
     }
 
-    log = log || (() => { });
-
     return updatePathInternal(sourcePath, targetPath, options, log);
 }
 
@@ -191,8 +189,6 @@ function updatePaths (pathMap, options, log) {
     if (!pathMap || typeof pathMap !== 'object' || Array.isArray(pathMap)) {
         throw new Error('An object mapping from target paths to source paths is required.');
     }
-
-    log = log || (() => { });
 
     // Iterate in sorted order for nicer logs
     return Object.keys(pathMap).sort().map(targetPath => {
@@ -240,8 +236,6 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     if (!targetDir || typeof targetDir !== 'string') {
         throw new Error('A target directory path is required.');
     }
-
-    log = log || (() => { });
 
     const rootDir = (options && options.rootDir) || '';
 
