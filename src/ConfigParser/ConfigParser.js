@@ -148,9 +148,7 @@ class ConfigParser {
         ).pop();
 
         if (!pref) {
-            pref = new et.Element('preference');
-            pref.attrib.name = name;
-            platformEl.append(pref);
+            pref = et.SubElement(platformEl, 'preference', { name });
         }
         pref.attrib.value = value;
     }
@@ -355,11 +353,8 @@ class ConfigParser {
      */
     addPlugin (attributes, variables) {
         if (!attributes && !attributes.name) return;
-        const el = new et.Element('plugin');
-        el.attrib.name = attributes.name;
-        if (attributes.spec) {
-            el.attrib.spec = attributes.spec;
-        }
+
+        const el = et.SubElement(this.doc.getroot(), 'plugin', attributes);
 
         // support arbitrary object as variables source
         if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
@@ -370,11 +365,10 @@ class ConfigParser {
         }
 
         if (variables) {
-            variables.forEach(variable => {
-                el.append(new et.Element('variable', { name: variable.name, value: variable.value }));
+            variables.forEach(({ name, value }) => {
+                et.SubElement(el, 'variable', { name, value });
             });
         }
-        this.doc.getroot().append(el);
     }
 
     /**
@@ -433,13 +427,7 @@ class ConfigParser {
 
     // Add any element to the root
     addElement (name, attributes) {
-        const el = et.Element(name);
-
-        for (const a in attributes) {
-            el.attrib[a] = attributes[a];
-        }
-
-        this.doc.getroot().append(el);
+        et.SubElement(this.doc.getroot(), name, attributes);
     }
 
     /**
@@ -450,14 +438,8 @@ class ConfigParser {
     addEngine (name, spec) {
         if (!name) return;
 
-        const el = et.Element('engine');
-        el.attrib.name = name;
-
-        if (spec) {
-            el.attrib.spec = spec;
-        }
-
-        this.doc.getroot().append(el);
+        const attrs = Object.assign({ name }, spec ? { spec } : null);
+        et.SubElement(this.doc.getroot(), 'engine', attrs);
     }
 
     /**
@@ -575,14 +557,8 @@ function getNodeTextSafe (el) {
 }
 
 function findOrCreate (doc, name) {
-    let ret = doc.find(name);
-
-    if (!ret) {
-        ret = new et.Element(name);
-        doc.getroot().append(ret);
-    }
-
-    return ret;
+    const parent = doc.getroot();
+    return parent.find(name) || new et.SubElement(parent, name);
 }
 
 function getCordovaNamespacePrefix (doc) {
