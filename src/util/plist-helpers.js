@@ -33,9 +33,8 @@ function graftPLIST (doc, xml, selector) {
     } else {
         // plist uses objects for <dict>. If we have two dicts we merge them instead of
         // overriding the old one. See CB-6472
-        if (node && _.isObject(node) && _.isObject(obj) && !_.isDate(node) && !_.isDate(obj)) { // arrays checked above
-            _.extend(obj, node);
-        }
+        const isDict = o => _.isObject(o) && !_.isDate(o); // arrays checked above
+        if (isDict(node) && isDict(obj)) _.extend(obj, node);
 
         doc[selector] = obj;
     }
