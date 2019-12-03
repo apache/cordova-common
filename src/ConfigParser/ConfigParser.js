@@ -178,6 +178,7 @@ class ConfigParser {
 
     /**
      * Returns all resources for the platform specified.
+     *
      * @param  {String} platform     The platform.
      * @param {string}  resourceName Type of static resources to return.
      *                               "icon" and "splash" currently supported.
@@ -215,6 +216,7 @@ class ConfigParser {
 
         /**
          * Returns resource with specified width and/or height.
+         *
          * @param  {number} width Width of resource.
          * @param  {number} height Height of resource.
          * @return {Resource} Resource object or null if not found.
@@ -231,6 +233,7 @@ class ConfigParser {
 
         /**
          * Returns resource with specified density.
+         *
          * @param  {string} density Density of resource.
          * @return {Resource}       Resource object or null if not found.
          */
@@ -246,6 +249,7 @@ class ConfigParser {
 
     /**
      * Returns all icons for specific platform.
+     *
      * @param  {string} platform Platform name
      * @return {Resource[]}      Array of icon objects.
      */
@@ -255,6 +259,7 @@ class ConfigParser {
 
     /**
      * Returns all splash images for specific platform.
+     *
      * @param  {string} platform Platform name
      * @return {Resource[]}      Array of Splash objects.
      */
@@ -264,6 +269,7 @@ class ConfigParser {
 
     /**
      * Returns all resource-files for a specific platform.
+     *
      * @param  {string} platform Platform name
      * @param  {boolean} includeGlobal Whether to return resource-files at the
      *                                 root level.
@@ -291,6 +297,7 @@ class ConfigParser {
 
     /**
      * Returns all hook scripts for the hook type specified.
+     *
      * @param  {String} hook     The hook type.
      * @param {Array}  platforms Platforms to look for scripts into (root scripts will be included as well).
      * @return {Array}               Script elements.
@@ -310,6 +317,7 @@ class ConfigParser {
     *
     * This function also returns any plugin's that
     * were defined using the legacy <feature> tags.
+    *
     * @return {string[]} Array of plugin IDs
     */
     getPluginIdList () {
@@ -394,7 +402,7 @@ class ConfigParser {
      * This function also operates on any plugin's that
      * were defined using the legacy <feature> tags.
      *
-     * @param id name of the plugin
+     * @param {string} id name of the plugin
      */
     removePlugin (id) {
         if (!id) return;
@@ -411,8 +419,9 @@ class ConfigParser {
 
     /**
      * Adds an engine. Does not check for duplicates.
+     *
      * @param  {String} name the engine name
-     * @param  {String} spec engine source location or version (optional)
+     * @param  {String} [spec] engine source location or version
      */
     addEngine (name, spec) {
         if (!name) return;
@@ -423,6 +432,7 @@ class ConfigParser {
 
     /**
      * Removes all the engines with given name
+     *
      * @param  {String} name the engine name.
      */
     removeEngine (name) {
@@ -436,7 +446,27 @@ class ConfigParser {
         }));
     }
 
-    /* Get all the access tags */
+    /**
+     * @typedef {Object} CommonRuleOptions
+     * @prop {string} [minimum_tls_version]
+     * @prop {StringifiedBool} [requires_forward_secrecy]
+     * @prop {StringifiedBool} [requires_certificate_transparency]
+     *
+     * @typedef {string} StringifiedBool has either the value 'true' or 'false'
+     */
+
+    /**
+     * Get all the access tags
+     *
+     * @returns {AccessRule[]}
+     *
+     * @typedef {CommonRuleOptions} AccessRule
+     * @prop {string} origin
+     * @prop {StringifiedBool} [allows_arbitrary_loads_in_web_content]
+     * @prop {StringifiedBool} [allows_arbitrary_loads_in_media] (DEPRECATED)
+     * @prop {StringifiedBool} [allows_arbitrary_loads_for_media]
+     * @prop {StringifiedBool} [allows_local_networking]
+     */
     getAccesses () {
         return this.doc.findall('./access').map(element => ({
             origin: element.attrib.origin,
@@ -450,7 +480,12 @@ class ConfigParser {
         }));
     }
 
-    /* Get all the allow-navigation tags */
+    /**
+     * Get all the allow-navigation tags
+     *
+     * @returns {AllowNavigationRule[]}
+     * @typedef {{href: string} & CommonRuleOptions} AllowNavigationRule
+     */
     getAllowNavigations () {
         return this.doc.findall('./allow-navigation').map(element => ({
             href: element.attrib.href,
@@ -460,14 +495,18 @@ class ConfigParser {
         }));
     }
 
-    /* Get all the allow-intent tags */
+    /**
+     * Get all the allow-intent tags
+     *
+     * @returns {{href: string}[]}
+     */
     getAllowIntents () {
         return this.doc.findall('./allow-intent').map(element => ({
             href: element.attrib.href
         }));
     }
 
-    /* Get all edit-config tags */
+    /** Get all edit-config tags */
     getEditConfigs (platform) {
         const platform_edit_configs = this.doc.findall(`./platform[@name="${platform}"]/edit-config`);
         const edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
@@ -481,7 +520,7 @@ class ConfigParser {
         }));
     }
 
-    /* Get all config-file tags */
+    /** Get all config-file tags */
     getConfigFiles (platform) {
         const platform_config_files = this.doc.findall(`./platform[@name="${platform}"]/config-file`);
         const config_files = this.doc.findall('config-file').concat(platform_config_files);
