@@ -25,18 +25,11 @@ const plist = require('plist');
 module.exports.graftPLIST = graftPLIST;
 function graftPLIST (doc, xml, selector) {
     const obj = plist.parse(`<plist>${xml}</plist>`);
-    let node = doc[selector];
+    const node = doc[selector];
 
     if (node && Array.isArray(node) && Array.isArray(obj)) {
-        node = node.concat(obj);
-
-        for (let i = 0; i < node.length; i++) {
-            for (let j = i + 1; j < node.length; ++j) {
-                if (nodeEqual(node[i], node[j])) { node.splice(j--, 1); }
-            }
-        }
-
-        doc[selector] = node;
+        const isNew = item => !node.some(nodeChild => nodeEqual(item, nodeChild));
+        doc[selector] = node.concat(obj.filter(isNew));
     } else {
         // plist uses objects for <dict>. If we have two dicts we merge them instead of
         // overriding the old one. See CB-6472
