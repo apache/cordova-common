@@ -196,11 +196,10 @@ function mergeXml (src, dest, platform, clobber) {
     if (BLACKLIST.includes(src.tag)) return;
 
     // Handle attributes
-    Object.getOwnPropertyNames(src.attrib).forEach(attribute => {
-        if (clobber || !dest.attrib[attribute]) {
-            dest.attrib[attribute] = src.attrib[attribute];
-        }
-    });
+    const omitAttrs = new Set(clobber ? [] : dest.keys());
+    const xferAttrs = src.keys().filter(k => !omitAttrs.has(k));
+    xferAttrs.forEach(attr => { dest.attrib[attr] = src.attrib[attr]; });
+
     // Handle text
     if (src.text && (clobber || !dest.text)) {
         dest.text = src.text;
