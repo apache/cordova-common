@@ -145,8 +145,7 @@ module.exports = {
     },
 
     parseElementtreeSync: function (filename) {
-        const contents = stripBom(fs.readFileSync(filename, 'utf-8'));
-        return new et.ElementTree(et.XML(contents));
+        return et.parse(stripBom(fs.readFileSync(filename, 'utf-8')));
     },
 
     resolveParent: function (doc, selector) {
