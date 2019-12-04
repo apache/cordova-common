@@ -74,14 +74,14 @@ module.exports = {
         }
 
         nodes.forEach(node => {
-            // check if child is unique first
-            if (uniqueChild(node, parent)) {
-                const children = parent.getchildren();
-                const insertIdx = after ? findInsertIdx(children, after) : children.length;
+            // skip if an equal element already exists in parent
+            if (findChild(node, parent)) return;
 
-                // TODO: replace with parent.insert after the bug in ElementTree is fixed
-                parent.getchildren().splice(insertIdx, 0, node);
-            }
+            const children = parent.getchildren();
+            const insertIdx = after ? findInsertIdx(children, after) : children.length;
+
+            // TODO: replace with parent.insert after the bug in ElementTree is fixed
+            parent.getchildren().splice(insertIdx, 0, node);
         });
 
         return true;
@@ -190,10 +190,6 @@ function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
 function findChild (node, parent) {
     const matches = parent.findall(node.tag);
     return matches.find(m => module.exports.equalNodes(node, m));
-}
-
-function uniqueChild (node, parent) {
-    return !findChild(node, parent);
 }
 
 // Find the index at which to insert an entry. After is a ;-separated priority list
