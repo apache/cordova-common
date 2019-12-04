@@ -176,24 +176,13 @@ module.exports = {
 
 function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
     const target = module.exports.resolveParent(doc, selector);
-
     if (!target) return false;
 
     // saves the attributes of the original xml before making changes
-    xml.oldAttrib = _.extend({}, target.attrib);
+    xml.oldAttrib = Object.assign({}, target.attrib);
 
-    if (overwrite) {
-        // remove old attributes from target
-        for (const targetAttribute in target.attrib) {
-            delete target.attrib[targetAttribute];
-        }
-    }
-
-    nodes.forEach(node => {
-        for (const attribute in node.attrib) {
-            target.attrib[attribute] = node.attrib[attribute];
-        }
-    });
+    if (overwrite) target.attrib = {};
+    Object.assign(target.attrib, ...nodes.map(n => n.attrib));
 
     return true;
 }
