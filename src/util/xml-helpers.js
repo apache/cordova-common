@@ -245,23 +245,20 @@ function mergeXml (src, dest, platform, clobber) {
     }
 
     function removeDuplicatePreferences (xml) {
+        const prefs = xml.findall('preference[@name][@value]');
+
         // reduce preference tags to a hashtable to remove dupes
-        const prefHash = xml.findall('preference[@name][@value]').reduce((previousValue, currentValue) => {
-            previousValue[currentValue.attrib.name] = currentValue.attrib.value;
-            return previousValue;
-        }, {});
+        const prefMap = new Map(
+            prefs.map(({ attrib: { name, value } }) => [name, value])
+        );
 
         // remove all preferences
-        xml.findall('preference[@name][@value]').forEach(pref => {
-            xml.remove(pref);
-        });
+        prefs.forEach(pref => xml.remove(pref));
 
         // write new preferences
-        Object.keys(prefHash).forEach(function (key) {
-            const element = et.SubElement(xml, 'preference');
-            element.set('name', key);
-            element.set('value', this[key]);
-        }, prefHash);
+        prefMap.forEach((value, name) => {
+            et.SubElement(xml, 'preference', { name, value });
+        });
     }
 }
 
