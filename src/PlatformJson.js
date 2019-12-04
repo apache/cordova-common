@@ -29,7 +29,7 @@ class PlatformJson {
     static load (plugins_dir, platform) {
         const filePath = path.join(plugins_dir, `${platform}.json`);
         const root = fs.existsSync(filePath)
-            ? JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+            ? fs.readJsonSync(filePath)
             : null;
 
         return new PlatformJson(filePath, platform, root);
