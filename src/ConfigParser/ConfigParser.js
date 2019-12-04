@@ -267,36 +267,26 @@ class ConfigParser {
      * @param  {string} platform Platform name
      * @param  {boolean} includeGlobal Whether to return resource-files at the
      *                                 root level.
-     * @return {Resource[]}      Array of resource file objects.
+     * @return {FileResource[]}      Array of resource file objects.
      */
     getFileResources (platform, includeGlobal) {
-        let fileResources = [];
+        const platformResources = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]/resource-file`)
+            : [];
 
-        if (platform) { // platform specific resources
-            fileResources = this.doc.findall(`./platform[@name="${platform}"]/resource-file`).map(tag => ({
-                platform,
-                src: tag.attrib.src,
-                target: tag.attrib.target,
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target'],
-                arch: tag.attrib.arch
+        const globalResources = includeGlobal
+            ? this.doc.findall('resource-file')
+            : [];
+
+        return [].concat(platformResources, globalResources)
+            .map(({ attrib }) => ({
+                platform: platform || null,
+                src: attrib.src,
+                target: attrib.target,
+                versions: attrib.versions,
+                deviceTarget: attrib['device-target'],
+                arch: attrib.arch
             }));
-        }
-
-        if (includeGlobal) {
-            this.doc.findall('resource-file').forEach(tag => {
-                fileResources.push({
-                    platform: platform || null,
-                    src: tag.attrib.src,
-                    target: tag.attrib.target,
-                    versions: tag.attrib.versions,
-                    deviceTarget: tag.attrib['device-target'],
-                    arch: tag.attrib.arch
-                });
-            });
-        }
-
-        return fileResources;
     }
 
     /**
