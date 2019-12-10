@@ -41,114 +41,114 @@ const modules = {
 * TODO: Consider moving it out to a separate file and maybe partially with
 * overrides in platform handlers.
 ******************************************************************************/
-function ConfigFile (project_dir, platform, file_tag) {
-    this.project_dir = project_dir;
-    this.platform = platform;
-    this.file_tag = file_tag;
-    this.is_changed = false;
+class ConfigFile {
+    constructor (project_dir, platform, file_tag) {
+        this.project_dir = project_dir;
+        this.platform = platform;
+        this.file_tag = file_tag;
+        this.is_changed = false;
 
-    this.load();
-}
-
-// ConfigFile.load()
-ConfigFile.prototype.load = ConfigFile_load;
-function ConfigFile_load () {
-    // config file may be in a place not exactly specified in the target
-    const filepath = this.filepath = resolveConfigFilePath(this.project_dir, this.platform, this.file_tag);
-
-    if (!filepath || !fs.existsSync(filepath)) {
-        this.exists = false;
-        return;
+        this.load();
     }
-    this.exists = true;
-    this.mtime = fs.statSync(this.filepath).mtime;
 
-    const ext = path.extname(filepath);
-    // Windows8 uses an appxmanifest, and wp8 will likely use
-    // the same in a future release
-    if (ext === '.xml' || ext === '.appxmanifest' || ext === '.storyboard' || ext === '.jsproj') {
-        this.type = 'xml';
-        this.data = modules.xml_helpers.parseElementtreeSync(filepath);
-    } else {
-        // plist file
-        this.type = 'plist';
-        // TODO: isBinaryPlist() reads the file and then parse re-reads it again.
-        //       We always write out text plist, not binary.
-        //       Do we still need to support binary plist?
-        //       If yes, use plist.parseStringSync() and read the file once.
-        this.data = isBinaryPlist(filepath)
-            ? modules.bplist.parseBuffer(fs.readFileSync(filepath))[0]
-            : modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
+    load () {
+        // config file may be in a place not exactly specified in the target
+        const filepath = this.filepath = resolveConfigFilePath(this.project_dir, this.platform, this.file_tag);
+
+        if (!filepath || !fs.existsSync(filepath)) {
+            this.exists = false;
+            return;
+        }
+        this.exists = true;
+        this.mtime = fs.statSync(this.filepath).mtime;
+
+        const ext = path.extname(filepath);
+        // Windows8 uses an appxmanifest, and wp8 will likely use
+        // the same in a future release
+        if (ext === '.xml' || ext === '.appxmanifest' || ext === '.storyboard' || ext === '.jsproj') {
+            this.type = 'xml';
+            this.data = modules.xml_helpers.parseElementtreeSync(filepath);
+        } else {
+            // plist file
+            this.type = 'plist';
+            // TODO: isBinaryPlist() reads the file and then parse re-reads it again.
+            //       We always write out text plist, not binary.
+            //       Do we still need to support binary plist?
+            //       If yes, use plist.parseStringSync() and read the file once.
+            this.data = isBinaryPlist(filepath)
+                ? modules.bplist.parseBuffer(fs.readFileSync(filepath))[0]
+                : modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
+        }
     }
-}
 
-ConfigFile.prototype.save = function ConfigFile_save () {
-    if (this.type === 'xml') {
-        fs.writeFileSync(this.filepath, this.data.write({ indent: 4 }), 'utf-8');
-    } else {
-        // plist
-        const regExp = /<string>[ \t\r\n]+?<\/string>/g;
-        fs.writeFileSync(this.filepath, modules.plist.build(this.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
+    save () {
+        if (this.type === 'xml') {
+            fs.writeFileSync(this.filepath, this.data.write({ indent: 4 }), 'utf-8');
+        } else {
+            // plist
+            const regExp = /<string>[ \t\r\n]+?<\/string>/g;
+            fs.writeFileSync(this.filepath, modules.plist.build(this.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
+        }
+        this.is_changed = false;
     }
-    this.is_changed = false;
-};
 
-ConfigFile.prototype.graft_child = function ConfigFile_graft_child (selector, xml_child) {
-    const filepath = this.filepath;
-    let result;
-    if (this.type === 'xml') {
-        const xml_to_graft = [modules.et.XML(xml_child.xml)];
-        switch (xml_child.mode) {
-        case 'merge':
-            result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
-            break;
-        case 'overwrite':
-            result = modules.xml_helpers.graftXMLOverwrite(this.data, xml_to_graft, selector, xml_child);
-            break;
-        case 'remove':
-            result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
-            break;
-        default:
-            result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
+    graft_child (selector, xml_child) {
+        const filepath = this.filepath;
+        let result;
+        if (this.type === 'xml') {
+            const xml_to_graft = [modules.et.XML(xml_child.xml)];
+            switch (xml_child.mode) {
+            case 'merge':
+                result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
+                break;
+            case 'overwrite':
+                result = modules.xml_helpers.graftXMLOverwrite(this.data, xml_to_graft, selector, xml_child);
+                break;
+            case 'remove':
+                result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
+                break;
+            default:
+                result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
+            }
+            if (!result) {
+                throw new Error(`Unable to graft xml at selector "${selector}" from "${filepath}" during config install`);
+            }
+        } else {
+            // plist file
+            result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
+            if (!result) {
+                throw new Error(`Unable to graft plist "${filepath}" during config install`);
+            }
+        }
+        this.is_changed = true;
+    }
+
+    prune_child (selector, xml_child) {
+        const filepath = this.filepath;
+        let result;
+        if (this.type === 'xml') {
+            const xml_to_graft = [modules.et.XML(xml_child.xml)];
+            switch (xml_child.mode) {
+            case 'merge':
+            case 'overwrite':
+                result = modules.xml_helpers.pruneXMLRestore(this.data, selector, xml_child);
+                break;
+            case 'remove':
+                result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
+                break;
+            default:
+                result = modules.xml_helpers.pruneXML(this.data, xml_to_graft, selector);
+            }
+        } else {
+            // plist file
+            result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
         }
         if (!result) {
-            throw new Error(`Unable to graft xml at selector "${selector}" from "${filepath}" during config install`);
+            throw new Error(`Pruning at selector "${selector}" from "${filepath}" went bad.`);
         }
-    } else {
-        // plist file
-        result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
-        if (!result) {
-            throw new Error(`Unable to graft plist "${filepath}" during config install`);
-        }
+        this.is_changed = true;
     }
-    this.is_changed = true;
-};
-
-ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xml_child) {
-    const filepath = this.filepath;
-    let result;
-    if (this.type === 'xml') {
-        const xml_to_graft = [modules.et.XML(xml_child.xml)];
-        switch (xml_child.mode) {
-        case 'merge':
-        case 'overwrite':
-            result = modules.xml_helpers.pruneXMLRestore(this.data, selector, xml_child);
-            break;
-        case 'remove':
-            result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
-            break;
-        default:
-            result = modules.xml_helpers.pruneXML(this.data, xml_to_graft, selector);
-        }
-    } else {
-        // plist file
-        result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
-    }
-    if (!result) {
-        throw new Error(`Pruning at selector "${selector}" from "${filepath}" went bad.`);
-    }
-    this.is_changed = true;
-};
+}
 
 // Some config-file target attributes are not qualified with a full leading directory, or contain wildcards.
 // Resolve to a real path in this function.
