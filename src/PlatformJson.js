@@ -14,10 +14,10 @@
  *
 */
 
-var fs = require('fs-extra');
-var path = require('path');
-var endent = require('endent');
-var mungeutil = require('./ConfigChanges/munge-util');
+const fs = require('fs-extra');
+const path = require('path');
+const endent = require('endent');
+const mungeutil = require('./ConfigChanges/munge-util');
 
 function PlatformJson (filePath, platform, root) {
     this.filePath = filePath;
@@ -26,8 +26,8 @@ function PlatformJson (filePath, platform, root) {
 }
 
 PlatformJson.load = (plugins_dir, platform) => {
-    var filePath = path.join(plugins_dir, platform + '.json');
-    var root = null;
+    const filePath = path.join(plugins_dir, platform + '.json');
+    let root = null;
     if (fs.existsSync(filePath)) {
         root = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     }
@@ -72,7 +72,7 @@ PlatformJson.prototype.isPluginInstalled = function (pluginId) {
 };
 
 PlatformJson.prototype.addPlugin = function (pluginId, variables, isTopLevel) {
-    var pluginsList = isTopLevel
+    const pluginsList = isTopLevel
         ? this.root.installed_plugins
         : this.root.dependent_plugins;
 
@@ -89,11 +89,11 @@ PlatformJson.prototype.addPlugin = function (pluginId, variables, isTopLevel) {
  * @returns {this} Current PlatformJson instance to allow calls chaining
  */
 PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
-    var installedModules = this.root.modules || [];
+    const installedModules = this.root.modules || [];
 
-    var installedPaths = installedModules.map(m => m.file);
+    const installedPaths = installedModules.map(m => m.file);
 
-    var modulesToInstall = pluginInfo.getJsModules(this.platform)
+    const modulesToInstall = pluginInfo.getJsModules(this.platform)
         .map(module => new ModuleMetadata(pluginInfo.id, module))
         // Filter out modules which are already added to metadata
         .filter(metadata => !installedPaths.includes(metadata.file));
@@ -107,7 +107,7 @@ PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
 };
 
 PlatformJson.prototype.removePlugin = function (pluginId, isTopLevel) {
-    var pluginsList = isTopLevel
+    const pluginsList = isTopLevel
         ? this.root.installed_plugins
         : this.root.dependent_plugins;
 
@@ -126,10 +126,10 @@ PlatformJson.prototype.removePlugin = function (pluginId, isTopLevel) {
  * @returns {this} Current PlatformJson instance to allow calls chaining
  */
 PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
-    var modulesToRemove = pluginInfo.getJsModules(this.platform)
+    const modulesToRemove = pluginInfo.getJsModules(this.platform)
         .map(jsModule => ['plugins', pluginInfo.id, jsModule.src].join('/'));
 
-    var installedModules = this.root.modules || [];
+    const installedModules = this.root.modules || [];
     this.root.modules = installedModules
         // Leave only those metadatas which 'file' is not in removed modules
         .filter(m => !modulesToRemove.includes(m.file));
@@ -157,7 +157,7 @@ PlatformJson.prototype.addUninstalledPluginToPrepareQueue = function (pluginId, 
  * @return {PlatformJson} PlatformJson instance.
  */
 PlatformJson.prototype.makeTopLevel = function (pluginId) {
-    var plugin = this.root.dependent_plugins[pluginId];
+    const plugin = this.root.dependent_plugins[pluginId];
     if (plugin) {
         delete this.root.dependent_plugins[pluginId];
         this.root.installed_plugins[pluginId] = plugin;
@@ -201,14 +201,14 @@ function fix_munge (root) {
     root.installed_plugins = root.installed_plugins || {};
     root.dependent_plugins = root.dependent_plugins || {};
 
-    var munge = root.config_munge;
+    const munge = root.config_munge;
     if (!munge.files) {
-        var new_munge = { files: {} };
-        for (var file in munge) {
-            for (var selector in munge[file]) {
-                for (var xml_child in munge[file][selector]) {
-                    var val = parseInt(munge[file][selector][xml_child]);
-                    for (var i = 0; i < val; i++) {
+        const new_munge = { files: {} };
+        for (const file in munge) {
+            for (const selector in munge[file]) {
+                for (const xml_child in munge[file][selector]) {
+                    const val = parseInt(munge[file][selector][xml_child]);
+                    for (let i = 0; i < val; i++) {
                         mungeutil.deep_add(new_munge, [file, selector, { xml: xml_child, count: val }]);
                     }
                 }

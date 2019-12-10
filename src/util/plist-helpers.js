@@ -18,19 +18,19 @@
 */
 
 // contains PLIST utility functions
-var __ = require('underscore');
-var plist = require('plist');
+const __ = require('underscore');
+const plist = require('plist');
 
 // adds node to doc at selector
 module.exports.graftPLIST = graftPLIST;
 function graftPLIST (doc, xml, selector) {
-    var obj = plist.parse('<plist>' + xml + '</plist>');
+    const obj = plist.parse('<plist>' + xml + '</plist>');
 
-    var node = doc[selector];
+    let node = doc[selector];
     if (node && Array.isArray(node) && Array.isArray(obj)) {
         node = node.concat(obj);
-        for (var i = 0; i < node.length; i++) {
-            for (var j = i + 1; j < node.length; ++j) {
+        for (let i = 0; i < node.length; i++) {
+            for (let j = i + 1; j < node.length; ++j) {
                 if (nodeEqual(node[i], node[j])) { node.splice(j--, 1); }
             }
         }
@@ -50,7 +50,7 @@ function graftPLIST (doc, xml, selector) {
 // removes node from doc at selector
 module.exports.prunePLIST = prunePLIST;
 function prunePLIST (doc, xml, selector) {
-    var obj = plist.parse('<plist>' + xml + '</plist>');
+    const obj = plist.parse('<plist>' + xml + '</plist>');
 
     pruneOBJECT(doc, selector, obj);
 
@@ -59,9 +59,9 @@ function prunePLIST (doc, xml, selector) {
 
 function pruneOBJECT (doc, selector, fragment) {
     if (Array.isArray(fragment) && Array.isArray(doc[selector])) {
-        var empty = true;
-        for (var i in fragment) {
-            for (var j in doc[selector]) {
+        let empty = true;
+        for (const i in fragment) {
+            for (const j in doc[selector]) {
                 empty = pruneOBJECT(doc[selector], j, fragment[i]) && empty;
             }
         }
@@ -82,7 +82,7 @@ function nodeEqual (node1, node2) {
         node2 = escapeRE(node2).replace(/\\\$\(\S+\)/gm, '(.*?)');
         return new RegExp('^' + node2 + '$').test(node1);
     } else {
-        for (var key in node2) {
+        for (const key in node2) {
             if (!nodeEqual(node1[key], node2[key])) return false;
         }
         return true;

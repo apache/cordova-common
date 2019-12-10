@@ -19,9 +19,9 @@
 
 'use strict';
 
-var fs = require('fs-extra');
-var path = require('path');
-var minimatch = require('minimatch');
+const fs = require('fs-extra');
+const path = require('path');
+const minimatch = require('minimatch');
 
 /**
  * Logging callback used in the FileUpdater methods.
@@ -55,15 +55,15 @@ var minimatch = require('minimatch');
  *     and everything was up to date
  */
 function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log) {
-    var updated = false;
+    let updated = false;
 
-    var rootDir = (options && options.rootDir) || '';
-    var copyAll = (options && options.all) || false;
+    const rootDir = (options && options.rootDir) || '';
+    const copyAll = (options && options.all) || false;
 
-    var targetFullPath = path.join(rootDir || '', targetPath);
+    const targetFullPath = path.join(rootDir || '', targetPath);
 
     if (sourceStats) {
-        var sourceFullPath = path.join(rootDir || '', sourcePath);
+        const sourceFullPath = path.join(rootDir || '', sourcePath);
 
         if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
             // The target exists. But if the directory status doesn't match the source, delete it.
@@ -120,14 +120,14 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
  * and ensures target directory exists before copying a file.
  */
 function updatePathInternal (sourcePath, targetPath, options, log) {
-    var rootDir = (options && options.rootDir) || '';
-    var targetFullPath = path.join(rootDir, targetPath);
-    var targetStats = fs.existsSync(targetFullPath) ? fs.statSync(targetFullPath) : null;
-    var sourceStats = null;
+    const rootDir = (options && options.rootDir) || '';
+    const targetFullPath = path.join(rootDir, targetPath);
+    const targetStats = fs.existsSync(targetFullPath) ? fs.statSync(targetFullPath) : null;
+    let sourceStats = null;
 
     if (sourcePath) {
         // A non-null source path was specified. It should exist.
-        var sourceFullPath = path.join(rootDir, sourcePath);
+        const sourceFullPath = path.join(rootDir, sourcePath);
         if (!fs.existsSync(sourceFullPath)) {
             throw new Error('Source path does not exist: ' + sourcePath);
         }
@@ -135,7 +135,7 @@ function updatePathInternal (sourcePath, targetPath, options, log) {
         sourceStats = fs.statSync(sourceFullPath);
 
         // Create the target's parent directory if it doesn't exist.
-        var parentDir = path.dirname(targetFullPath);
+        const parentDir = path.dirname(targetFullPath);
         if (!fs.existsSync(parentDir)) {
             fs.ensureDirSync(parentDir);
         }
@@ -202,11 +202,11 @@ function updatePaths (pathMap, options, log) {
 
     log = log || (() => { });
 
-    var updated = false;
+    let updated = false;
 
     // Iterate in sorted order to ensure directories are created before files under them.
     Object.keys(pathMap).sort().forEach(targetPath => {
-        var sourcePath = pathMap[targetPath];
+        const sourcePath = pathMap[targetPath];
         updated = updatePathInternal(sourcePath, targetPath, options, log) || updated;
     });
 
@@ -255,16 +255,16 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
 
     log = log || (() => { });
 
-    var rootDir = (options && options.rootDir) || '';
+    const rootDir = (options && options.rootDir) || '';
 
-    var include = (options && options.include) || ['**'];
+    let include = (options && options.include) || ['**'];
     if (typeof include === 'string') {
         include = [include];
     } else if (!Array.isArray(include)) {
         throw new Error('Include parameter must be a glob string or array of glob strings.');
     }
 
-    var exclude = (options && options.exclude) || [];
+    let exclude = (options && options.exclude) || [];
     if (typeof exclude === 'string') {
         exclude = [exclude];
     } else if (!Array.isArray(exclude)) {
@@ -272,7 +272,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     }
 
     // Scan the files in each of the source directories.
-    var sourceMaps = sourceDirs.map(sourceDir =>
+    const sourceMaps = sourceDirs.map(sourceDir =>
         path.join(rootDir, sourceDir)
     ).map(sourcePath => {
         if (!fs.existsSync(sourcePath)) {
@@ -282,19 +282,19 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     });
 
     // Scan the files in the target directory, if it exists.
-    var targetMap = {};
-    var targetFullPath = path.join(rootDir, targetDir);
+    let targetMap = {};
+    const targetFullPath = path.join(rootDir, targetDir);
     if (fs.existsSync(targetFullPath)) {
         targetMap = mapDirectory(rootDir, targetDir, include, exclude);
     }
 
-    var pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
+    const pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
 
-    var updated = false;
+    let updated = false;
 
     // Iterate in sorted order to ensure directories are created before files under them.
     Object.keys(pathMap).sort().forEach(subPath => {
-        var entry = pathMap[subPath];
+        const entry = pathMap[subPath];
         updated = updatePathWithStats(
             entry.sourcePath,
             entry.sourceStats,
@@ -311,22 +311,22 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
  * Creates a dictionary map of all files and directories under a path.
  */
 function mapDirectory (rootDir, subDir, include, exclude) {
-    var dirMap = { '': { subDir: subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
+    const dirMap = { '': { subDir: subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
     mapSubdirectory(rootDir, subDir, '', include, exclude, dirMap);
     return dirMap;
 
     function mapSubdirectory (rootDir, subDir, relativeDir, include, exclude, dirMap) {
-        var itemMapped = false;
-        var items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
+        let itemMapped = false;
+        const items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
 
         items.forEach(item => {
-            var relativePath = path.join(relativeDir, item);
+            const relativePath = path.join(relativeDir, item);
             if (!matchGlobArray(relativePath, exclude)) {
                 // Stats obtained here (required at least to know where to recurse in directories)
                 // are saved for later, where the modified times may also be used. This minimizes
                 // the number of file I/O operations performed.
-                var fullPath = path.join(rootDir, subDir, relativePath);
-                var stats = fs.statSync(fullPath);
+                const fullPath = path.join(rootDir, subDir, relativePath);
+                const stats = fs.statSync(fullPath);
 
                 if (stats.isDirectory()) {
                     // Directories are included if either something under them is included or they
@@ -361,10 +361,10 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Merge multiple source maps together, along with target path info.
     // Entries in later source maps override those in earlier source maps.
     // Target stats will be filled in below for targets that exist.
-    var pathMap = {};
+    const pathMap = {};
     sourceMaps.forEach(sourceMap => {
         Object.keys(sourceMap).forEach(sourceSubPath => {
-            var sourceEntry = sourceMap[sourceSubPath];
+            const sourceEntry = sourceMap[sourceSubPath];
             pathMap[sourceSubPath] = {
                 targetPath: path.join(targetDir, sourceSubPath),
                 targetStats: null,
@@ -377,7 +377,7 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Fill in target stats for targets that exist, and create entries
     // for targets that don't have any corresponding sources.
     Object.keys(targetMap).forEach(subPath => {
-        var entry = pathMap[subPath];
+        const entry = pathMap[subPath];
         if (entry) {
             entry.targetStats = targetMap[subPath].stats;
         } else {

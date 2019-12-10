@@ -14,8 +14,8 @@
  *
 */
 
-var path = require('path');
-var ConfigFile = require('./ConfigFile');
+const path = require('path');
+const ConfigFile = require('./ConfigFile');
 
 /******************************************************************************
 * ConfigKeeper class
@@ -39,20 +39,20 @@ ConfigKeeper.prototype.get = function ConfigKeeper_get (project_dir, platform, f
     if (file === 'config.xml' && platform === 'android') {
         file = 'res/xml/config.xml';
     }
-    var fake_path = path.join(project_dir, platform, file);
+    const fake_path = path.join(project_dir, platform, file);
 
     if (this._cached[fake_path]) {
         return this._cached[fake_path];
     }
     // File was not cached, need to load.
-    var config_file = new ConfigFile(project_dir, platform, file);
+    const config_file = new ConfigFile(project_dir, platform, file);
     this._cached[fake_path] = config_file;
     return config_file;
 };
 
 ConfigKeeper.prototype.save_all = function ConfigKeeper_save_all () {
     Object.keys(this._cached).forEach(fake_path => {
-        var config_file = this._cached[fake_path];
+        const config_file = this._cached[fake_path];
         if (config_file.is_changed) config_file.save();
     });
 };

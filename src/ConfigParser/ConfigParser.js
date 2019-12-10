@@ -17,11 +17,11 @@
     under the License.
 */
 
-var et = require('elementtree');
-var xml = require('../util/xml-helpers');
-var CordovaError = require('../CordovaError');
-var fs = require('fs-extra');
-var events = require('../events');
+const et = require('elementtree');
+const xml = require('../util/xml-helpers');
+const CordovaError = require('../CordovaError');
+const fs = require('fs-extra');
+const events = require('../events');
 
 /** Wraps a config.xml file */
 function ConfigParser (path) {
@@ -34,7 +34,7 @@ function ConfigParser (path) {
         events.emit('error', 'Parsing ' + path + ' failed');
         throw e;
     }
-    var r = this.doc.getroot();
+    const r = this.doc.getroot();
     if (r.tag !== 'widget') {
         throw new CordovaError(path + ' has incorrect root node name (expected "widget", was "' + r.tag + '")');
     }
@@ -45,7 +45,7 @@ function getNodeTextSafe (el) {
 }
 
 function findOrCreate (doc, name) {
-    var ret = doc.find(name);
+    let ret = doc.find(name);
     if (!ret) {
         ret = new et.Element(name);
         doc.getroot().append(ret);
@@ -54,12 +54,12 @@ function findOrCreate (doc, name) {
 }
 
 function getCordovaNamespacePrefix (doc) {
-    var rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
-    var prefix = 'cdv';
-    for (var j = 0; j < rootAtribs.length; j++) {
+    const rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
+    let prefix = 'cdv';
+    for (let j = 0; j < rootAtribs.length; j++) {
         if (rootAtribs[j].startsWith('xmlns:') &&
             doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
-            var strings = rootAtribs[j].split(':');
+            const strings = rootAtribs[j].split(':');
             prefix = strings[1];
             break;
         }
@@ -76,7 +76,7 @@ function getCordovaNamespacePrefix (doc) {
 function findElementAttributeValue (attributeName, elems) {
     elems = Array.isArray(elems) ? elems : [elems];
 
-    var value = elems.filter(elem =>
+    const value = elems.filter(elem =>
         elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
     ).map(filteredElems =>
         filteredElems.attrib.value
@@ -114,14 +114,14 @@ ConfigParser.prototype = {
         return getNodeTextSafe(this.doc.find('name'));
     },
     setName: function (name) {
-        var el = findOrCreate(this.doc, 'name');
+        const el = findOrCreate(this.doc, 'name');
         el.text = name;
     },
     shortName: function () {
         return this.doc.find('name').attrib.short || this.name();
     },
     setShortName: function (shortname) {
-        var el = findOrCreate(this.doc, 'name');
+        const el = findOrCreate(this.doc, 'name');
         if (!el.text) {
             el.text = shortname;
         }
@@ -131,7 +131,7 @@ ConfigParser.prototype = {
         return getNodeTextSafe(this.doc.find('description'));
     },
     setDescription: function (text) {
-        var el = findOrCreate(this.doc, 'description');
+        const el = findOrCreate(this.doc, 'description');
         el.text = text;
     },
     version: function () {
@@ -156,7 +156,7 @@ ConfigParser.prototype = {
         return findElementAttributeValue(name, this.doc.findall('preference'));
     },
     setGlobalPreference: function (name, value) {
-        var pref = this.doc.find('preference[@name="' + name + '"]');
+        let pref = this.doc.find('preference[@name="' + name + '"]');
         if (!pref) {
             pref = new et.Element('preference');
             pref.attrib.name = name;
@@ -185,7 +185,7 @@ ConfigParser.prototype = {
         pref.attrib.value = value;
     },
     getPreference: function (name, platform) {
-        var platformPreference = '';
+        let platformPreference = '';
 
         if (platform) {
             platformPreference = this.getPlatformPreference(name, platform);
@@ -213,8 +213,8 @@ ConfigParser.prototype = {
      * @return {Array}               Resources for the platform specified.
      */
     getStaticResources: function (platform, resourceName) {
-        var ret = [];
-        var staticResources = [];
+        const ret = [];
+        let staticResources = [];
         if (platform) { // platform specific icons
             this.doc.findall('./platform[@name="' + platform + '"]/' + resourceName).forEach(elt => {
                 elt.platform = platform; // mark as platform specific resource
@@ -225,7 +225,7 @@ ConfigParser.prototype = {
         staticResources = staticResources.concat(this.doc.findall(resourceName));
         // parse resource elements
         staticResources.forEach(elt => {
-            var res = {};
+            const res = {};
             res.src = elt.attrib.src;
             res.target = elt.attrib.target || undefined;
             res.density = elt.attrib.density || elt.attrib[this.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
@@ -299,7 +299,7 @@ ConfigParser.prototype = {
      * @return {Resource[]}      Array of resource file objects.
      */
     getFileResources: function (platform, includeGlobal) {
-        var fileResources = [];
+        let fileResources = [];
 
         if (platform) { // platform specific resources
             fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(tag => ({
@@ -335,7 +335,7 @@ ConfigParser.prototype = {
      * @return {Array}               Script elements.
      */
     getHookScripts: function (hook, platforms) {
-        var scriptElements = this.doc.findall('./hook');
+        let scriptElements = this.doc.findall('./hook');
 
         if (platforms) {
             platforms.forEach(platform => {
@@ -357,11 +357,11 @@ ConfigParser.prototype = {
     * @return {string[]} Array of plugin IDs
     */
     getPluginIdList: function () {
-        var plugins = this.doc.findall('plugin');
-        var result = plugins.map(plugin => plugin.attrib.name);
-        var features = this.doc.findall('feature');
+        const plugins = this.doc.findall('plugin');
+        const result = plugins.map(plugin => plugin.attrib.name);
+        const features = this.doc.findall('feature');
         features.forEach(element => {
-            var idTag = element.find('./param[@name="id"]');
+            const idTag = element.find('./param[@name="id"]');
             if (idTag) {
                 result.push(idTag.attrib.value);
             }
@@ -382,7 +382,7 @@ ConfigParser.prototype = {
      */
     addPlugin: function (attributes, variables) {
         if (!attributes && !attributes.name) return;
-        var el = new et.Element('plugin');
+        const el = new et.Element('plugin');
         el.attrib.name = attributes.name;
         if (attributes.spec) {
             el.attrib.spec = attributes.spec;
@@ -417,24 +417,24 @@ ConfigParser.prototype = {
         if (!id) {
             return undefined;
         }
-        var pluginElement = this.doc.find('./plugin/[@name="' + id + '"]');
+        const pluginElement = this.doc.find('./plugin/[@name="' + id + '"]');
         if (pluginElement === null) {
-            var legacyFeature = this.doc.find('./feature/param[@name="id"][@value="' + id + '"]/..');
+            const legacyFeature = this.doc.find('./feature/param[@name="id"][@value="' + id + '"]/..');
             if (legacyFeature) {
                 events.emit('log', 'Found deprecated feature entry for ' + id + ' in config.xml.');
                 return featureToPlugin(legacyFeature);
             }
             return undefined;
         }
-        var plugin = {};
+        const plugin = {};
 
         plugin.name = pluginElement.attrib.name;
         plugin.spec = pluginElement.attrib.spec || pluginElement.attrib.src || pluginElement.attrib.version;
         plugin.variables = {};
-        var variableElements = pluginElement.findall('variable');
+        const variableElements = pluginElement.findall('variable');
         variableElements.forEach(varElement => {
-            var name = varElement.attrib.name;
-            var value = varElement.attrib.value;
+            const name = varElement.attrib.name;
+            const value = varElement.attrib.value;
             if (name) {
                 plugin.variables[name] = value;
             }
@@ -459,8 +459,8 @@ ConfigParser.prototype = {
 
     // Add any element to the root
     addElement: function (name, attributes) {
-        var el = et.Element(name);
-        for (var a in attributes) {
+        const el = et.Element(name);
+        for (const a in attributes) {
             el.attrib[a] = attributes[a];
         }
         this.doc.getroot().append(el);
@@ -473,7 +473,7 @@ ConfigParser.prototype = {
      */
     addEngine: function (name, spec) {
         if (!name) return;
-        var el = et.Element('engine');
+        const el = et.Element('engine');
         el.attrib.name = name;
         if (spec) {
             el.attrib.spec = spec;
@@ -488,9 +488,9 @@ ConfigParser.prototype = {
         removeChildren(this.doc.getroot(), `./engine/[@name="${name}"]`);
     },
     getEngines: function () {
-        var engines = this.doc.findall('./engine');
+        const engines = this.doc.findall('./engine');
         return engines.map(engine => {
-            var spec = engine.attrib.spec || engine.attrib.version;
+            const spec = engine.attrib.spec || engine.attrib.version;
             return {
                 name: engine.attrib.name,
                 spec: spec || null
@@ -499,15 +499,15 @@ ConfigParser.prototype = {
     },
     /* Get all the access tags */
     getAccesses: function () {
-        var accesses = this.doc.findall('./access');
+        const accesses = this.doc.findall('./access');
         return accesses.map(access => {
-            var minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
-            var requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
-            var requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
-            var allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
-            var allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean (DEPRECATED) */
-            var allows_arbitrary_loads_for_media = access.attrib['allows-arbitrary-loads-for-media']; /* Boolean */
-            var allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
+            const minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
+            const requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
+            const requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
+            const allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
+            const allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean (DEPRECATED) */
+            const allows_arbitrary_loads_for_media = access.attrib['allows-arbitrary-loads-for-media']; /* Boolean */
+            const allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
 
             return {
                 origin: access.attrib.origin,
@@ -523,11 +523,11 @@ ConfigParser.prototype = {
     },
     /* Get all the allow-navigation tags */
     getAllowNavigations: function () {
-        var allow_navigations = this.doc.findall('./allow-navigation');
+        const allow_navigations = this.doc.findall('./allow-navigation');
         return allow_navigations.map(allow_navigation => {
-            var minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
-            var requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
-            var requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
+            const minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
+            const requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
+            const requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
 
             return {
                 href: allow_navigation.attrib.href,
@@ -539,18 +539,18 @@ ConfigParser.prototype = {
     },
     /* Get all the allow-intent tags */
     getAllowIntents: function () {
-        var allow_intents = this.doc.findall('./allow-intent');
+        const allow_intents = this.doc.findall('./allow-intent');
         return allow_intents.map(allow_intent => ({
             href: allow_intent.attrib.href
         }));
     },
     /* Get all edit-config tags */
     getEditConfigs: function (platform) {
-        var platform_edit_configs = this.doc.findall('./platform[@name="' + platform + '"]/edit-config');
-        var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
+        const platform_edit_configs = this.doc.findall('./platform[@name="' + platform + '"]/edit-config');
+        const edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
         return edit_configs.map(tag => {
-            var editConfig = {
+            const editConfig = {
                 file: tag.attrib.file,
                 target: tag.attrib.target,
                 mode: tag.attrib.mode,
@@ -563,11 +563,11 @@ ConfigParser.prototype = {
 
     /* Get all config-file tags */
     getConfigFiles: function (platform) {
-        var platform_config_files = this.doc.findall('./platform[@name="' + platform + '"]/config-file');
-        var config_files = this.doc.findall('config-file').concat(platform_config_files);
+        const platform_config_files = this.doc.findall('./platform[@name="' + platform + '"]/config-file');
+        const config_files = this.doc.findall('config-file').concat(platform_config_files);
 
         return config_files.map(tag => {
-            var configFile = {
+            const configFile = {
                 target: tag.attrib.target,
                 parent: tag.attrib.parent,
                 after: tag.attrib.after,
@@ -586,15 +586,14 @@ ConfigParser.prototype = {
 };
 
 function featureToPlugin (featureElement) {
-    var plugin = {};
+    const plugin = {};
     plugin.variables = [];
-    var pluginVersion,
-        pluginSrc;
+    let pluginVersion, pluginSrc;
 
-    var nodes = featureElement.findall('param');
+    const nodes = featureElement.findall('param');
     nodes.forEach(element => {
-        var n = element.attrib.name;
-        var v = element.attrib.value;
+        const n = element.attrib.name;
+        const v = element.attrib.value;
         if (n === 'id') {
             plugin.name = v;
         } else if (n === 'version') {
@@ -606,7 +605,7 @@ function featureToPlugin (featureElement) {
         }
     });
 
-    var spec = pluginSrc || pluginVersion;
+    const spec = pluginSrc || pluginVersion;
     if (spec) {
         plugin.spec = spec;
     }
