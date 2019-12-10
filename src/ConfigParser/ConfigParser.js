@@ -303,7 +303,7 @@ ConfigParser.prototype = {
 
         if (platform) { // platform specific resources
             fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(tag => ({
-                platform: platform,
+                platform,
                 src: tag.attrib.src,
                 target: tag.attrib.target,
                 versions: tag.attrib.versions,
@@ -511,13 +511,13 @@ ConfigParser.prototype = {
 
             return {
                 origin: access.attrib.origin,
-                minimum_tls_version: minimum_tls_version,
-                requires_forward_secrecy: requires_forward_secrecy,
-                requires_certificate_transparency: requires_certificate_transparency,
-                allows_arbitrary_loads_in_web_content: allows_arbitrary_loads_in_web_content,
-                allows_arbitrary_loads_in_media: allows_arbitrary_loads_in_media,
-                allows_arbitrary_loads_for_media: allows_arbitrary_loads_for_media,
-                allows_local_networking: allows_local_networking
+                minimum_tls_version,
+                requires_forward_secrecy,
+                requires_certificate_transparency,
+                allows_arbitrary_loads_in_web_content,
+                allows_arbitrary_loads_in_media,
+                allows_arbitrary_loads_for_media,
+                allows_local_networking
             };
         });
     },
@@ -531,9 +531,9 @@ ConfigParser.prototype = {
 
             return {
                 href: allow_navigation.attrib.href,
-                minimum_tls_version: minimum_tls_version,
-                requires_forward_secrecy: requires_forward_secrecy,
-                requires_certificate_transparency: requires_certificate_transparency
+                minimum_tls_version,
+                requires_forward_secrecy,
+                requires_certificate_transparency
             };
         });
     },

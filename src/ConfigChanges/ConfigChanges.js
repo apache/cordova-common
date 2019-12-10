@@ -273,7 +273,7 @@ function generate_config_xml_munge (config, config_changes, type) {
             const stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
             // 2. add into munge
             if (change.mode) {
-                mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id: id });
+                mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id });
             } else {
                 mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after });
             }
@@ -385,11 +385,11 @@ PlatformMunger.prototype._is_conflicting = function (editchanges, config_munge, 
     });
 
     return {
-        conflictFound: conflictFound,
-        conflictingPlugin: conflictingPlugin,
-        conflictingMunge: conflictingMunge,
-        configxmlMunge: configxmlMunge,
-        conflictWithConfigxml: conflictWithConfigxml
+        conflictFound,
+        conflictingPlugin,
+        conflictingMunge,
+        configxmlMunge,
+        conflictWithConfigxml
     };
 };
 

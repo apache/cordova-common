@@ -72,11 +72,7 @@ function PluginInfo (dirname) {
             throw new Error(msg);
         }
 
-        const asset = {
-            itemType: 'asset',
-            src: src,
-            target: target
-        };
+        const asset = { itemType: 'asset', src, target };
         return asset;
     }
 
@@ -279,11 +275,7 @@ function PluginInfo (dirname) {
                     return Object.assign({}, acc, { [val.name]: val });
                 }, {});
             }
-            return {
-                declarations: declarations,
-                sources: sources,
-                libraries: libraries
-            };
+            return { declarations, sources, libraries };
         });
         return podSpecs;
     }
@@ -372,7 +364,7 @@ function PluginInfo (dirname) {
                 parent: el.attrib.parent,
                 custom: isStrTrue(el.attrib.custom),
                 embed: isStrTrue(el.attrib.embed),
-                src: src,
+                src,
                 spec: el.attrib.spec,
                 weak: isStrTrue(el.attrib.weak),
                 versions: el.attrib.versions,
