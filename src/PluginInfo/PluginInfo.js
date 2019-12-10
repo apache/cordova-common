@@ -31,6 +31,31 @@ const xml_helpers = require('../util/xml-helpers');
 const CordovaError = require('../CordovaError');
 
 function PluginInfo (dirname) {
+    /// // PluginInfo Constructor logic  /////
+    this.filepath = path.join(dirname, 'plugin.xml');
+    if (!fs.existsSync(this.filepath)) {
+        throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
+    }
+
+    this.dir = dirname;
+    const et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
+    const pelem = et.getroot();
+    this.id = pelem.attrib.id;
+    this.version = pelem.attrib.version;
+
+    // Optional fields
+    this.name = pelem.findtext('name');
+    this.description = pelem.findtext('description');
+    this.license = pelem.findtext('license');
+    this.repo = pelem.findtext('repo');
+    this.issue = pelem.findtext('issue');
+    this.keywords = pelem.findtext('keywords');
+    this.info = pelem.findtext('info');
+    if (this.keywords) {
+        this.keywords = this.keywords.split(',').map(s => s.trim());
+    }
+    // End of PluginInfo constructor.
+
     // METHODS
     // Defined inside the constructor to avoid the "this" binding problems.
 
@@ -383,36 +408,13 @@ function PluginInfo (dirname) {
         );
         return items;
     }
-    /// // End of PluginInfo methods /////
 
-    /// // PluginInfo Constructor logic  /////
-    this.filepath = path.join(dirname, 'plugin.xml');
-    if (!fs.existsSync(this.filepath)) {
-        throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
-    }
-
-    this.dir = dirname;
-    const et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
-    const pelem = et.getroot();
-    this.id = pelem.attrib.id;
-    this.version = pelem.attrib.version;
-
-    // Optional fields
-    this.name = pelem.findtext('name');
-    this.description = pelem.findtext('description');
-    this.license = pelem.findtext('license');
-    this.repo = pelem.findtext('repo');
-    this.issue = pelem.findtext('issue');
-    this.keywords = pelem.findtext('keywords');
-    this.info = pelem.findtext('info');
-    if (this.keywords) {
-        this.keywords = this.keywords.split(',').map(s => s.trim());
-    }
     this.getKeywordsAndPlatforms = () => {
         const ret = this.keywords || [];
         return ret.concat('ecosystem:cordova').concat(addCordova(this.getPlatformsArray()));
     };
-} // End of PluginInfo constructor.
+    /// // End of PluginInfo methods /////
+}
 
 // Helper function used to prefix every element of an array with cordova-
 // Useful when we want to modify platforms to be cordova-platform
