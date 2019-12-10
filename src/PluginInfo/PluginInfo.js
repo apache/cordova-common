@@ -31,8 +31,6 @@ var xml_helpers = require('../util/xml-helpers');
 var CordovaError = require('../CordovaError');
 
 function PluginInfo (dirname) {
-    var self = this;
-
     // METHODS
     // Defined inside the constructor to avoid the "this" binding problems.
 
@@ -40,9 +38,9 @@ function PluginInfo (dirname) {
     // Example: <preference name="API_KEY" />
     // Used to require a variable to be specified via --variable when installing the plugin.
     // returns { key : default | null}
-    self.getPreferences = getPreferences;
+    this.getPreferences = getPreferences;
     function getPreferences (platform) {
-        return _getTags(self._et, 'preference', platform, _parsePreference)
+        return _getTags(this._et, 'preference', platform, _parsePreference)
             .reduce((preferences, pref) => {
                 preferences[pref.preference] = pref.default;
                 return preferences;
@@ -56,9 +54,9 @@ function PluginInfo (dirname) {
     }
 
     // <asset>
-    self.getAssets = getAssets;
+    this.getAssets = getAssets;
     function getAssets (platform) {
-        var assets = _getTags(self._et, 'asset', platform, _parseAsset);
+        var assets = _getTags(this._et, 'asset', platform, _parseAsset);
         return assets;
     }
 
@@ -70,7 +68,7 @@ function PluginInfo (dirname) {
             var msg =
                 'Malformed <asset> tag. Both "src" and "target" attributes' +
                 'must be specified in\n' +
-                self.filepath
+                this.filepath
                 ;
             throw new Error(msg);
         }
@@ -89,10 +87,10 @@ function PluginInfo (dirname) {
     //     url="https://github.com/myuser/someplugin"
     //     commit="428931ada3891801"
     //     subdir="some/path/here" />
-    self.getDependencies = getDependencies;
+    this.getDependencies = getDependencies;
     function getDependencies (platform) {
         var deps = _getTags(
-            self._et,
+            this._et,
             'dependency',
             platform,
             _parseDependency
@@ -114,7 +112,7 @@ function PluginInfo (dirname) {
         if (!dep.id) {
             var msg =
                 '<dependency> tag is missing id attribute in ' +
-                self.filepath
+                this.filepath
                 ;
             throw new CordovaError(msg);
         }
@@ -122,9 +120,9 @@ function PluginInfo (dirname) {
     }
 
     // <config-file> tag
-    self.getConfigFiles = getConfigFiles;
+    this.getConfigFiles = getConfigFiles;
     function getConfigFiles (platform) {
-        var configFiles = _getTags(self._et, 'config-file', platform, _parseConfigFile);
+        var configFiles = _getTags(this._et, 'config-file', platform, _parseConfigFile);
         return configFiles;
     }
 
@@ -141,9 +139,9 @@ function PluginInfo (dirname) {
         return configFile;
     }
 
-    self.getEditConfigs = getEditConfigs;
+    this.getEditConfigs = getEditConfigs;
     function getEditConfigs (platform) {
-        var editConfigs = _getTags(self._et, 'edit-config', platform, _parseEditConfigs);
+        var editConfigs = _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
         return editConfigs;
     }
 
@@ -159,10 +157,10 @@ function PluginInfo (dirname) {
 
     // <info> tags, both global and within a <platform>
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
-    self.getInfo = getInfo;
+    this.getInfo = getInfo;
     function getInfo (platform) {
         var infos = _getTags(
-            self._et,
+            this._et,
             'info',
             platform,
             elem => elem.text
@@ -176,9 +174,9 @@ function PluginInfo (dirname) {
     // Examples:
     // <source-file src="src/ios/someLib.a" framework="true" />
     // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
-    self.getSourceFiles = getSourceFiles;
+    this.getSourceFiles = getSourceFiles;
     function getSourceFiles (platform) {
-        var sourceFiles = _getTagsInPlatform(self._et, 'source-file', platform, _parseSourceFile);
+        var sourceFiles = _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
         return sourceFiles;
     }
 
@@ -196,9 +194,9 @@ function PluginInfo (dirname) {
     // <header-file>
     // Example:
     // <header-file src="CDVFoo.h" />
-    self.getHeaderFiles = getHeaderFiles;
+    this.getHeaderFiles = getHeaderFiles;
     function getHeaderFiles (platform) {
-        var headerFiles = _getTagsInPlatform(self._et, 'header-file', platform, tag => ({
+        var headerFiles = _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
             itemType: 'header-file',
             src: tag.attrib.src,
             targetDir: tag.attrib['target-dir'],
@@ -210,9 +208,9 @@ function PluginInfo (dirname) {
     // <resource-file>
     // Example:
     // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
-    self.getResourceFiles = getResourceFiles;
+    this.getResourceFiles = getResourceFiles;
     function getResourceFiles (platform) {
-        var resourceFiles = _getTagsInPlatform(self._et, 'resource-file', platform, tag => ({
+        var resourceFiles = _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
             itemType: 'resource-file',
             src: tag.attrib.src,
             target: tag.attrib.target,
@@ -227,9 +225,9 @@ function PluginInfo (dirname) {
     // <lib-file>
     // Example:
     // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
-    self.getLibFiles = getLibFiles;
+    this.getLibFiles = getLibFiles;
     function getLibFiles (platform) {
-        var libFiles = _getTagsInPlatform(self._et, 'lib-file', platform, tag => ({
+        var libFiles = _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
             itemType: 'lib-file',
             src: tag.attrib.src,
             arch: tag.attrib.arch,
@@ -256,9 +254,9 @@ function PluginInfo (dirname) {
     //     <pod name="Foobar5" swift-version="3.0" />
     //   </pods>
     // </podspec>
-    self.getPodSpecs = getPodSpecs;
+    this.getPodSpecs = getPodSpecs;
     function getPodSpecs (platform) {
-        var podSpecs = _getTagsInPlatform(self._et, 'podspec', platform, tag => {
+        var podSpecs = _getTagsInPlatform(this._et, 'podspec', platform, tag => {
             var declarations = null;
             var sources = null;
             var libraries = null;
@@ -295,13 +293,13 @@ function PluginInfo (dirname) {
     // <hook>
     // Example:
     // <hook type="before_build" src="scripts/beforeBuild.js" />
-    self.getHookScripts = getHookScripts;
+    this.getHookScripts = getHookScripts;
     function getHookScripts (hook, platforms) {
-        var scriptElements = self._et.findall('./hook');
+        var scriptElements = this._et.findall('./hook');
 
         if (platforms) {
             platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(self._et.findall('./platform[@name="' + platform + '"]/hook'));
+                scriptElements = scriptElements.concat(this._et.findall('./platform[@name="' + platform + '"]/hook'));
             });
         }
 
@@ -312,9 +310,9 @@ function PluginInfo (dirname) {
         return scriptElements.filter(filterScriptByHookType);
     }
 
-    self.getJsModules = getJsModules;
+    this.getJsModules = getJsModules;
     function getJsModules (platform) {
-        var modules = _getTags(self._et, 'js-module', platform, _parseJsModule);
+        var modules = _getTags(this._et, 'js-module', platform, _parseJsModule);
         return modules;
     }
 
@@ -331,8 +329,8 @@ function PluginInfo (dirname) {
         return ret;
     }
 
-    self.getEngines = function () {
-        return self._et.findall('engines/engine').map(n => ({
+    this.getEngines = function () {
+        return this._et.findall('engines/engine').map(n => ({
             name: n.attrib.name,
             version: n.attrib.version,
             platform: n.attrib.platform,
@@ -340,25 +338,25 @@ function PluginInfo (dirname) {
         }));
     };
 
-    self.getPlatforms = function () {
-        return self._et.findall('platform').map(n => ({
+    this.getPlatforms = function () {
+        return this._et.findall('platform').map(n => ({
             name: n.attrib.name
         }));
     };
 
-    self.getPlatformsArray = function () {
-        return self._et.findall('platform').map(n => n.attrib.name);
+    this.getPlatformsArray = function () {
+        return this._et.findall('platform').map(n => n.attrib.name);
     };
 
-    self.getFrameworks = function (platform, options) {
-        return _getTags(self._et, 'framework', platform, el => {
+    this.getFrameworks = function (platform, options) {
+        return _getTags(this._et, 'framework', platform, el => {
             var src = el.attrib.src;
             if (options) {
                 var vars = options.cli_variables || {};
 
                 if (Object.keys(vars).length === 0) {
                     // get variable defaults from plugin.xml for removal
-                    vars = self.getPreferences(platform);
+                    vars = this.getPreferences(platform);
                 }
                 var regExp;
                 // Iterate over plugin variables.
@@ -389,47 +387,47 @@ function PluginInfo (dirname) {
         });
     };
 
-    self.getFilesAndFrameworks = getFilesAndFrameworks;
+    this.getFilesAndFrameworks = getFilesAndFrameworks;
     function getFilesAndFrameworks (platform, options) {
         // Please avoid changing the order of the calls below, files will be
         // installed in this order.
         var items = [].concat(
-            self.getSourceFiles(platform),
-            self.getHeaderFiles(platform),
-            self.getResourceFiles(platform),
-            self.getFrameworks(platform, options),
-            self.getLibFiles(platform)
+            this.getSourceFiles(platform),
+            this.getHeaderFiles(platform),
+            this.getResourceFiles(platform),
+            this.getFrameworks(platform, options),
+            this.getLibFiles(platform)
         );
         return items;
     }
     /// // End of PluginInfo methods /////
 
     /// // PluginInfo Constructor logic  /////
-    self.filepath = path.join(dirname, 'plugin.xml');
-    if (!fs.existsSync(self.filepath)) {
+    this.filepath = path.join(dirname, 'plugin.xml');
+    if (!fs.existsSync(this.filepath)) {
         throw new CordovaError('Cannot find plugin.xml for plugin "' + path.basename(dirname) + '". Please try adding it again.');
     }
 
-    self.dir = dirname;
-    var et = self._et = xml_helpers.parseElementtreeSync(self.filepath);
+    this.dir = dirname;
+    var et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
     var pelem = et.getroot();
-    self.id = pelem.attrib.id;
-    self.version = pelem.attrib.version;
+    this.id = pelem.attrib.id;
+    this.version = pelem.attrib.version;
 
     // Optional fields
-    self.name = pelem.findtext('name');
-    self.description = pelem.findtext('description');
-    self.license = pelem.findtext('license');
-    self.repo = pelem.findtext('repo');
-    self.issue = pelem.findtext('issue');
-    self.keywords = pelem.findtext('keywords');
-    self.info = pelem.findtext('info');
-    if (self.keywords) {
-        self.keywords = self.keywords.split(',').map(s => s.trim());
+    this.name = pelem.findtext('name');
+    this.description = pelem.findtext('description');
+    this.license = pelem.findtext('license');
+    this.repo = pelem.findtext('repo');
+    this.issue = pelem.findtext('issue');
+    this.keywords = pelem.findtext('keywords');
+    this.info = pelem.findtext('info');
+    if (this.keywords) {
+        this.keywords = this.keywords.split(',').map(s => s.trim());
     }
-    self.getKeywordsAndPlatforms = () => {
-        var ret = self.keywords || [];
-        return ret.concat('ecosystem:cordova').concat(addCordova(self.getPlatformsArray()));
+    this.getKeywordsAndPlatforms = () => {
+        var ret = this.keywords || [];
+        return ret.concat('ecosystem:cordova').concat(addCordova(this.getPlatformsArray()));
     };
 } // End of PluginInfo constructor.
 

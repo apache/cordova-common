@@ -224,12 +224,11 @@ ConfigParser.prototype = {
         // root level resources
         staticResources = staticResources.concat(this.doc.findall(resourceName));
         // parse resource elements
-        var that = this;
         staticResources.forEach(elt => {
             var res = {};
             res.src = elt.attrib.src;
             res.target = elt.attrib.target || undefined;
-            res.density = elt.attrib.density || elt.attrib[that.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
+            res.density = elt.attrib.density || elt.attrib[this.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
             res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
             res.width = +elt.attrib.width || undefined;
             res.height = +elt.attrib.height || undefined;
@@ -336,12 +335,11 @@ ConfigParser.prototype = {
      * @return {Array}               Script elements.
      */
     getHookScripts: function (hook, platforms) {
-        var self = this;
-        var scriptElements = self.doc.findall('./hook');
+        var scriptElements = this.doc.findall('./hook');
 
         if (platforms) {
             platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(self.doc.findall('./platform[@name="' + platform + '"]/hook'));
+                scriptElements = scriptElements.concat(this.doc.findall('./platform[@name="' + platform + '"]/hook'));
             });
         }
 
