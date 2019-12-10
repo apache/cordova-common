@@ -40,56 +40,6 @@ function ConfigParser (path) {
     }
 }
 
-function getNodeTextSafe (el) {
-    return el && el.text && el.text.trim();
-}
-
-function findOrCreate (doc, name) {
-    let ret = doc.find(name);
-    if (!ret) {
-        ret = new et.Element(name);
-        doc.getroot().append(ret);
-    }
-    return ret;
-}
-
-function getCordovaNamespacePrefix (doc) {
-    const rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
-    let prefix = 'cdv';
-    for (let j = 0; j < rootAtribs.length; j++) {
-        if (rootAtribs[j].startsWith('xmlns:') &&
-            doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
-            const strings = rootAtribs[j].split(':');
-            prefix = strings[1];
-            break;
-        }
-    }
-    return prefix;
-}
-
-/**
- * Finds the value of an element's attribute
- * @param  {String} attributeName Name of the attribute to search for
- * @param  {Array}  elems         An array of ElementTree nodes
- * @return {String}
- */
-function findElementAttributeValue (attributeName, elems) {
-    elems = Array.isArray(elems) ? elems : [elems];
-
-    const value = elems.filter(elem =>
-        elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
-    ).map(filteredElems =>
-        filteredElems.attrib.value
-    ).pop();
-
-    return value || '';
-}
-
-function removeChildren (el, selector) {
-    const matches = el.findall(selector);
-    matches.forEach(child => el.remove(child));
-}
-
 ConfigParser.prototype = {
     getAttribute: function (attr) {
         return this.doc.getroot().attrib[attr];
@@ -584,6 +534,56 @@ ConfigParser.prototype = {
         fs.writeFileSync(this.path, this.doc.write({ indent: 4 }), 'utf-8');
     }
 };
+
+function getNodeTextSafe (el) {
+    return el && el.text && el.text.trim();
+}
+
+function findOrCreate (doc, name) {
+    let ret = doc.find(name);
+    if (!ret) {
+        ret = new et.Element(name);
+        doc.getroot().append(ret);
+    }
+    return ret;
+}
+
+function getCordovaNamespacePrefix (doc) {
+    const rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
+    let prefix = 'cdv';
+    for (let j = 0; j < rootAtribs.length; j++) {
+        if (rootAtribs[j].startsWith('xmlns:') &&
+            doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
+            const strings = rootAtribs[j].split(':');
+            prefix = strings[1];
+            break;
+        }
+    }
+    return prefix;
+}
+
+/**
+ * Finds the value of an element's attribute
+ * @param  {String} attributeName Name of the attribute to search for
+ * @param  {Array}  elems         An array of ElementTree nodes
+ * @return {String}
+ */
+function findElementAttributeValue (attributeName, elems) {
+    elems = Array.isArray(elems) ? elems : [elems];
+
+    const value = elems.filter(elem =>
+        elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
+    ).map(filteredElems =>
+        filteredElems.attrib.value
+    ).pop();
+
+    return value || '';
+}
+
+function removeChildren (el, selector) {
+    const matches = el.findall(selector);
+    matches.forEach(child => el.remove(child));
+}
 
 function featureToPlugin (featureElement) {
     const plugin = {};
