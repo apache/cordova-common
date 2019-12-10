@@ -57,7 +57,7 @@ var iswin32 = process.platform === 'win32';
  *       'stderr': ...
  *   }
  */
-exports.spawn = function (cmd, args, opts) {
+exports.spawn = (cmd, args, opts) => {
     args = args || [];
     opts = opts || {};
     var spawnOpts = {};
@@ -101,7 +101,7 @@ exports.spawn = function (cmd, args, opts) {
 
     if (child.stdout) {
         child.stdout.setEncoding('utf8');
-        child.stdout.on('data', function (data) {
+        child.stdout.on('data', data => {
             capturedOut += data;
             d.notify({ stdout: data });
         });
@@ -109,7 +109,7 @@ exports.spawn = function (cmd, args, opts) {
 
     if (child.stderr) {
         child.stderr.setEncoding('utf8');
-        child.stderr.on('data', function (data) {
+        child.stderr.on('data', data => {
             capturedErr += data;
             d.notify({ stderr: data });
         });
@@ -147,7 +147,7 @@ exports.spawn = function (cmd, args, opts) {
     return d.promise;
 };
 
-exports.maybeSpawn = function (cmd, args, opts) {
+exports.maybeSpawn = (cmd, args, opts) => {
     if (fs.existsSync(cmd)) {
         return exports.spawn(cmd, args, opts);
     }

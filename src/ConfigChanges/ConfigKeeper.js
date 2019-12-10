@@ -54,7 +54,7 @@ ConfigKeeper.prototype.get = function ConfigKeeper_get (project_dir, platform, f
 
 ConfigKeeper.prototype.save_all = function ConfigKeeper_save_all () {
     var self = this;
-    Object.keys(self._cached).forEach(function (fake_path) {
+    Object.keys(self._cached).forEach(fake_path => {
         var config_file = self._cached[fake_path];
         if (config_file.is_changed) config_file.save();
     });

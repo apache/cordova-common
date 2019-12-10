@@ -54,7 +54,7 @@ function PluginManager (platform, locations, ideProject) {
  * @param {IDEProject} ideProject The IDE project to add/remove plugin changes to/from
  * @returns new PluginManager instance
  */
-PluginManager.get = function (platform, locations, ideProject) {
+PluginManager.get = (platform, locations, ideProject) => {
     return new PluginManager(platform, locations, ideProject);
 };
 
@@ -96,7 +96,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
         .concat(plugin.getAssets(this.platform))
         .concat(plugin.getJsModules(this.platform))
         // ... put them into stack ...
-        .forEach(function (item) {
+        .forEach(item => {
             var installer = self.project.getInstaller(item.itemType);
             var uninstaller = self.project.getUninstaller(item.itemType);
             var actionArgs = [item, plugin, self.project, options];
@@ -112,7 +112,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
 
     // ... and run through the action stack
     return actions.process(this.platform)
-        .then(function () {
+        .then(() => {
             if (self.project.write) {
                 self.project.write();
             }

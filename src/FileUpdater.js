@@ -173,7 +173,7 @@ function updatePath (sourcePath, targetPath, options, log) {
         throw new Error('A target path is required.');
     }
 
-    log = log || function () { };
+    log = log || (() => { });
 
     return updatePathInternal(sourcePath, targetPath, options, log);
 }
@@ -200,12 +200,12 @@ function updatePaths (pathMap, options, log) {
         throw new Error('An object mapping from target paths to source paths is required.');
     }
 
-    log = log || function () { };
+    log = log || (() => { });
 
     var updated = false;
 
     // Iterate in sorted order to ensure directories are created before files under them.
-    Object.keys(pathMap).sort().forEach(function (targetPath) {
+    Object.keys(pathMap).sort().forEach(targetPath => {
         var sourcePath = pathMap[targetPath];
         updated = updatePathInternal(sourcePath, targetPath, options, log) || updated;
     });
@@ -253,7 +253,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
         throw new Error('A target directory path is required.');
     }
 
-    log = log || function () { };
+    log = log || (() => { });
 
     var rootDir = (options && options.rootDir) || '';
 
@@ -272,9 +272,9 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     }
 
     // Scan the files in each of the source directories.
-    var sourceMaps = sourceDirs.map(function (sourceDir) {
-        return path.join(rootDir, sourceDir);
-    }).map(function (sourcePath) {
+    var sourceMaps = sourceDirs.map(sourceDir =>
+        path.join(rootDir, sourceDir)
+    ).map(sourcePath => {
         if (!fs.existsSync(sourcePath)) {
             throw new Error('Source directory does not exist: ' + sourcePath);
         }
@@ -293,7 +293,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     var updated = false;
 
     // Iterate in sorted order to ensure directories are created before files under them.
-    Object.keys(pathMap).sort().forEach(function (subPath) {
+    Object.keys(pathMap).sort().forEach(subPath => {
         var entry = pathMap[subPath];
         updated = updatePathWithStats(
             entry.sourcePath,
@@ -319,7 +319,7 @@ function mapDirectory (rootDir, subDir, include, exclude) {
         var itemMapped = false;
         var items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
 
-        items.forEach(function (item) {
+        items.forEach(item => {
             var relativePath = path.join(relativeDir, item);
             if (!matchGlobArray(relativePath, exclude)) {
                 // Stats obtained here (required at least to know where to recurse in directories)
@@ -349,9 +349,7 @@ function mapDirectory (rootDir, subDir, include, exclude) {
     }
 
     function matchGlobArray (path, globs) {
-        return globs.some(function (elem) {
-            return minimatch(path, elem, { dot: true });
-        });
+        return globs.some(elem => minimatch(path, elem, { dot: true }));
     }
 }
 
@@ -364,8 +362,8 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Entries in later source maps override those in earlier source maps.
     // Target stats will be filled in below for targets that exist.
     var pathMap = {};
-    sourceMaps.forEach(function (sourceMap) {
-        Object.keys(sourceMap).forEach(function (sourceSubPath) {
+    sourceMaps.forEach(sourceMap => {
+        Object.keys(sourceMap).forEach(sourceSubPath => {
             var sourceEntry = sourceMap[sourceSubPath];
             pathMap[sourceSubPath] = {
                 targetPath: path.join(targetDir, sourceSubPath),
@@ -378,7 +376,7 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
 
     // Fill in target stats for targets that exist, and create entries
     // for targets that don't have any corresponding sources.
-    Object.keys(targetMap).forEach(function (subPath) {
+    Object.keys(targetMap).forEach(subPath => {
         var entry = pathMap[subPath];
         if (entry) {
             entry.targetStats = targetMap[subPath].stats;
