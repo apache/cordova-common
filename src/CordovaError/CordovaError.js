@@ -34,15 +34,6 @@ class CordovaError extends Error {
     }
 
     /**
-     * Translates instance's error code number into error code name, e.g. 0 -> UNKNOWN_ERROR
-     * @returns {string} Error code string name
-     */
-    getErrorCodeName () {
-        return Object.keys(CordovaError)
-            .find(key => CordovaError[key] === this.code);
-    }
-
-    /**
      * Converts CordovaError instance to string representation
      * @return  {String}              Stringified error representation
      */

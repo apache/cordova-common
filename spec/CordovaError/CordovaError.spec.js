@@ -24,11 +24,6 @@ describe('CordovaError class', function () {
         expect(new CordovaError('error')).toEqual(jasmine.any(CordovaError));
     });
 
-    it('Test 002 : getErrorCodeName works', function () {
-        var error002_1 = new CordovaError('error', 0);
-        expect(error002_1.getErrorCodeName()).toEqual('UNKNOWN_ERROR');
-    });
-
     it('Test 003 : toString works', function () {
         var error003_1 = new CordovaError('error', 0);
         expect(error003_1.toString()).toEqual('error');
