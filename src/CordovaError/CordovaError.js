@@ -17,24 +17,20 @@
     under the License.
 */
 
-var EOL = require('os').EOL;
-
 /**
  * A derived exception class. See usage example in cli.js
  * Based on:
  * stackoverflow.com/questions/1382107/whats-a-good-way-to-extend-error-in-javascript/8460753#8460753
  * @param {String} message Error message
  * @param {Number} [code=0] Error code
- * @param {CordovaExternalToolErrorContext} [context] External tool error context object
  * @constructor
  */
 class CordovaError extends Error {
-    constructor (message, code, context) {
+    constructor (message, code) {
         super(message);
         Error.captureStackTrace(this, this.constructor);
         this.name = this.constructor.name;
         this.code = code || CordovaError.UNKNOWN_ERROR;
-        this.context = context;
     }
 
     /**
@@ -49,7 +45,7 @@ class CordovaError extends Error {
     /**
      * Converts CordovaError instance to string representation
      * @param   {Boolean}  [isVerbose]  Set up verbose mode. Used to provide more
-     *   details including information about error code name and context
+     *   details including information about error code name
      * @return  {String}              Stringified error representation
      */
     toString (isVerbose) {
@@ -61,16 +57,7 @@ class CordovaError extends Error {
         }
 
         if (this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
-            if (typeof this.context !== 'undefined') {
-                if (isVerbose) {
-                    message = codePrefix + EOL + this.context.toString(isVerbose) + '\n failed with an error: ' +
-                        this.message + EOL + 'Stack trace: ' + this.stack;
-                } else {
-                    message = codePrefix + '\'' + this.context.toString(isVerbose) + '\' ' + this.message;
-                }
-            } else {
-                message = 'External tool failed with an error: ' + this.message;
-            }
+            message = 'External tool failed with an error: ' + this.message;
         } else {
             message = isVerbose ? codePrefix + this.stack : codePrefix + this.message;
         }

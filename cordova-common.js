@@ -25,7 +25,6 @@ module.exports = {
     get CordovaError () { return require('./src/CordovaError/CordovaError'); },
     get CordovaLogger () { return require('./src/CordovaLogger'); },
     get CordovaCheck () { return require('./src/CordovaCheck'); },
-    get CordovaExternalToolErrorContext () { return require('./src/CordovaError/CordovaExternalToolErrorContext'); },
     get PlatformJson () { return require('./src/PlatformJson'); },
     get ConfigParser () { return require('./src/ConfigParser/ConfigParser'); },
     get FileUpdater () { return require('./src/FileUpdater'); },
