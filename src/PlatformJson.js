@@ -41,8 +41,8 @@ class PlatformJson {
 
     /**
      * Indicates whether the specified plugin is installed as a top-level (not as
-     *  dependency to others)
-     * @method function
+     * dependency to others)
+     *
      * @param  {String} pluginId A plugin id to check for.
      * @return {Boolean} true if plugin installed as top-level, otherwise false.
      */
@@ -52,8 +52,8 @@ class PlatformJson {
 
     /**
      * Indicates whether the specified plugin is installed as a dependency to other
-     *  plugin.
-     * @method function
+     * plugin.
+     *
      * @param  {String} pluginId A plugin id to check for.
      * @return {Boolean} true if plugin installed as a dependency, otherwise false.
      */
@@ -63,7 +63,7 @@ class PlatformJson {
 
     /**
      * Indicates whether plugin is installed either as top-level or as dependency.
-     * @method function
+     *
      * @param  {String} pluginId A plugin id to check for.
      * @return {Boolean} true if plugin installed, otherwise false.
      */
@@ -153,7 +153,7 @@ class PlatformJson {
     /**
      * Moves plugin, specified by id to top-level plugins. If plugin is top-level
      *  already, then does nothing.
-     * @method function
+     *
      * @param  {String} pluginId A plugin id to make top-level.
      * @return {PlatformJson} PlatformJson instance.
      */

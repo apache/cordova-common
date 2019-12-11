@@ -351,8 +351,7 @@ class ConfigParser {
 
     /**
      * Adds a plugin element. Does not check for duplicates.
-     * @name addPlugin
-     * @function
+     *
      * @param {object} attributes name and spec are supported
      * @param {Array|object} variables name, value or arbitary object
      */
@@ -385,8 +384,7 @@ class ConfigParser {
      *
      * This function also returns any plugin's that
      * were defined using the legacy <feature> tags.
-     * @name getPlugin
-     * @function
+     *
      * @param {String} id
      * @returns {object} plugin including any variables
      */
@@ -424,8 +422,7 @@ class ConfigParser {
      *
      * This function also operates on any plugin's that
      * were defined using the legacy <feature> tags.
-     * @name removePlugin
-     * @function
+     *
      * @param id name of the plugin
      */
     removePlugin (id) {
