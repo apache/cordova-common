@@ -18,13 +18,16 @@
 */
 
 /**
- * A derived exception class. See usage example in cli.js
- * Based on:
- * stackoverflow.com/questions/1382107/whats-a-good-way-to-extend-error-in-javascript/8460753#8460753
- * @param {String} message Error message
- * @constructor
+ * A derived exception class
+ *
+ * Based on: https://stackoverflow.com/a/8460753/380229
  */
 class CordovaError extends Error {
+    /**
+     * Creates new CordovaError with given error message
+     *
+     * @param {String} message Error message
+     */
     constructor (message) {
         super(message);
         Error.captureStackTrace(this, this.constructor);
@@ -32,8 +35,9 @@ class CordovaError extends Error {
     }
 
     /**
-     * Converts CordovaError instance to string representation
-     * @return  {String}              Stringified error representation
+     * Converts this to its string representation
+     *
+     * @return {String} Stringified error representation
      */
     toString () {
         return this.message;
