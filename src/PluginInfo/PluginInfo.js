@@ -81,8 +81,7 @@ function PluginInfo (dirname) {
     // <asset>
     this.getAssets = getAssets;
     function getAssets (platform) {
-        const assets = _getTags(this._et, 'asset', platform, _parseAsset);
-        return assets;
+        return _getTags(this._et, 'asset', platform, _parseAsset);
     }
 
     function _parseAsset (tag) {
@@ -93,8 +92,7 @@ function PluginInfo (dirname) {
             throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in\n${this.filepath}`);
         }
 
-        const asset = { itemType: 'asset', src, target };
-        return asset;
+        return { itemType: 'asset', src, target };
     }
 
     // <dependency>
@@ -105,41 +103,32 @@ function PluginInfo (dirname) {
     //     subdir="some/path/here" />
     this.getDependencies = getDependencies;
     function getDependencies (platform) {
-        const deps = _getTags(
-            this._et,
-            'dependency',
-            platform,
-            _parseDependency
-        );
-        return deps;
+        return _getTags(this._et, 'dependency', platform, _parseDependency);
     }
 
     function _parseDependency (tag) {
-        const dep = {
+        if (!tag.attrib.id) {
+            throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
+        }
+
+        return {
             id: tag.attrib.id,
             version: tag.attrib.version || '',
             url: tag.attrib.url || '',
             subdir: tag.attrib.subdir || '',
-            commit: tag.attrib.commit
+            commit: tag.attrib.commit,
+            git_ref: tag.attrib.commit
         };
-
-        dep.git_ref = dep.commit;
-
-        if (!dep.id) {
-            throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
-        }
-        return dep;
     }
 
     // <config-file> tag
     this.getConfigFiles = getConfigFiles;
     function getConfigFiles (platform) {
-        const configFiles = _getTags(this._et, 'config-file', platform, _parseConfigFile);
-        return configFiles;
+        return _getTags(this._et, 'config-file', platform, _parseConfigFile);
     }
 
     function _parseConfigFile (tag) {
-        const configFile = {
+        return {
             target: tag.attrib.target,
             parent: tag.attrib.parent,
             after: tag.attrib.after,
@@ -148,38 +137,29 @@ function PluginInfo (dirname) {
             versions: tag.attrib.versions,
             deviceTarget: tag.attrib['device-target']
         };
-        return configFile;
     }
 
     this.getEditConfigs = getEditConfigs;
     function getEditConfigs (platform) {
-        const editConfigs = _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
-        return editConfigs;
+        return _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
     }
 
     function _parseEditConfigs (tag) {
-        const editConfig = {
+        return {
             file: tag.attrib.file,
             target: tag.attrib.target,
             mode: tag.attrib.mode,
             xmls: tag.getchildren()
         };
-        return editConfig;
     }
 
     // <info> tags, both global and within a <platform>
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
     this.getInfo = getInfo;
     function getInfo (platform) {
-        let infos = _getTags(
-            this._et,
-            'info',
-            platform,
-            elem => elem.text
-        );
-        // Filter out any undefined or empty strings.
-        infos = infos.filter(Boolean);
-        return infos;
+        return _getTags(this._et, 'info', platform, elem => elem.text)
+            // Filter out any undefined or empty strings.
+            .filter(Boolean);
     }
 
     // <source-file>
@@ -188,8 +168,7 @@ function PluginInfo (dirname) {
     // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
     this.getSourceFiles = getSourceFiles;
     function getSourceFiles (platform) {
-        const sourceFiles = _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
-        return sourceFiles;
+        return _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
     }
 
     function _parseSourceFile (tag) {
@@ -208,13 +187,12 @@ function PluginInfo (dirname) {
     // <header-file src="CDVFoo.h" />
     this.getHeaderFiles = getHeaderFiles;
     function getHeaderFiles (platform) {
-        const headerFiles = _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
             itemType: 'header-file',
             src: tag.attrib.src,
             targetDir: tag.attrib['target-dir'],
             type: tag.attrib.type
         }));
-        return headerFiles;
     }
 
     // <resource-file>
@@ -222,7 +200,7 @@ function PluginInfo (dirname) {
     // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
     this.getResourceFiles = getResourceFiles;
     function getResourceFiles (platform) {
-        const resourceFiles = _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
             itemType: 'resource-file',
             src: tag.attrib.src,
             target: tag.attrib.target,
@@ -231,7 +209,6 @@ function PluginInfo (dirname) {
             arch: tag.attrib.arch,
             reference: tag.attrib.reference
         }));
-        return resourceFiles;
     }
 
     // <lib-file>
@@ -239,7 +216,7 @@ function PluginInfo (dirname) {
     // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
     this.getLibFiles = getLibFiles;
     function getLibFiles (platform) {
-        const libFiles = _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
             itemType: 'lib-file',
             src: tag.attrib.src,
             arch: tag.attrib.arch,
@@ -247,7 +224,6 @@ function PluginInfo (dirname) {
             versions: tag.attrib.versions,
             deviceTarget: tag.attrib['device-target'] || tag.attrib.target
         }));
-        return libFiles;
     }
 
     // <podspec>
@@ -268,7 +244,7 @@ function PluginInfo (dirname) {
     // </podspec>
     this.getPodSpecs = getPodSpecs;
     function getPodSpecs (platform) {
-        const podSpecs = _getTagsInPlatform(this._et, 'podspec', platform, tag => {
+        return _getTagsInPlatform(this._et, 'podspec', platform, tag => {
             let declarations = null;
             let sources = null;
             let libraries = null;
@@ -295,7 +271,6 @@ function PluginInfo (dirname) {
             }
             return { declarations, sources, libraries };
         });
-        return podSpecs;
     }
 
     // <hook>
@@ -320,12 +295,11 @@ function PluginInfo (dirname) {
 
     this.getJsModules = getJsModules;
     function getJsModules (platform) {
-        const modules = _getTags(this._et, 'js-module', platform, _parseJsModule);
-        return modules;
+        return _getTags(this._et, 'js-module', platform, _parseJsModule);
     }
 
     function _parseJsModule (tag) {
-        const ret = {
+        return {
             itemType: 'js-module',
             name: tag.attrib.name,
             src: tag.attrib.src,
@@ -333,8 +307,6 @@ function PluginInfo (dirname) {
             merges: tag.findall('merges').map(tag => ({ target: tag.attrib.target })),
             runs: tag.findall('runs').length > 0
         };
-
-        return ret;
     }
 
     this.getEngines = function () {
@@ -376,7 +348,7 @@ function PluginInfo (dirname) {
                     }
                 });
             }
-            const ret = {
+            return {
                 itemType: 'framework',
                 type: el.attrib.type,
                 parent: el.attrib.parent,
@@ -391,7 +363,6 @@ function PluginInfo (dirname) {
                 arch: el.attrib.arch,
                 implementation: el.attrib.implementation
             };
-            return ret;
         });
     };
 
@@ -399,19 +370,19 @@ function PluginInfo (dirname) {
     function getFilesAndFrameworks (platform, options) {
         // Please avoid changing the order of the calls below, files will be
         // installed in this order.
-        const items = [].concat(
+        return [].concat(
             this.getSourceFiles(platform),
             this.getHeaderFiles(platform),
             this.getResourceFiles(platform),
             this.getFrameworks(platform, options),
             this.getLibFiles(platform)
         );
-        return items;
     }
 
     this.getKeywordsAndPlatforms = () => {
-        const ret = this.keywords || [];
-        return ret.concat('ecosystem:cordova').concat(addCordova(this.getPlatformsArray()));
+        return (this.keywords || [])
+            .concat('ecosystem:cordova')
+            .concat(addCordova(this.getPlatformsArray()));
     };
     /// // End of PluginInfo methods /////
 }
@@ -419,8 +390,7 @@ function PluginInfo (dirname) {
 // Helper function used to prefix every element of an array with cordova-
 // Useful when we want to modify platforms to be cordova-platform
 function addCordova (someArray) {
-    const newArray = someArray.map(element => `cordova-${element}`);
-    return newArray;
+    return someArray.map(element => `cordova-${element}`);
 }
 
 // Helper function used by most of the getSomething methods of PluginInfo.
