@@ -44,18 +44,16 @@ class CordovaError extends Error {
 
     /**
      * Converts CordovaError instance to string representation
-     * @param   {Boolean}  [isVerbose]  Set up verbose mode. Used to provide more
-     *   details including information about error code name
      * @return  {String}              Stringified error representation
      */
-    toString (isVerbose) {
+    toString () {
         var codePrefix = '';
 
         if (this.code !== CordovaError.UNKNOWN_ERROR) {
-            codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
+            codePrefix = 'code: ' + this.code + ' ';
         }
 
-        return isVerbose ? codePrefix + this.stack : codePrefix + this.message;
+        return codePrefix + this.message;
     }
 }
 

@@ -31,7 +31,6 @@ describe('CordovaError class', function () {
 
     it('Test 003 : toString works', function () {
         var error003_1 = new CordovaError('error', 0);
-        expect(error003_1.toString(false)).toEqual('error');
-        expect(error003_1.toString(true)).toContain(error003_1.stack);
+        expect(error003_1.toString()).toEqual('error');
     });
 });
