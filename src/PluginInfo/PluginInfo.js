@@ -65,34 +65,30 @@ function PluginInfo (dirname) {
     // returns { key : default | null}
     this.getPreferences = getPreferences;
     function getPreferences (platform) {
-        return _getTags(this._et, 'preference', platform, _parsePreference)
+        return _getTags(this._et, 'preference', platform, prefTag => {
+            const name = prefTag.attrib.name.toUpperCase();
+            const def = prefTag.attrib.default || null;
+            return { preference: name, default: def };
+        })
             .reduce((preferences, pref) => {
                 preferences[pref.preference] = pref.default;
                 return preferences;
             }, {});
     }
 
-    function _parsePreference (prefTag) {
-        const name = prefTag.attrib.name.toUpperCase();
-        const def = prefTag.attrib.default || null;
-        return { preference: name, default: def };
-    }
-
     // <asset>
     this.getAssets = getAssets;
     function getAssets (platform) {
-        return _getTags(this._et, 'asset', platform, _parseAsset);
-    }
+        return _getTags(this._et, 'asset', platform, tag => {
+            const src = tag.attrib.src;
+            const target = tag.attrib.target;
 
-    function _parseAsset (tag) {
-        const src = tag.attrib.src;
-        const target = tag.attrib.target;
+            if (!src || !target) {
+                throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in\n${this.filepath}`);
+            }
 
-        if (!src || !target) {
-            throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in\n${this.filepath}`);
-        }
-
-        return { itemType: 'asset', src, target };
+            return { itemType: 'asset', src, target };
+        });
     }
 
     // <dependency>
@@ -103,32 +99,26 @@ function PluginInfo (dirname) {
     //     subdir="some/path/here" />
     this.getDependencies = getDependencies;
     function getDependencies (platform) {
-        return _getTags(this._et, 'dependency', platform, _parseDependency);
-    }
+        return _getTags(this._et, 'dependency', platform, tag => {
+            if (!tag.attrib.id) {
+                throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
+            }
 
-    function _parseDependency (tag) {
-        if (!tag.attrib.id) {
-            throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
-        }
-
-        return {
-            id: tag.attrib.id,
-            version: tag.attrib.version || '',
-            url: tag.attrib.url || '',
-            subdir: tag.attrib.subdir || '',
-            commit: tag.attrib.commit,
-            git_ref: tag.attrib.commit
-        };
+            return {
+                id: tag.attrib.id,
+                version: tag.attrib.version || '',
+                url: tag.attrib.url || '',
+                subdir: tag.attrib.subdir || '',
+                commit: tag.attrib.commit,
+                git_ref: tag.attrib.commit
+            };
+        });
     }
 
     // <config-file> tag
     this.getConfigFiles = getConfigFiles;
     function getConfigFiles (platform) {
-        return _getTags(this._et, 'config-file', platform, _parseConfigFile);
-    }
-
-    function _parseConfigFile (tag) {
-        return {
+        return _getTags(this._et, 'config-file', platform, tag => ({
             target: tag.attrib.target,
             parent: tag.attrib.parent,
             after: tag.attrib.after,
@@ -136,21 +126,17 @@ function PluginInfo (dirname) {
             // To support demuxing via versions
             versions: tag.attrib.versions,
             deviceTarget: tag.attrib['device-target']
-        };
+        }));
     }
 
     this.getEditConfigs = getEditConfigs;
     function getEditConfigs (platform) {
-        return _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
-    }
-
-    function _parseEditConfigs (tag) {
-        return {
+        return _getTags(this._et, 'edit-config', platform, tag => ({
             file: tag.attrib.file,
             target: tag.attrib.target,
             mode: tag.attrib.mode,
             xmls: tag.getchildren()
-        };
+        }));
     }
 
     // <info> tags, both global and within a <platform>
@@ -168,18 +154,14 @@ function PluginInfo (dirname) {
     // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
     this.getSourceFiles = getSourceFiles;
     function getSourceFiles (platform) {
-        return _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
-    }
-
-    function _parseSourceFile (tag) {
-        return {
+        return _getTagsInPlatform(this._et, 'source-file', platform, tag => ({
             itemType: 'source-file',
             src: tag.attrib.src,
             framework: isStrTrue(tag.attrib.framework),
             weak: isStrTrue(tag.attrib.weak),
             compilerFlags: tag.attrib['compiler-flags'],
             targetDir: tag.attrib['target-dir']
-        };
+        }));
     }
 
     // <header-file>
@@ -295,18 +277,14 @@ function PluginInfo (dirname) {
 
     this.getJsModules = getJsModules;
     function getJsModules (platform) {
-        return _getTags(this._et, 'js-module', platform, _parseJsModule);
-    }
-
-    function _parseJsModule (tag) {
-        return {
+        return _getTags(this._et, 'js-module', platform, tag => ({
             itemType: 'js-module',
             name: tag.attrib.name,
             src: tag.attrib.src,
             clobbers: tag.findall('clobbers').map(tag => ({ target: tag.attrib.target })),
             merges: tag.findall('merges').map(tag => ({ target: tag.attrib.target })),
             runs: tag.findall('runs').length > 0
-        };
+        }));
     }
 
     this.getEngines = function () {
