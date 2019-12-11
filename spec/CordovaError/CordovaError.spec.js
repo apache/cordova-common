@@ -25,7 +25,7 @@ describe('CordovaError class', function () {
     });
 
     it('Test 003 : toString works', function () {
-        var error003_1 = new CordovaError('error', 0);
+        var error003_1 = new CordovaError('error');
         expect(error003_1.toString()).toEqual('error');
     });
 });

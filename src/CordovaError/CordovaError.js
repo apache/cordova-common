@@ -22,15 +22,13 @@
  * Based on:
  * stackoverflow.com/questions/1382107/whats-a-good-way-to-extend-error-in-javascript/8460753#8460753
  * @param {String} message Error message
- * @param {Number} [code=0] Error code
  * @constructor
  */
 class CordovaError extends Error {
-    constructor (message, code) {
+    constructor (message) {
         super(message);
         Error.captureStackTrace(this, this.constructor);
         this.name = this.constructor.name;
-        this.code = code || CordovaError.UNKNOWN_ERROR;
     }
 
     /**
@@ -38,17 +36,8 @@ class CordovaError extends Error {
      * @return  {String}              Stringified error representation
      */
     toString () {
-        var codePrefix = '';
-
-        if (this.code !== CordovaError.UNKNOWN_ERROR) {
-            codePrefix = 'code: ' + this.code + ' ';
-        }
-
-        return codePrefix + this.message;
+        return this.message;
     }
 }
-
-// TODO: Extend error codes according the projects specifics
-CordovaError.UNKNOWN_ERROR = 0;
 
 module.exports = CordovaError;
