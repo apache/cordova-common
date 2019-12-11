@@ -49,25 +49,17 @@ class CordovaError extends Error {
      * @return  {String}              Stringified error representation
      */
     toString (isVerbose) {
-        var message = '';
         var codePrefix = '';
 
         if (this.code !== CordovaError.UNKNOWN_ERROR) {
             codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
         }
 
-        if (this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
-            message = 'External tool failed with an error: ' + this.message;
-        } else {
-            message = isVerbose ? codePrefix + this.stack : codePrefix + this.message;
-        }
-
-        return message;
+        return isVerbose ? codePrefix + this.stack : codePrefix + this.message;
     }
 }
 
 // TODO: Extend error codes according the projects specifics
 CordovaError.UNKNOWN_ERROR = 0;
-CordovaError.EXTERNAL_TOOL_ERROR = 1;
 
 module.exports = CordovaError;
