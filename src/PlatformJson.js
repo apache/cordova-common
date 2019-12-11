@@ -26,7 +26,7 @@ function PlatformJson (filePath, platform, root) {
 }
 
 PlatformJson.load = (plugins_dir, platform) => {
-    const filePath = path.join(plugins_dir, platform + '.json');
+    const filePath = path.join(plugins_dir, `${platform}.json`);
     let root = null;
     if (fs.existsSync(filePath)) {
         root = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -234,7 +234,7 @@ function ModuleMetadata (pluginId, jsModule) {
     if (!pluginId) throw new TypeError('pluginId argument must be a valid plugin id');
     if (!jsModule.src && !jsModule.name) throw new TypeError('jsModule argument must contain src or/and name properties');
 
-    this.id = pluginId + '.' + (jsModule.name || jsModule.src.match(/([^/]+)\.js/)[1]);
+    this.id = `${pluginId}.${jsModule.name || jsModule.src.match(/([^/]+)\.js/)[1]}`;
     this.file = ['plugins', pluginId, jsModule.src].join('/');
     this.pluginId = pluginId;
 

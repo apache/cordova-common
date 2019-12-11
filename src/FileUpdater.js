@@ -67,7 +67,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
 
         if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
             // The target exists. But if the directory status doesn't match the source, delete it.
-            log('delete ' + targetPath);
+            log(`delete ${targetPath}`);
             fs.removeSync(targetFullPath);
             targetStats = null;
             updated = true;
@@ -76,12 +76,12 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
         if (!targetStats) {
             if (sourceStats.isDirectory()) {
                 // The target directory does not exist, so it should be created.
-                log('mkdir ' + targetPath);
+                log(`mkdir ${targetPath}`);
                 fs.ensureDirSync(targetFullPath);
                 updated = true;
             } else if (sourceStats.isFile()) {
                 // The target file does not exist, so it should be copied from the source.
-                log('copy  ' + sourcePath + ' ' + targetPath + (copyAll ? '' : ' (new file)'));
+                log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (new file)'}`);
                 fs.copySync(sourceFullPath, targetFullPath);
                 updated = true;
             }
@@ -89,7 +89,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
             // The source and target paths both exist and are files.
             if (copyAll) {
                 // The caller specified all files should be copied.
-                log('copy  ' + sourcePath + ' ' + targetPath);
+                log(`copy  ${sourcePath} ${targetPath}`);
                 fs.copySync(sourceFullPath, targetFullPath);
                 updated = true;
             } else {
@@ -99,7 +99,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
                 // for timestamps lacking sub-second precision in some filesystems.
                 if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
                         sourceStats.size !== targetStats.size) {
-                    log('copy  ' + sourcePath + ' ' + targetPath + ' (updated file)');
+                    log(`copy  ${sourcePath} ${targetPath} (updated file)`);
                     fs.copySync(sourceFullPath, targetFullPath);
                     updated = true;
                 }
@@ -107,7 +107,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
         }
     } else if (targetStats) {
         // The target exists but the source is null, so the target should be deleted.
-        log('delete ' + targetPath + (copyAll ? '' : ' (no source)'));
+        log(`delete ${targetPath}${copyAll ? '' : ' (no source)'}`);
         fs.removeSync(targetFullPath);
         updated = true;
     }
@@ -129,7 +129,7 @@ function updatePathInternal (sourcePath, targetPath, options, log) {
         // A non-null source path was specified. It should exist.
         const sourceFullPath = path.join(rootDir, sourcePath);
         if (!fs.existsSync(sourceFullPath)) {
-            throw new Error('Source path does not exist: ' + sourcePath);
+            throw new Error(`Source path does not exist: ${sourcePath}`);
         }
 
         sourceStats = fs.statSync(sourceFullPath);
@@ -276,7 +276,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
         path.join(rootDir, sourceDir)
     ).map(sourcePath => {
         if (!fs.existsSync(sourcePath)) {
-            throw new Error('Source directory does not exist: ' + sourcePath);
+            throw new Error(`Source directory does not exist: ${sourcePath}`);
         }
         return mapDirectory(rootDir, path.relative(rootDir, sourcePath), include, exclude);
     });

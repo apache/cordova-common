@@ -85,7 +85,7 @@ exports.spawn = (cmd, args, opts) => {
         }
     }
 
-    events.emit(opts.printCommand ? 'log' : 'verbose', 'Running command: ' + cmd + ' ' + args.join(' '));
+    events.emit(opts.printCommand ? 'log' : 'verbose', `Running command: ${cmd} ${args.join(' ')}`);
 
     // At least until Node.js 8, child_process.spawn will throw exceptions
     // instead of emitting error events in certain cases (like EACCES), Thus we
@@ -125,13 +125,13 @@ exports.spawn = (cmd, args, opts) => {
         }
         const code = typeof arg === 'number' ? arg : arg && arg.code;
 
-        events.emit('verbose', 'Command finished with error code ' + code + ': ' + cmd + ' ' + args);
+        events.emit('verbose', `Command finished with error code ${code}: ${cmd} ${args}`);
         if (code === 0) {
             d.resolve(capturedOut.trim());
         } else {
-            let errMsg = cmd + ': Command failed with exit code ' + code;
+            let errMsg = `${cmd}: Command failed with exit code ${code}`;
             if (capturedErr) {
-                errMsg += ' Error output:\n' + capturedErr.trim();
+                errMsg += ` Error output:\n${capturedErr.trim()}`;
             }
             const err = new Error(errMsg);
             if (capturedErr) {

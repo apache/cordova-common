@@ -59,7 +59,7 @@ module.exports = {
         if (!parent) {
             // Try to create the parent recursively if necessary
             try {
-                const parentToCreate = et.XML('<' + path.basename(selector) + '/>');
+                const parentToCreate = et.XML(`<${path.basename(selector)}/>`);
                 const parentSelector = path.dirname(selector);
 
                 this.graftXML(doc, [parentToCreate], parentSelector);
@@ -248,7 +248,7 @@ function mergeXml (src, dest, platform, clobber) {
 
     // Handle platform
     if (platform) {
-        src.findall('platform[@name="' + platform + '"]').forEach(platformElement => {
+        src.findall(`platform[@name="${platform}"]`).forEach(platformElement => {
             platformElement.getchildren().forEach(mergeChild);
         });
     }

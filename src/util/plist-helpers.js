@@ -24,7 +24,7 @@ const plist = require('plist');
 // adds node to doc at selector
 module.exports.graftPLIST = graftPLIST;
 function graftPLIST (doc, xml, selector) {
-    const obj = plist.parse('<plist>' + xml + '</plist>');
+    const obj = plist.parse(`<plist>${xml}</plist>`);
 
     let node = doc[selector];
     if (node && Array.isArray(node) && Array.isArray(obj)) {
@@ -50,7 +50,7 @@ function graftPLIST (doc, xml, selector) {
 // removes node from doc at selector
 module.exports.prunePLIST = prunePLIST;
 function prunePLIST (doc, xml, selector) {
-    const obj = plist.parse('<plist>' + xml + '</plist>');
+    const obj = plist.parse(`<plist>${xml}</plist>`);
 
     pruneOBJECT(doc, selector, obj);
 
@@ -80,7 +80,7 @@ function pruneOBJECT (doc, selector, fragment) {
 function nodeEqual (node1, node2) {
     if (typeof node1 !== typeof node2) { return false; } else if (typeof node1 === 'string') {
         node2 = escapeRE(node2).replace(/\\\$\(\S+\)/gm, '(.*?)');
-        return new RegExp('^' + node2 + '$').test(node1);
+        return new RegExp(`^${node2}$`).test(node1);
     } else {
         for (const key in node2) {
             if (!nodeEqual(node1[key], node2[key])) return false;

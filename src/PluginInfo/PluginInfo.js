@@ -65,11 +65,7 @@ function PluginInfo (dirname) {
         const target = tag.attrib.target;
 
         if (!src || !target) {
-            const msg =
-                'Malformed <asset> tag. Both "src" and "target" attributes' +
-                'must be specified in\n' +
-                this.filepath;
-            throw new Error(msg);
+            throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in\n${this.filepath}`);
         }
 
         const asset = { itemType: 'asset', src, target };
@@ -105,10 +101,7 @@ function PluginInfo (dirname) {
         dep.git_ref = dep.commit;
 
         if (!dep.id) {
-            const msg =
-                '<dependency> tag is missing id attribute in ' +
-                this.filepath;
-            throw new CordovaError(msg);
+            throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
         }
         return dep;
     }
@@ -289,7 +282,7 @@ function PluginInfo (dirname) {
 
         if (platforms) {
             platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(this._et.findall('./platform[@name="' + platform + '"]/hook'));
+                scriptElements = scriptElements.concat(this._et.findall(`./platform[@name="${platform}"]/hook`));
             });
         }
 
@@ -353,7 +346,7 @@ function PluginInfo (dirname) {
                 // Replace them in framework src if they exist
                 Object.keys(vars).forEach(name => {
                     if (vars[name]) {
-                        regExp = new RegExp('\\$' + name, 'g');
+                        regExp = new RegExp(`\\$${name}`, 'g');
                         src = src.replace(regExp, vars[name]);
                     }
                 });
@@ -395,7 +388,7 @@ function PluginInfo (dirname) {
     /// // PluginInfo Constructor logic  /////
     this.filepath = path.join(dirname, 'plugin.xml');
     if (!fs.existsSync(this.filepath)) {
-        throw new CordovaError('Cannot find plugin.xml for plugin "' + path.basename(dirname) + '". Please try adding it again.');
+        throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
     }
 
     this.dir = dirname;
@@ -424,7 +417,7 @@ function PluginInfo (dirname) {
 // Helper function used to prefix every element of an array with cordova-
 // Useful when we want to modify platforms to be cordova-platform
 function addCordova (someArray) {
-    const newArray = someArray.map(element => 'cordova-' + element);
+    const newArray = someArray.map(element => `cordova-${element}`);
     return newArray;
 }
 
@@ -433,7 +426,7 @@ function addCordova (someArray) {
 // for the given platform. If transform is given and is a function, it is
 // applied to each element.
 function _getTags (pelem, tag, platform, transform) {
-    const platformTag = pelem.find('./platform[@name="' + platform + '"]');
+    const platformTag = pelem.find(`./platform[@name="${platform}"]`);
     let tagsInRoot = pelem.findall(tag);
     tagsInRoot = tagsInRoot || [];
     const tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
@@ -446,7 +439,7 @@ function _getTags (pelem, tag, platform, transform) {
 
 // Same as _getTags() but only looks inside a platform section.
 function _getTagsInPlatform (pelem, tag, platform, transform) {
-    const platformTag = pelem.find('./platform[@name="' + platform + '"]');
+    const platformTag = pelem.find(`./platform[@name="${platform}"]`);
     let tags = platformTag ? platformTag.findall(tag) : [];
     if (typeof transform === 'function') {
         tags = tags.map(transform);

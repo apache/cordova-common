@@ -31,12 +31,12 @@ function ConfigParser (path) {
         this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
         et.register_namespace(this.cdvNamespacePrefix, 'http://cordova.apache.org/ns/1.0');
     } catch (e) {
-        events.emit('error', 'Parsing ' + path + ' failed');
+        events.emit('error', `Parsing ${path} failed`);
         throw e;
     }
     const r = this.doc.getroot();
     if (r.tag !== 'widget') {
-        throw new CordovaError(path + ' has incorrect root node name (expected "widget", was "' + r.tag + '")');
+        throw new CordovaError(`${path} has incorrect root node name (expected "widget", was "${r.tag}")`);
     }
 }
 
@@ -156,7 +156,7 @@ ConfigParser.prototype = {
         return findElementAttributeValue(name, this.doc.findall('preference'));
     },
     setGlobalPreference: function (name, value) {
-        let pref = this.doc.find('preference[@name="' + name + '"]');
+        let pref = this.doc.find(`preference[@name="${name}"]`);
         if (!pref) {
             pref = new et.Element('preference');
             pref.attrib.name = name;
@@ -165,14 +165,14 @@ ConfigParser.prototype = {
         pref.attrib.value = value;
     },
     getPlatformPreference: function (name, platform) {
-        return findElementAttributeValue(name, this.doc.findall('./platform[@name="' + platform + '"]/preference'));
+        return findElementAttributeValue(name, this.doc.findall(`./platform[@name="${platform}"]/preference`));
     },
     setPlatformPreference: function (name, platform, value) {
-        const platformEl = this.doc.find('./platform[@name="' + platform + '"]');
+        const platformEl = this.doc.find(`./platform[@name="${platform}"]`);
         if (!platformEl) {
-            throw new CordovaError('platform does not exist (received platform: ' + platform + ')');
+            throw new CordovaError(`platform does not exist (received platform: ${platform})`);
         }
-        const elems = this.doc.findall('./platform[@name="' + platform + '"]/preference');
+        const elems = this.doc.findall(`./platform[@name="${platform}"]/preference`);
         let pref = elems.filter(elem =>
             elem.attrib.name.toLowerCase() === name.toLowerCase()
         ).pop();
@@ -216,7 +216,7 @@ ConfigParser.prototype = {
         const ret = [];
         let staticResources = [];
         if (platform) { // platform specific icons
-            this.doc.findall('./platform[@name="' + platform + '"]/' + resourceName).forEach(elt => {
+            this.doc.findall(`./platform[@name="${platform}"]/${resourceName}`).forEach(elt => {
                 elt.platform = platform; // mark as platform specific resource
                 staticResources.push(elt);
             });
@@ -228,7 +228,7 @@ ConfigParser.prototype = {
             const res = {};
             res.src = elt.attrib.src;
             res.target = elt.attrib.target || undefined;
-            res.density = elt.attrib.density || elt.attrib[this.cdvNamespacePrefix + ':density'] || elt.attrib['gap:density'];
+            res.density = elt.attrib.density || elt.attrib[`${this.cdvNamespacePrefix}:density`] || elt.attrib['gap:density'];
             res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
             res.width = +elt.attrib.width || undefined;
             res.height = +elt.attrib.height || undefined;
@@ -302,7 +302,7 @@ ConfigParser.prototype = {
         let fileResources = [];
 
         if (platform) { // platform specific resources
-            fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(tag => ({
+            fileResources = this.doc.findall(`./platform[@name="${platform}"]/resource-file`).map(tag => ({
                 platform,
                 src: tag.attrib.src,
                 target: tag.attrib.target,
@@ -339,7 +339,7 @@ ConfigParser.prototype = {
 
         if (platforms) {
             platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(this.doc.findall('./platform[@name="' + platform + '"]/hook'));
+                scriptElements = scriptElements.concat(this.doc.findall(`./platform[@name="${platform}"]/hook`));
             });
         }
 
@@ -417,11 +417,11 @@ ConfigParser.prototype = {
         if (!id) {
             return undefined;
         }
-        const pluginElement = this.doc.find('./plugin/[@name="' + id + '"]');
+        const pluginElement = this.doc.find(`./plugin/[@name="${id}"]`);
         if (pluginElement === null) {
-            const legacyFeature = this.doc.find('./feature/param[@name="id"][@value="' + id + '"]/..');
+            const legacyFeature = this.doc.find(`./feature/param[@name="id"][@value="${id}"]/..`);
             if (legacyFeature) {
-                events.emit('log', 'Found deprecated feature entry for ' + id + ' in config.xml.');
+                events.emit('log', `Found deprecated feature entry for ${id} in config.xml.`);
                 return featureToPlugin(legacyFeature);
             }
             return undefined;
@@ -546,7 +546,7 @@ ConfigParser.prototype = {
     },
     /* Get all edit-config tags */
     getEditConfigs: function (platform) {
-        const platform_edit_configs = this.doc.findall('./platform[@name="' + platform + '"]/edit-config');
+        const platform_edit_configs = this.doc.findall(`./platform[@name="${platform}"]/edit-config`);
         const edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
         return edit_configs.map(tag => {
@@ -563,7 +563,7 @@ ConfigParser.prototype = {
 
     /* Get all config-file tags */
     getConfigFiles: function (platform) {
-        const platform_config_files = this.doc.findall('./platform[@name="' + platform + '"]/config-file');
+        const platform_config_files = this.doc.findall(`./platform[@name="${platform}"]/config-file`);
         const config_files = this.doc.findall('config-file').concat(platform_config_files);
 
         return config_files.map(tag => {
