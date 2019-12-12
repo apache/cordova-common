@@ -17,7 +17,7 @@
     under the License.
 */
 
-var CordovaError = require('../../src/CordovaError/CordovaError');
+var CordovaError = require('../../src/CordovaError');
 
 describe('CordovaError class', function () {
     it('Test 001 : should be constructable', function () {

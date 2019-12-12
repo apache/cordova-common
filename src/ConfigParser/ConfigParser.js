@@ -19,7 +19,7 @@
 
 var et = require('elementtree');
 var xml = require('../util/xml-helpers');
-var CordovaError = require('../CordovaError/CordovaError');
+var CordovaError = require('../CordovaError');
 var fs = require('fs-extra');
 var events = require('../events');
 

@@ -22,7 +22,7 @@ module.exports = {
     get superspawn () { return require('./src/superspawn'); },
 
     get ActionStack () { return require('./src/ActionStack'); },
-    get CordovaError () { return require('./src/CordovaError/CordovaError'); },
+    get CordovaError () { return require('./src/CordovaError'); },
     get CordovaLogger () { return require('./src/CordovaLogger'); },
     get CordovaCheck () { return require('./src/CordovaCheck'); },
     get PlatformJson () { return require('./src/PlatformJson'); },
