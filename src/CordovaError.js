@@ -17,30 +17,36 @@
     under the License.
 */
 
-/**
- * A derived exception class
- *
- * Based on: https://stackoverflow.com/a/8460753/380229
- */
-class CordovaError extends Error {
-    /**
-     * Creates new CordovaError with given error message
-     *
-     * @param {String} message Error message
-     */
-    constructor (message) {
-        super(message);
-        Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
-    }
+// @ts-check
 
+const { VError } = require('@netflix/nerror');
+
+/**
+ * @public
+ * @typedef {Object} CordovaErrorOptions
+ * @param {String} [name] - Name of the error.
+ * @param {Error} [cause] - Indicates that the new error was caused by `cause`.
+ * @param {Object} [info] - Specifies arbitrary informational properties.
+ */
+
+/**
+ * A custom exception class derived from VError
+ */
+class CordovaError extends VError {
     /**
-     * Converts this to its string representation
-     *
-     * @return {String} Stringified error representation
+     * @param {String} message - Error message
+     * @param {Error|CordovaErrorOptions} [causeOrOpts] - The Error that caused
+     * this to be thrown or a CordovaErrorOptions object.
      */
-    toString () {
-        return this.message;
+    constructor (message, causeOrOpts = {}) {
+        const defaults = { name: 'CordovaError' };
+        const overrides = { strict: false, skipPrintf: true };
+        const userOpts = causeOrOpts instanceof Error
+            ? { cause: causeOrOpts }
+            : causeOrOpts;
+        const opts = Object.assign(defaults, userOpts, overrides);
+
+        super(opts, message);
     }
 }
 
