@@ -264,13 +264,13 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     }
 
     // Scan the files in each of the source directories.
-    const sourceMaps = sourceDirs.map(sourceDir =>
-        path.join(rootDir, sourceDir)
-    ).map(sourcePath => {
+    const sourceMaps = sourceDirs.map(sourceDir => {
+        const sourcePath = path.join(rootDir, sourceDir);
         if (!fs.existsSync(sourcePath)) {
             throw new Error(`Source directory does not exist: ${sourcePath}`);
         }
-        return mapDirectory(rootDir, path.relative(rootDir, sourcePath), include, exclude);
+
+        return mapDirectory(rootDir, sourceDir, include, exclude);
     });
 
     // Scan the files in the target directory, if it exists.
