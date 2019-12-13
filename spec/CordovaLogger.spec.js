@@ -17,7 +17,7 @@
     under the License.
 */
 
-var CordovaError = require('../src/CordovaError/CordovaError');
+var CordovaError = require('../src/CordovaError');
 var CordovaLogger = require('../src/CordovaLogger');
 var EventEmitter = require('events').EventEmitter;
 

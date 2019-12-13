@@ -23,7 +23,7 @@ var path = require('path');
 
 var ActionStack = require('./ActionStack');
 var PlatformJson = require('./PlatformJson');
-var CordovaError = require('./CordovaError/CordovaError');
+var CordovaError = require('./CordovaError');
 var PlatformMunger = require('./ConfigChanges/ConfigChanges').PlatformMunger;
 var PluginInfoProvider = require('./PluginInfo/PluginInfoProvider');
 

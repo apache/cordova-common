@@ -17,7 +17,7 @@
        under the License.
 */
 
-const CordovaError = require('../CordovaError/CordovaError');
+const CordovaError = require('../CordovaError');
 
 /**
  * Formats an error for logging.
