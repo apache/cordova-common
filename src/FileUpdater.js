@@ -96,25 +96,20 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
 
     if (sourceStats.isFile()) {
         // The source and target paths both exist and are files.
-        if (copyAll) {
-            // The caller specified all files should be copied.
-            log(`copy  ${sourcePath} ${targetPath}`);
-            fs.copySync(sourceFullPath, targetFullPath);
-            return true;
-        } else {
-            // Copy if the source has been modified since it was copied to the target, or if
-            // the file sizes are different. (The latter catches most cases in which something
-            // was done to the file after copying.) Comparison is >= rather than > to allow
-            // for timestamps lacking sub-second precision in some filesystems.
-            const needsUpdate =
-                sourceStats.size !== targetStats.size ||
-                sourceStats.mtime.getTime() >= targetStats.mtime.getTime();
-            if (!needsUpdate) return false;
 
-            log(`copy  ${sourcePath} ${targetPath} (updated file)`);
-            fs.copySync(sourceFullPath, targetFullPath);
-            return true;
-        }
+        // If the caller did not specify that all files should be copied,
+        // check if the source has been modified since it was copied to the target, or if
+        // the file sizes are different. (The latter catches most cases in which something
+        // was done to the file after copying.) Comparison is >= rather than > to allow
+        // for timestamps lacking sub-second precision in some filesystems.
+        const needsUpdate = copyAll ||
+            sourceStats.size !== targetStats.size ||
+            sourceStats.mtime.getTime() >= targetStats.mtime.getTime();
+        if (!needsUpdate) return false;
+
+        log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (updated file)'}`);
+        fs.copySync(sourceFullPath, targetFullPath);
+        return true;
     }
 
     return false;
