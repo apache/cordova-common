@@ -20,6 +20,7 @@
 var path = require('path');
 var rewire = require('rewire');
 var FileUpdater = rewire('../src/FileUpdater');
+const { Stats } = require('@nodelib/fs.macchiato');
 
 // Normally these are internal to the module; these lines use rewire to expose them for testing.
 FileUpdater.mapDirectory = FileUpdater.__get__('mapDirectory');
@@ -37,20 +38,28 @@ FileUpdater.__set__('updatePathWithStats', function () {
 
 // Create mock fs.Stats to simulate file or directory attributes.
 function mockFileStats (modified) {
-    return {
-        isFile: function () { return true; },
-        isDirectory: function () { return false; },
+    return new Stats({
+        isFile: true,
+        isDirectory: false,
         ctime: modified,
         mtime: modified
-    };
+    });
 }
 function mockDirStats () {
-    return {
-        isFile: function () { return false; },
-        isDirectory: function () { return true; },
+    return new Stats({
+        isFile: false,
+        isDirectory: true,
         ctime: null,
         mtime: null
-    };
+    });
+}
+
+class SystemError extends Error {
+    constructor (code, message) {
+        super(`${code}: ${message}`);
+        this.name = 'SystemError';
+        this.code = code;
+    }
 }
 
 // Create a mock to replace the fs-extra module used by the FileUpdater,
@@ -71,19 +80,23 @@ var mockFs = {
     },
 
     existsSync: function (fileOrDirPath) {
-        return typeof (this.statMap[fileOrDirPath]) !== 'undefined';
+        return this._getEntry(this.statMap, fileOrDirPath) !== undefined;
     },
 
     readdirSync: function (dirPath) {
-        var result = this.dirMap[dirPath];
-        if (!result) throw new Error('Directory path not found: ' + dirPath);
+        var result = this._getEntry(this.dirMap, dirPath);
+        if (!result) throw new SystemError('ENOENT', 'Directory path not found: ' + dirPath);
         return result;
     },
 
     statSync: function (fileOrDirPath) {
-        var result = this.statMap[fileOrDirPath];
-        if (!result) throw new Error('File or directory path not found: ' + fileOrDirPath);
+        var result = this._getEntry(this.statMap, fileOrDirPath);
+        if (!result) throw new SystemError('ENOENT', 'File or directory path not found: ' + fileOrDirPath);
         return result;
+    },
+
+    lstatSync (fileOrDirPath) {
+        return this.statSync(fileOrDirPath);
     },
 
     ensureDirSync: function (path) {
@@ -96,6 +109,11 @@ var mockFs = {
 
     removeSync: function (path) {
         this.rmPaths.push(path);
+    },
+
+    _getEntry (map, p) {
+        // Try a few variants of path. Hackety hack...
+        return map[p] || map[path.resolve(p)] || map[path.relative(process.cwd(), p)];
     }
 };
 FileUpdater.__set__('fs', mockFs);
@@ -409,7 +427,6 @@ describe('FileUpdater class', function () {
             var dirMap = FileUpdater.mapDirectory('', testSourceDir, ['**/' + testSourceFile], []);
             expect(Object.keys(dirMap).sort()).toEqual([
                 '',
-                testSubDir,
                 path.join(testSubDir, testSourceFile)]);
             expect(dirMap[''].subDir).toBe(testSourceDir);
             expect(dirMap[''].stats).toBe(testDirStats);

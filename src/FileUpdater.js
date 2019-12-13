@@ -21,7 +21,7 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const minimatch = require('minimatch');
+const fastGlob = require('fast-glob');
 
 /**
  * Logging callback used in the FileUpdater methods.
@@ -307,46 +307,21 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
  * Creates a dictionary map of all files and directories under a path.
  */
 function mapDirectory (rootDir, subDir, include, exclude) {
-    const dirMap = { '': { subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
-    mapSubdirectory(rootDir, subDir, '', include, exclude, dirMap);
-    return dirMap;
+    const pathToMap = path.join(rootDir, subDir);
 
-    function mapSubdirectory (rootDir, subDir, relativeDir, include, exclude, dirMap) {
-        let itemMapped = false;
-        const items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
-
-        items.forEach(item => {
-            const relativePath = path.join(relativeDir, item);
-            if (!matchGlobArray(relativePath, exclude)) {
-                // Stats obtained here (required at least to know where to recurse in directories)
-                // are saved for later, where the modified times may also be used. This minimizes
-                // the number of file I/O operations performed.
-                const fullPath = path.join(rootDir, subDir, relativePath);
-                const stats = fs.statSync(fullPath);
-
-                if (stats.isDirectory()) {
-                    // Directories are included if either something under them is included or they
-                    // match an include glob.
-                    if (mapSubdirectory(rootDir, subDir, relativePath, include, exclude, dirMap) ||
-                            matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir, stats };
-                        itemMapped = true;
-                    }
-                } else if (stats.isFile()) {
-                    // Files are included only if they match an include glob.
-                    if (matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir, stats };
-                        itemMapped = true;
-                    }
-                }
-            }
-        });
-        return itemMapped;
-    }
-
-    function matchGlobArray (path, globs) {
-        return globs.some(elem => minimatch(path, elem, { dot: true }));
-    }
+    return fastGlob.sync(include, {
+        fs, // we pass in fs here, to be able to mock it in our tests
+        dot: true,
+        stats: true,
+        onlyFiles: false,
+        cwd: pathToMap,
+        ignore: exclude
+    })
+        .map(({ path, stats }) => ({ [path]: { subDir, stats } }))
+        .reduce(
+            (dirMap, fragment) => Object.assign(dirMap, fragment),
+            { '': { subDir, stats: fs.statSync(pathToMap) } }
+        );
 }
 
 /**
