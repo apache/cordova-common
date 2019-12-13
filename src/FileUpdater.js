@@ -61,54 +61,56 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     const copyAll = (options && options.all) || false;
     const targetFullPath = path.join(rootDir, targetPath);
 
-    if (sourceStats) {
-        const sourceFullPath = path.join(rootDir, sourcePath);
+    if (!sourceStats) {
+        if (!targetStats) return false;
 
-        if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
-            // The target exists. But if the directory status doesn't match the source, delete it.
-            log(`delete ${targetPath}`);
-            fs.removeSync(targetFullPath);
-            targetStats = null;
-            updated = true;
-        }
-
-        if (!targetStats) {
-            if (sourceStats.isDirectory()) {
-                // The target directory does not exist, so it should be created.
-                log(`mkdir ${targetPath}`);
-                fs.ensureDirSync(targetFullPath);
-                updated = true;
-            } else if (sourceStats.isFile()) {
-                // The target file does not exist, so it should be copied from the source.
-                log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (new file)'}`);
-                fs.copySync(sourceFullPath, targetFullPath);
-                updated = true;
-            }
-        } else if (sourceStats.isFile() && targetStats.isFile()) {
-            // The source and target paths both exist and are files.
-            if (copyAll) {
-                // The caller specified all files should be copied.
-                log(`copy  ${sourcePath} ${targetPath}`);
-                fs.copySync(sourceFullPath, targetFullPath);
-                updated = true;
-            } else {
-                // Copy if the source has been modified since it was copied to the target, or if
-                // the file sizes are different. (The latter catches most cases in which something
-                // was done to the file after copying.) Comparison is >= rather than > to allow
-                // for timestamps lacking sub-second precision in some filesystems.
-                if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
-                        sourceStats.size !== targetStats.size) {
-                    log(`copy  ${sourcePath} ${targetPath} (updated file)`);
-                    fs.copySync(sourceFullPath, targetFullPath);
-                    updated = true;
-                }
-            }
-        }
-    } else if (targetStats) {
         // The target exists but the source is null, so the target should be deleted.
         log(`delete ${targetPath}${copyAll ? '' : ' (no source)'}`);
         fs.removeSync(targetFullPath);
+        return true;
+    }
+
+    const sourceFullPath = path.join(rootDir, sourcePath);
+
+    if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
+        // The target exists. But if the directory status doesn't match the source, delete it.
+        log(`delete ${targetPath}`);
+        fs.removeSync(targetFullPath);
+        targetStats = null;
         updated = true;
+    }
+
+    if (!targetStats) {
+        if (sourceStats.isDirectory()) {
+            // The target directory does not exist, so it should be created.
+            log(`mkdir ${targetPath}`);
+            fs.ensureDirSync(targetFullPath);
+            updated = true;
+        } else if (sourceStats.isFile()) {
+            // The target file does not exist, so it should be copied from the source.
+            log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (new file)'}`);
+            fs.copySync(sourceFullPath, targetFullPath);
+            updated = true;
+        }
+    } else if (sourceStats.isFile() && targetStats.isFile()) {
+        // The source and target paths both exist and are files.
+        if (copyAll) {
+            // The caller specified all files should be copied.
+            log(`copy  ${sourcePath} ${targetPath}`);
+            fs.copySync(sourceFullPath, targetFullPath);
+            updated = true;
+        } else {
+            // Copy if the source has been modified since it was copied to the target, or if
+            // the file sizes are different. (The latter catches most cases in which something
+            // was done to the file after copying.) Comparison is >= rather than > to allow
+            // for timestamps lacking sub-second precision in some filesystems.
+            if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
+                    sourceStats.size !== targetStats.size) {
+                log(`copy  ${sourcePath} ${targetPath} (updated file)`);
+                fs.copySync(sourceFullPath, targetFullPath);
+                updated = true;
+            }
+        }
     }
 
     return updated;
