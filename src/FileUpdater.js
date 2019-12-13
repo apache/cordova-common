@@ -67,14 +67,14 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
         if (!targetStats) return false;
 
         // The target exists but the source is null, so the target should be deleted.
-        log(`delete ${targetPath}${copyAll ? '' : ' (no source)'}`);
+        log(`delete ${targetPath} (no source)`);
         fs.removeSync(targetFullPath);
         return true;
     }
 
     if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
         // The target exists. But if the directory status doesn't match the source, delete it.
-        log(`delete ${targetPath}`);
+        log(`delete ${targetPath} (wrong type)`);
         fs.removeSync(targetFullPath);
         targetStats = null;
     }
@@ -100,7 +100,7 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
         if (!needsUpdate) return false;
 
         const type = targetStats ? 'updated' : 'new';
-        log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ` (${type} file)`}`);
+        log(`copy  ${sourcePath} ${targetPath} (${type} file)`);
         fs.copySync(path.join(rootDir, sourcePath), targetFullPath);
         return true;
     }
