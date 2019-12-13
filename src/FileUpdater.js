@@ -312,37 +312,29 @@ function mapDirectory (rootDir, subDir, include, exclude) {
 function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Merge multiple source maps together, along with target path info.
     // Entries in later source maps override those in earlier source maps.
-    // Target stats will be filled in below for targets that exist.
-    const pathMap = {};
+    const sourceMap = Object.assign({}, ...sourceMaps);
 
-    sourceMaps.forEach(sourceMap => {
-        Object.keys(sourceMap).forEach(sourceSubPath => {
-            const sourceEntry = sourceMap[sourceSubPath];
+    const allKeys = [].concat(Object.keys(sourceMap), Object.keys(targetMap));
+    const pathMap = allKeys.reduce((acc, subPath) => (
+        Object.assign(acc, { [subPath]: {
+            targetPath: path.join(targetDir, subPath),
+            targetStats: null,
+            sourcePath: null,
+            sourceStats: null
+        } })
+    ), {});
 
-            pathMap[sourceSubPath] = {
-                targetPath: path.join(targetDir, sourceSubPath),
-                targetStats: null,
-                sourcePath: path.join(sourceEntry.subDir, sourceSubPath),
-                sourceStats: sourceEntry.stats
-            };
-        });
+    Object.entries(sourceMap).forEach(([subPath, { subDir, stats }]) => {
+        Object.assign(
+            pathMap[subPath],
+            { sourcePath: path.join(subDir, subPath), sourceStats: stats }
+        );
     });
 
     // Fill in target stats for targets that exist, and create entries
     // for targets that don't have any corresponding sources.
-    Object.keys(targetMap).forEach(subPath => {
-        const entry = pathMap[subPath];
-
-        if (entry) {
-            entry.targetStats = targetMap[subPath].stats;
-        } else {
-            pathMap[subPath] = {
-                targetPath: path.join(targetDir, subPath),
-                targetStats: targetMap[subPath].stats,
-                sourcePath: null,
-                sourceStats: null
-            };
-        }
+    Object.entries(targetMap).forEach(([subPath, { stats }]) => {
+        Object.assign(pathMap[subPath], { targetStats: stats });
     });
 
     return pathMap;
