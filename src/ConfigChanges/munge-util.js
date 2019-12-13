@@ -23,10 +23,8 @@ exports.deep_add = function deep_add (obj, keys /* or key1, key2 .... */) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, true/* createParents */, function (parentArray, k) {
-        var found = _.find(parentArray, function (element) {
-            return element.xml === k.xml;
-        });
+    return exports.process_munge(obj, true/* createParents */, (parentArray, k) => {
+        var found = _.find(parentArray, element => element.xml === k.xml);
         if (found) {
             found.after = found.after || k.after;
             found.count += k.count;
@@ -44,9 +42,9 @@ exports.deep_remove = function deep_remove (obj, keys /* or key1, key2 .... */) 
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    var result = exports.process_munge(obj, false/* createParents */, function (parentArray, k) {
+    var result = exports.process_munge(obj, false/* createParents */, (parentArray, k) => {
         var index = -1;
-        var found = _.find(parentArray, function (element) {
+        var found = _.find(parentArray, element => {
             index++;
             return element.xml === k.xml;
         });
@@ -74,10 +72,8 @@ exports.deep_find = function deep_find (obj, keys /* or key1, key2 .... */) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, false/* createParents? */, function (parentArray, k) {
-        return _.find(parentArray, function (element) {
-            return element.xml === (k.xml || k);
-        });
+    return exports.process_munge(obj, false/* createParents? */, (parentArray, k) => {
+        return _.find(parentArray, element => element.xml === (k.xml || k));
     }, keys);
 };
 

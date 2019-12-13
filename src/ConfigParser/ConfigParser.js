@@ -76,11 +76,11 @@ function getCordovaNamespacePrefix (doc) {
 function findElementAttributeValue (attributeName, elems) {
     elems = Array.isArray(elems) ? elems : [elems];
 
-    var value = elems.filter(function (elem) {
-        return elem.attrib.name.toLowerCase() === attributeName.toLowerCase();
-    }).map(function (filteredElems) {
-        return filteredElems.attrib.value;
-    }).pop();
+    var value = elems.filter(elem =>
+        elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
+    ).map(filteredElems =>
+        filteredElems.attrib.value
+    ).pop();
 
     return value || '';
 }
@@ -173,9 +173,9 @@ ConfigParser.prototype = {
             throw new CordovaError('platform does not exist (received platform: ' + platform + ')');
         }
         const elems = this.doc.findall('./platform[@name="' + platform + '"]/preference');
-        let pref = elems.filter(function (elem) {
-            return elem.attrib.name.toLowerCase() === name.toLowerCase();
-        }).pop();
+        let pref = elems.filter(elem =>
+            elem.attrib.name.toLowerCase() === name.toLowerCase()
+        ).pop();
 
         if (!pref) {
             pref = new et.Element('preference');
@@ -216,7 +216,7 @@ ConfigParser.prototype = {
         var ret = [];
         var staticResources = [];
         if (platform) { // platform specific icons
-            this.doc.findall('./platform[@name="' + platform + '"]/' + resourceName).forEach(function (elt) {
+            this.doc.findall('./platform[@name="' + platform + '"]/' + resourceName).forEach(elt => {
                 elt.platform = platform; // mark as platform specific resource
                 staticResources.push(elt);
             });
@@ -225,7 +225,7 @@ ConfigParser.prototype = {
         staticResources = staticResources.concat(this.doc.findall(resourceName));
         // parse resource elements
         var that = this;
-        staticResources.forEach(function (elt) {
+        staticResources.forEach(elt => {
             var res = {};
             res.src = elt.attrib.src;
             res.target = elt.attrib.target || undefined;
@@ -249,8 +249,8 @@ ConfigParser.prototype = {
          * @param  {number} height Height of resource.
          * @return {Resource} Resource object or null if not found.
          */
-        ret.getBySize = function (width, height) {
-            return ret.filter(function (res) {
+        ret.getBySize = (width, height) => {
+            return ret.filter(res => {
                 if (!res.width && !res.height) {
                     return false;
                 }
@@ -264,16 +264,12 @@ ConfigParser.prototype = {
          * @param  {string} density Density of resource.
          * @return {Resource}       Resource object or null if not found.
          */
-        ret.getByDensity = function (density) {
-            return ret.filter(function (res) {
-                return res.density === density;
-            })[0] || null;
+        ret.getByDensity = density => {
+            return ret.filter(res => res.density === density)[0] || null;
         };
 
         /** Returns default icons */
-        ret.getDefault = function () {
-            return ret.defaultResource;
-        };
+        ret.getDefault = () => ret.defaultResource;
 
         return ret;
     },
@@ -307,20 +303,18 @@ ConfigParser.prototype = {
         var fileResources = [];
 
         if (platform) { // platform specific resources
-            fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(function (tag) {
-                return {
-                    platform: platform,
-                    src: tag.attrib.src,
-                    target: tag.attrib.target,
-                    versions: tag.attrib.versions,
-                    deviceTarget: tag.attrib['device-target'],
-                    arch: tag.attrib.arch
-                };
-            });
+            fileResources = this.doc.findall('./platform[@name="' + platform + '"]/resource-file').map(tag => ({
+                platform: platform,
+                src: tag.attrib.src,
+                target: tag.attrib.target,
+                versions: tag.attrib.versions,
+                deviceTarget: tag.attrib['device-target'],
+                arch: tag.attrib.arch
+            }));
         }
 
         if (includeGlobal) {
-            this.doc.findall('resource-file').forEach(function (tag) {
+            this.doc.findall('resource-file').forEach(tag => {
                 fileResources.push({
                     platform: platform || null,
                     src: tag.attrib.src,
@@ -346,7 +340,7 @@ ConfigParser.prototype = {
         var scriptElements = self.doc.findall('./hook');
 
         if (platforms) {
-            platforms.forEach(function (platform) {
+            platforms.forEach(platform => {
                 scriptElements = scriptElements.concat(self.doc.findall('./platform[@name="' + platform + '"]/hook'));
             });
         }
@@ -366,11 +360,9 @@ ConfigParser.prototype = {
     */
     getPluginIdList: function () {
         var plugins = this.doc.findall('plugin');
-        var result = plugins.map(function (plugin) {
-            return plugin.attrib.name;
-        });
+        var result = plugins.map(plugin => plugin.attrib.name);
         var features = this.doc.findall('feature');
-        features.forEach(function (element) {
+        features.forEach(element => {
             var idTag = element.find('./param[@name="id"]');
             if (idTag) {
                 result.push(idTag.attrib.value);
@@ -400,14 +392,14 @@ ConfigParser.prototype = {
 
         // support arbitrary object as variables source
         if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
-            variables = Object.keys(variables)
-                .map(function (variableName) {
-                    return { name: variableName, value: variables[variableName] };
-                });
+            variables = Object.keys(variables).map(variableName => ({
+                name: variableName,
+                value: variables[variableName]
+            }));
         }
 
         if (variables) {
-            variables.forEach(function (variable) {
+            variables.forEach(variable => {
                 el.append(new et.Element('variable', { name: variable.name, value: variable.value }));
             });
         }
@@ -442,7 +434,7 @@ ConfigParser.prototype = {
         plugin.spec = pluginElement.attrib.spec || pluginElement.attrib.src || pluginElement.attrib.version;
         plugin.variables = {};
         var variableElements = pluginElement.findall('variable');
-        variableElements.forEach(function (varElement) {
+        variableElements.forEach(varElement => {
             var name = varElement.attrib.name;
             var value = varElement.attrib.value;
             if (name) {
@@ -499,7 +491,7 @@ ConfigParser.prototype = {
     },
     getEngines: function () {
         var engines = this.doc.findall('./engine');
-        return engines.map(function (engine) {
+        return engines.map(engine => {
             var spec = engine.attrib.spec || engine.attrib.version;
             return {
                 name: engine.attrib.name,
@@ -510,7 +502,7 @@ ConfigParser.prototype = {
     /* Get all the access tags */
     getAccesses: function () {
         var accesses = this.doc.findall('./access');
-        return accesses.map(function (access) {
+        return accesses.map(access => {
             var minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
             var requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
             var requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
@@ -534,7 +526,7 @@ ConfigParser.prototype = {
     /* Get all the allow-navigation tags */
     getAllowNavigations: function () {
         var allow_navigations = this.doc.findall('./allow-navigation');
-        return allow_navigations.map(function (allow_navigation) {
+        return allow_navigations.map(allow_navigation => {
             var minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
             var requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
             var requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
@@ -550,18 +542,16 @@ ConfigParser.prototype = {
     /* Get all the allow-intent tags */
     getAllowIntents: function () {
         var allow_intents = this.doc.findall('./allow-intent');
-        return allow_intents.map(function (allow_intent) {
-            return {
-                href: allow_intent.attrib.href
-            };
-        });
+        return allow_intents.map(allow_intent => ({
+            href: allow_intent.attrib.href
+        }));
     },
     /* Get all edit-config tags */
     getEditConfigs: function (platform) {
         var platform_edit_configs = this.doc.findall('./platform[@name="' + platform + '"]/edit-config');
         var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
-        return edit_configs.map(function (tag) {
+        return edit_configs.map(tag => {
             var editConfig = {
                 file: tag.attrib.file,
                 target: tag.attrib.target,
@@ -578,7 +568,7 @@ ConfigParser.prototype = {
         var platform_config_files = this.doc.findall('./platform[@name="' + platform + '"]/config-file');
         var config_files = this.doc.findall('config-file').concat(platform_config_files);
 
-        return config_files.map(function (tag) {
+        return config_files.map(tag => {
             var configFile = {
                 target: tag.attrib.target,
                 parent: tag.attrib.parent,
@@ -604,7 +594,7 @@ function featureToPlugin (featureElement) {
         pluginSrc;
 
     var nodes = featureElement.findall('param');
-    nodes.forEach(function (element) {
+    nodes.forEach(element => {
         var n = element.attrib.name;
         var v = element.attrib.value;
         if (n === 'id') {

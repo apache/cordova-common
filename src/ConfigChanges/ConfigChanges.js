@@ -39,7 +39,7 @@ var xml_helpers = require('../util/xml-helpers');
 
 exports.PlatformMunger = PlatformMunger;
 
-exports.process = function (plugins_dir, project_dir, platform, platformJson, pluginInfoProvider) {
+exports.process = (plugins_dir, project_dir, platform, platformJson, pluginInfoProvider) => {
     var munger = new PlatformMunger(platform, project_dir, platformJson, pluginInfoProvider);
     munger.process(plugins_dir);
     munger.save_all();
@@ -274,8 +274,8 @@ function generate_config_xml_munge (config, config_changes, type) {
         id = config.id;
     }
 
-    config_changes.forEach(function (change) {
-        change.xmls.forEach(function (xml) {
+    config_changes.forEach(change => {
+        change.xmls.forEach(xml => {
             // 1. stringify each xml
             var stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
             // 2. add into munge
@@ -303,13 +303,13 @@ function generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
         Array.prototype.push.apply(changes, edit_config_changes);
     }
 
-    changes.forEach(function (change) {
-        change.xmls.forEach(function (xml) {
+    changes.forEach(change => {
+        change.xmls.forEach(xml => {
             // 1. stringify each xml
             var stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
             // interp vars
             if (vars) {
-                Object.keys(vars).forEach(function (key) {
+                Object.keys(vars).forEach(key => {
                     var regExp = new RegExp('\\$' + key, 'g');
                     stringified = stringified.replace(regExp, vars[key]);
                 });
@@ -336,7 +336,7 @@ function is_conflicting (editchanges, config_munge, self, force) {
     var conflictingParent;
     var conflictingPlugin;
 
-    editchanges.forEach(function (editchange) {
+    editchanges.forEach(editchange => {
         if (files[editchange.file]) {
             var parents = files[editchange.file].parents;
             var target = parents[editchange.target];
@@ -409,13 +409,13 @@ function PlatformMunger_process (plugins_dir) {
     var platform_config = self.platformJson.root;
 
     // Uninstallation first
-    platform_config.prepare_queue.uninstalled.forEach(function (u) {
+    platform_config.prepare_queue.uninstalled.forEach(u => {
         var pluginInfo = self.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
         self.remove_plugin_changes(pluginInfo, u.topLevel);
     });
 
     // Now handle installation
-    platform_config.prepare_queue.installed.forEach(function (u) {
+    platform_config.prepare_queue.installed.forEach(u => {
         var pluginInfo = self.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
         self.add_plugin_changes(pluginInfo, u.vars, u.topLevel, true, u.force);
     });

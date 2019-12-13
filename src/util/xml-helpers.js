@@ -70,7 +70,7 @@ module.exports = {
             if (!parent) return false;
         }
 
-        nodes.forEach(function (node) {
+        nodes.forEach(node => {
             // check if child is unique first
             if (uniqueChild(node, parent)) {
                 var children = parent.getchildren();
@@ -93,7 +93,7 @@ module.exports = {
         // saves the attributes of the original xml before making changes
         xml.oldAttrib = _.extend({}, target.attrib);
 
-        nodes.forEach(function (node) {
+        nodes.forEach(node => {
             var attributes = node.attrib;
             for (var attribute in attributes) {
                 target.attrib[attribute] = node.attrib[attribute];
@@ -119,7 +119,7 @@ module.exports = {
         }
 
         // add new attributes to target
-        nodes.forEach(function (node) {
+        nodes.forEach(node => {
             var attributes = node.attrib;
             for (var attribute in attributes) {
                 target.attrib[attribute] = node.attrib[attribute];
@@ -134,7 +134,7 @@ module.exports = {
         var parent = module.exports.resolveParent(doc, selector);
         if (!parent) return false;
 
-        nodes.forEach(function (node) {
+        nodes.forEach(node => {
             var matchingKid = findChild(node, parent);
             if (matchingKid !== undefined) {
                 // stupid elementtree takes an index argument it doesn't use
@@ -162,7 +162,7 @@ module.exports = {
         var target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
-        nodes.forEach(function (node) {
+        nodes.forEach(node => {
             var attributes = node.attrib;
             for (var attribute in attributes) {
                 if (target.attrib[attribute]) {
@@ -218,10 +218,10 @@ function uniqueChild (node, parent) {
 // insert an element C, and the rule is that the order of children has to be
 // As, Bs, Cs. After will be equal to "C;B;A".
 function findInsertIdx (children, after) {
-    var childrenTags = children.map(function (child) { return child.tag; });
+    var childrenTags = children.map(child => child.tag);
     var afters = after.split(';');
-    var afterIndexes = afters.map(function (current) { return childrenTags.lastIndexOf(current); });
-    var foundIndex = _.find(afterIndexes, function (index) { return index !== -1; });
+    var afterIndexes = afters.map(current => childrenTags.lastIndexOf(current));
+    var foundIndex = _.find(afterIndexes, index => index !== -1);
 
     // add to the beginning if no matching nodes are found
     return typeof foundIndex === 'undefined' ? 0 : foundIndex + 1;
@@ -234,7 +234,7 @@ function mergeXml (src, dest, platform, clobber) {
     if (BLACKLIST.includes(src.tag)) return;
 
     // Handle attributes
-    Object.getOwnPropertyNames(src.attrib).forEach(function (attribute) {
+    Object.getOwnPropertyNames(src.attrib).forEach(attribute => {
         if (clobber || !dest.attrib[attribute]) {
             dest.attrib[attribute] = src.attrib[attribute];
         }
@@ -248,7 +248,7 @@ function mergeXml (src, dest, platform, clobber) {
 
     // Handle platform
     if (platform) {
-        src.findall('platform[@name="' + platform + '"]').forEach(function (platformElement) {
+        src.findall('platform[@name="' + platform + '"]').forEach(platformElement => {
             platformElement.getchildren().forEach(mergeChild);
         });
     }
@@ -274,9 +274,9 @@ function mergeXml (src, dest, platform, clobber) {
         } else {
             // Check for an exact match and if you find one don't add
             var mergeCandidates = dest.findall(query)
-                .filter(function (foundChild) {
-                    return foundChild && textMatch(srcChild, foundChild) && attribMatch(srcChild, foundChild);
-                });
+                .filter(foundChild =>
+                    foundChild && textMatch(srcChild, foundChild) && attribMatch(srcChild, foundChild)
+                );
 
             if (mergeCandidates.length > 0) {
                 destChild = mergeCandidates[0];
@@ -291,13 +291,13 @@ function mergeXml (src, dest, platform, clobber) {
 
     function removeDuplicatePreferences (xml) {
         // reduce preference tags to a hashtable to remove dupes
-        var prefHash = xml.findall('preference[@name][@value]').reduce(function (previousValue, currentValue) {
+        var prefHash = xml.findall('preference[@name][@value]').reduce((previousValue, currentValue) => {
             previousValue[currentValue.attrib.name] = currentValue.attrib.value;
             return previousValue;
         }, {});
 
         // remove all preferences
-        xml.findall('preference[@name][@value]').forEach(function (pref) {
+        xml.findall('preference[@name][@value]').forEach(pref => {
             xml.remove(pref);
         });
 

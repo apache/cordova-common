@@ -25,7 +25,7 @@ function PlatformJson (filePath, platform, root) {
     this.root = fix_munge(root || {});
 }
 
-PlatformJson.load = function (plugins_dir, platform) {
+PlatformJson.load = (plugins_dir, platform) => {
     var filePath = path.join(plugins_dir, platform + '.json');
     var root = null;
     if (fs.existsSync(filePath)) {
@@ -91,18 +91,12 @@ PlatformJson.prototype.addPlugin = function (pluginId, variables, isTopLevel) {
 PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
     var installedModules = this.root.modules || [];
 
-    var installedPaths = installedModules.map(function (installedModule) {
-        return installedModule.file;
-    });
+    var installedPaths = installedModules.map(m => m.file);
 
     var modulesToInstall = pluginInfo.getJsModules(this.platform)
-        .map(function (module) {
-            return new ModuleMetadata(pluginInfo.id, module);
-        })
-        .filter(function (metadata) {
-            // Filter out modules which are already added to metadata
-            return !installedPaths.includes(metadata.file);
-        });
+        .map(module => new ModuleMetadata(pluginInfo.id, module))
+        // Filter out modules which are already added to metadata
+        .filter(metadata => !installedPaths.includes(metadata.file));
 
     this.root.modules = installedModules.concat(modulesToInstall);
 
@@ -133,16 +127,12 @@ PlatformJson.prototype.removePlugin = function (pluginId, isTopLevel) {
  */
 PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
     var modulesToRemove = pluginInfo.getJsModules(this.platform)
-        .map(function (jsModule) {
-            return ['plugins', pluginInfo.id, jsModule.src].join('/');
-        });
+        .map(jsModule => ['plugins', pluginInfo.id, jsModule.src].join('/'));
 
     var installedModules = this.root.modules || [];
     this.root.modules = installedModules
-        .filter(function (installedModule) {
-            // Leave only those metadatas which 'file' is not in removed modules
-            return !modulesToRemove.includes(installedModule.file);
-        });
+        // Leave only those metadatas which 'file' is not in removed modules
+        .filter(m => !modulesToRemove.includes(m.file));
 
     if (this.root.plugin_metadata) {
         delete this.root.plugin_metadata[pluginInfo.id];
@@ -249,10 +239,10 @@ function ModuleMetadata (pluginId, jsModule) {
     this.pluginId = pluginId;
 
     if (jsModule.clobbers && jsModule.clobbers.length > 0) {
-        this.clobbers = jsModule.clobbers.map(function (o) { return o.target; });
+        this.clobbers = jsModule.clobbers.map(o => o.target);
     }
     if (jsModule.merges && jsModule.merges.length > 0) {
-        this.merges = jsModule.merges.map(function (o) { return o.target; });
+        this.merges = jsModule.merges.map(o => o.target);
     }
     if (jsModule.runs) {
         this.runs = true;

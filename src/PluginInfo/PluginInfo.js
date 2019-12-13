@@ -43,7 +43,7 @@ function PluginInfo (dirname) {
     self.getPreferences = getPreferences;
     function getPreferences (platform) {
         return _getTags(self._et, 'preference', platform, _parsePreference)
-            .reduce(function (preferences, pref) {
+            .reduce((preferences, pref) => {
                 preferences[pref.preference] = pref.default;
                 return preferences;
             }, {});
@@ -165,7 +165,7 @@ function PluginInfo (dirname) {
             self._et,
             'info',
             platform,
-            function (elem) { return elem.text; }
+            elem => elem.text
         );
         // Filter out any undefined or empty strings.
         infos = infos.filter(Boolean);
@@ -198,14 +198,12 @@ function PluginInfo (dirname) {
     // <header-file src="CDVFoo.h" />
     self.getHeaderFiles = getHeaderFiles;
     function getHeaderFiles (platform) {
-        var headerFiles = _getTagsInPlatform(self._et, 'header-file', platform, function (tag) {
-            return {
-                itemType: 'header-file',
-                src: tag.attrib.src,
-                targetDir: tag.attrib['target-dir'],
-                type: tag.attrib.type
-            };
-        });
+        var headerFiles = _getTagsInPlatform(self._et, 'header-file', platform, tag => ({
+            itemType: 'header-file',
+            src: tag.attrib.src,
+            targetDir: tag.attrib['target-dir'],
+            type: tag.attrib.type
+        }));
         return headerFiles;
     }
 
@@ -214,17 +212,15 @@ function PluginInfo (dirname) {
     // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
     self.getResourceFiles = getResourceFiles;
     function getResourceFiles (platform) {
-        var resourceFiles = _getTagsInPlatform(self._et, 'resource-file', platform, function (tag) {
-            return {
-                itemType: 'resource-file',
-                src: tag.attrib.src,
-                target: tag.attrib.target,
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target'],
-                arch: tag.attrib.arch,
-                reference: tag.attrib.reference
-            };
-        });
+        var resourceFiles = _getTagsInPlatform(self._et, 'resource-file', platform, tag => ({
+            itemType: 'resource-file',
+            src: tag.attrib.src,
+            target: tag.attrib.target,
+            versions: tag.attrib.versions,
+            deviceTarget: tag.attrib['device-target'],
+            arch: tag.attrib.arch,
+            reference: tag.attrib.reference
+        }));
         return resourceFiles;
     }
 
@@ -233,16 +229,14 @@ function PluginInfo (dirname) {
     // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
     self.getLibFiles = getLibFiles;
     function getLibFiles (platform) {
-        var libFiles = _getTagsInPlatform(self._et, 'lib-file', platform, function (tag) {
-            return {
-                itemType: 'lib-file',
-                src: tag.attrib.src,
-                arch: tag.attrib.arch,
-                Include: tag.attrib.Include,
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target'] || tag.attrib.target
-            };
-        });
+        var libFiles = _getTagsInPlatform(self._et, 'lib-file', platform, tag => ({
+            itemType: 'lib-file',
+            src: tag.attrib.src,
+            arch: tag.attrib.arch,
+            Include: tag.attrib.Include,
+            versions: tag.attrib.versions,
+            deviceTarget: tag.attrib['device-target'] || tag.attrib.target
+        }));
         return libFiles;
     }
 
@@ -264,30 +258,28 @@ function PluginInfo (dirname) {
     // </podspec>
     self.getPodSpecs = getPodSpecs;
     function getPodSpecs (platform) {
-        var podSpecs = _getTagsInPlatform(self._et, 'podspec', platform, function (tag) {
+        var podSpecs = _getTagsInPlatform(self._et, 'podspec', platform, tag => {
             var declarations = null;
             var sources = null;
             var libraries = null;
             var config = tag.find('config');
             var pods = tag.find('pods');
             if (config != null) {
-                sources = config.findall('source').map(function (t) {
-                    return {
-                        url: t.attrib.url
-                    };
-                }).reduce(function (acc, val) {
+                sources = config.findall('source').map(t => ({
+                    url: t.attrib.url
+                })).reduce((acc, val) => {
                     return Object.assign({}, acc, { [val.url]: { source: val.url } });
                 }, {});
             }
             if (pods != null) {
-                declarations = Object.keys(pods.attrib).reduce(function (acc, key) {
+                declarations = Object.keys(pods.attrib).reduce((acc, key) => {
                     return pods.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: pods.attrib[key] });
                 }, {});
-                libraries = pods.findall('pod').map(function (t) {
-                    return Object.keys(t.attrib).reduce(function (acc, key) {
+                libraries = pods.findall('pod').map(t => {
+                    return Object.keys(t.attrib).reduce((acc, key) => {
                         return t.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: t.attrib[key] });
                     }, {});
-                }).reduce(function (acc, val) {
+                }).reduce((acc, val) => {
                     return Object.assign({}, acc, { [val.name]: val });
                 }, {});
             }
@@ -308,7 +300,7 @@ function PluginInfo (dirname) {
         var scriptElements = self._et.findall('./hook');
 
         if (platforms) {
-            platforms.forEach(function (platform) {
+            platforms.forEach(platform => {
                 scriptElements = scriptElements.concat(self._et.findall('./platform[@name="' + platform + '"]/hook'));
             });
         }
@@ -331,8 +323,8 @@ function PluginInfo (dirname) {
             itemType: 'js-module',
             name: tag.attrib.name,
             src: tag.attrib.src,
-            clobbers: tag.findall('clobbers').map(function (tag) { return { target: tag.attrib.target }; }),
-            merges: tag.findall('merges').map(function (tag) { return { target: tag.attrib.target }; }),
+            clobbers: tag.findall('clobbers').map(tag => ({ target: tag.attrib.target })),
+            merges: tag.findall('merges').map(tag => ({ target: tag.attrib.target })),
             runs: tag.findall('runs').length > 0
         };
 
@@ -340,30 +332,26 @@ function PluginInfo (dirname) {
     }
 
     self.getEngines = function () {
-        return self._et.findall('engines/engine').map(function (n) {
-            return {
-                name: n.attrib.name,
-                version: n.attrib.version,
-                platform: n.attrib.platform,
-                scriptSrc: n.attrib.scriptSrc
-            };
-        });
+        return self._et.findall('engines/engine').map(n => ({
+            name: n.attrib.name,
+            version: n.attrib.version,
+            platform: n.attrib.platform,
+            scriptSrc: n.attrib.scriptSrc
+        }));
     };
 
     self.getPlatforms = function () {
-        return self._et.findall('platform').map(function (n) {
-            return { name: n.attrib.name };
-        });
+        return self._et.findall('platform').map(n => ({
+            name: n.attrib.name
+        }));
     };
 
     self.getPlatformsArray = function () {
-        return self._et.findall('platform').map(function (n) {
-            return n.attrib.name;
-        });
+        return self._et.findall('platform').map(n => n.attrib.name);
     };
 
     self.getFrameworks = function (platform, options) {
-        return _getTags(self._et, 'framework', platform, function (el) {
+        return _getTags(self._et, 'framework', platform, el => {
             var src = el.attrib.src;
             if (options) {
                 var vars = options.cli_variables || {};
@@ -375,7 +363,7 @@ function PluginInfo (dirname) {
                 var regExp;
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
-                Object.keys(vars).forEach(function (name) {
+                Object.keys(vars).forEach(name => {
                     if (vars[name]) {
                         regExp = new RegExp('\\$' + name, 'g');
                         src = src.replace(regExp, vars[name]);
@@ -437,9 +425,9 @@ function PluginInfo (dirname) {
     self.keywords = pelem.findtext('keywords');
     self.info = pelem.findtext('info');
     if (self.keywords) {
-        self.keywords = self.keywords.split(',').map(function (s) { return s.trim(); });
+        self.keywords = self.keywords.split(',').map(s => s.trim());
     }
-    self.getKeywordsAndPlatforms = function () {
+    self.getKeywordsAndPlatforms = () => {
         var ret = self.keywords || [];
         return ret.concat('ecosystem:cordova').concat(addCordova(self.getPlatformsArray()));
     };
@@ -448,9 +436,7 @@ function PluginInfo (dirname) {
 // Helper function used to prefix every element of an array with cordova-
 // Useful when we want to modify platforms to be cordova-platform
 function addCordova (someArray) {
-    var newArray = someArray.map(function (element) {
-        return 'cordova-' + element;
-    });
+    var newArray = someArray.map(element => 'cordova-' + element);
     return newArray;
 }
 
@@ -488,7 +474,7 @@ function isStrTrue (x) {
 module.exports = PluginInfo;
 // Backwards compat:
 PluginInfo.PluginInfo = PluginInfo;
-PluginInfo.loadPluginsDir = function (dir) {
+PluginInfo.loadPluginsDir = dir => {
     var PluginInfoProvider = require('./PluginInfoProvider');
     return new PluginInfoProvider().getAllWithinSearchPath(dir);
 };
