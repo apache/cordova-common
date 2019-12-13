@@ -194,15 +194,11 @@ function updatePaths (pathMap, options, log) {
 
     log = log || (() => { });
 
-    let updated = false;
-
     // Iterate in sorted order for nicer logs
-    Object.keys(pathMap).sort().forEach(targetPath => {
+    return Object.keys(pathMap).sort().map(targetPath => {
         const sourcePath = pathMap[targetPath];
-        updated = updatePathInternal(sourcePath, targetPath, options, log) || updated;
-    });
-
-    return updated;
+        return updatePathInternal(sourcePath, targetPath, options, log);
+    }).some(updated => updated);
 }
 
 /**
@@ -279,21 +275,19 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
         ? mapDirectory(rootDir, targetDir, include, exclude)
         : {};
     const pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
-    let updated = false;
 
     // Iterate in sorted order for nicer logs
-    Object.keys(pathMap).sort().forEach(subPath => {
+    return Object.keys(pathMap).sort().map(subPath => {
         const entry = pathMap[subPath];
-        updated = updatePathWithStats(
+        return updatePathWithStats(
             entry.sourcePath,
             entry.sourceStats,
             entry.targetPath,
             entry.targetStats,
             options,
-            log) || updated;
-    });
-
-    return updated;
+            log
+        );
+    }).some(updated => updated);
 }
 
 /**
