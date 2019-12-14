@@ -34,8 +34,6 @@ function ConfigKeeper (project_dir, plugins_dir) {
 }
 
 ConfigKeeper.prototype.get = function ConfigKeeper_get (project_dir, platform, file) {
-    var self = this;
-
     // This fixes a bug with older plugins - when specifying config xml instead of res/xml/config.xml
     // https://issues.apache.org/jira/browse/CB-6414
     if (file === 'config.xml' && platform === 'android') {
@@ -43,19 +41,18 @@ ConfigKeeper.prototype.get = function ConfigKeeper_get (project_dir, platform, f
     }
     var fake_path = path.join(project_dir, platform, file);
 
-    if (self._cached[fake_path]) {
-        return self._cached[fake_path];
+    if (this._cached[fake_path]) {
+        return this._cached[fake_path];
     }
     // File was not cached, need to load.
     var config_file = new ConfigFile(project_dir, platform, file);
-    self._cached[fake_path] = config_file;
+    this._cached[fake_path] = config_file;
     return config_file;
 };
 
 ConfigKeeper.prototype.save_all = function ConfigKeeper_save_all () {
-    var self = this;
-    Object.keys(self._cached).forEach(fake_path => {
-        var config_file = self._cached[fake_path];
+    Object.keys(this._cached).forEach(fake_path => {
+        var config_file = this._cached[fake_path];
         if (config_file.is_changed) config_file.save();
     });
 };

@@ -88,7 +88,6 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
     // Set default to empty object to play safe when accesing properties
     options = options || {};
 
-    var self = this;
     var actions = new ActionStack();
 
     // gather all files need to be handled during operation ...
@@ -97,9 +96,9 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
         .concat(plugin.getJsModules(this.platform))
         // ... put them into stack ...
         .forEach(item => {
-            var installer = self.project.getInstaller(item.itemType);
-            var uninstaller = self.project.getUninstaller(item.itemType);
-            var actionArgs = [item, plugin, self.project, options];
+            var installer = this.project.getInstaller(item.itemType);
+            var uninstaller = this.project.getUninstaller(item.itemType);
+            var actionArgs = [item, plugin, this.project, options];
 
             var action;
             if (operation === PluginManager.INSTALL) {
@@ -113,29 +112,29 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
     // ... and run through the action stack
     return actions.process(this.platform)
         .then(() => {
-            if (self.project.write) {
-                self.project.write();
+            if (this.project.write) {
+                this.project.write();
             }
 
             if (operation === PluginManager.INSTALL) {
                 // Ignore passed `is_top_level` option since platform itself doesn't know
                 // anything about managing dependencies - it's responsibility of caller.
-                self.munger.add_plugin_changes(plugin, options.variables, /* is_top_level= */true, /* should_increment= */true, options.force);
-                self.munger.platformJson.addPluginMetadata(plugin);
+                this.munger.add_plugin_changes(plugin, options.variables, /* is_top_level= */true, /* should_increment= */true, options.force);
+                this.munger.platformJson.addPluginMetadata(plugin);
             } else {
-                self.munger.remove_plugin_changes(plugin, /* is_top_level= */true);
-                self.munger.platformJson.removePluginMetadata(plugin);
+                this.munger.remove_plugin_changes(plugin, /* is_top_level= */true);
+                this.munger.platformJson.removePluginMetadata(plugin);
             }
 
             // Save everything (munge and plugin/modules metadata)
-            self.munger.save_all();
+            this.munger.save_all();
 
-            var metadata = self.munger.platformJson.generateMetadata();
-            fs.writeFileSync(path.join(self.locations.www, 'cordova_plugins.js'), metadata, 'utf-8');
+            var metadata = this.munger.platformJson.generateMetadata();
+            fs.writeFileSync(path.join(this.locations.www, 'cordova_plugins.js'), metadata, 'utf-8');
 
             // CB-11022 save plugin metadata to both www and platform_www if options.usePlatformWww is specified
             if (options.usePlatformWww) {
-                fs.writeFileSync(path.join(self.locations.platformWww, 'cordova_plugins.js'), metadata, 'utf-8');
+                fs.writeFileSync(path.join(this.locations.platformWww, 'cordova_plugins.js'), metadata, 'utf-8');
             }
         });
 };

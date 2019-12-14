@@ -36,7 +36,7 @@ const modules = {
 * should be instantiated by ConfigKeeper.
 *
 * For plugin.xml files use as:
-* plugin_config = self.config_keeper.get(plugin_dir, '', 'plugin.xml');
+* plugin_config = this.config_keeper.get(plugin_dir, '', 'plugin.xml');
 *
 * TODO: Consider moving it out to a separate file and maybe partially with
 * overrides in platform handlers.
@@ -53,107 +53,102 @@ function ConfigFile (project_dir, platform, file_tag) {
 // ConfigFile.load()
 ConfigFile.prototype.load = ConfigFile_load;
 function ConfigFile_load () {
-    var self = this;
-
     // config file may be in a place not exactly specified in the target
-    var filepath = self.filepath = resolveConfigFilePath(self.project_dir, self.platform, self.file_tag);
+    var filepath = this.filepath = resolveConfigFilePath(this.project_dir, this.platform, this.file_tag);
 
     if (!filepath || !fs.existsSync(filepath)) {
-        self.exists = false;
+        this.exists = false;
         return;
     }
-    self.exists = true;
-    self.mtime = fs.statSync(self.filepath).mtime;
+    this.exists = true;
+    this.mtime = fs.statSync(this.filepath).mtime;
 
     var ext = path.extname(filepath);
     // Windows8 uses an appxmanifest, and wp8 will likely use
     // the same in a future release
     if (ext === '.xml' || ext === '.appxmanifest' || ext === '.storyboard' || ext === '.jsproj') {
-        self.type = 'xml';
-        self.data = modules.xml_helpers.parseElementtreeSync(filepath);
+        this.type = 'xml';
+        this.data = modules.xml_helpers.parseElementtreeSync(filepath);
     } else {
         // plist file
-        self.type = 'plist';
+        this.type = 'plist';
         // TODO: isBinaryPlist() reads the file and then parse re-reads it again.
         //       We always write out text plist, not binary.
         //       Do we still need to support binary plist?
         //       If yes, use plist.parseStringSync() and read the file once.
-        self.data = isBinaryPlist(filepath)
+        this.data = isBinaryPlist(filepath)
             ? modules.bplist.parseBuffer(fs.readFileSync(filepath))[0]
             : modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
     }
 }
 
 ConfigFile.prototype.save = function ConfigFile_save () {
-    var self = this;
-    if (self.type === 'xml') {
-        fs.writeFileSync(self.filepath, self.data.write({ indent: 4 }), 'utf-8');
+    if (this.type === 'xml') {
+        fs.writeFileSync(this.filepath, this.data.write({ indent: 4 }), 'utf-8');
     } else {
         // plist
         var regExp = /<string>[ \t\r\n]+?<\/string>/g;
-        fs.writeFileSync(self.filepath, modules.plist.build(self.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
+        fs.writeFileSync(this.filepath, modules.plist.build(this.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
     }
-    self.is_changed = false;
+    this.is_changed = false;
 };
 
 ConfigFile.prototype.graft_child = function ConfigFile_graft_child (selector, xml_child) {
-    var self = this;
-    var filepath = self.filepath;
+    var filepath = this.filepath;
     var result;
-    if (self.type === 'xml') {
+    if (this.type === 'xml') {
         var xml_to_graft = [modules.et.XML(xml_child.xml)];
         switch (xml_child.mode) {
         case 'merge':
-            result = modules.xml_helpers.graftXMLMerge(self.data, xml_to_graft, selector, xml_child);
+            result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
             break;
         case 'overwrite':
-            result = modules.xml_helpers.graftXMLOverwrite(self.data, xml_to_graft, selector, xml_child);
+            result = modules.xml_helpers.graftXMLOverwrite(this.data, xml_to_graft, selector, xml_child);
             break;
         case 'remove':
-            result = modules.xml_helpers.pruneXMLRemove(self.data, selector, xml_to_graft);
+            result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
             break;
         default:
-            result = modules.xml_helpers.graftXML(self.data, xml_to_graft, selector, xml_child.after);
+            result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
         }
         if (!result) {
             throw new Error('Unable to graft xml at selector "' + selector + '" from "' + filepath + '" during config install');
         }
     } else {
         // plist file
-        result = modules.plist_helpers.graftPLIST(self.data, xml_child.xml, selector);
+        result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
         if (!result) {
             throw new Error('Unable to graft plist "' + filepath + '" during config install');
         }
     }
-    self.is_changed = true;
+    this.is_changed = true;
 };
 
 ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xml_child) {
-    var self = this;
-    var filepath = self.filepath;
+    var filepath = this.filepath;
     var result;
-    if (self.type === 'xml') {
+    if (this.type === 'xml') {
         var xml_to_graft = [modules.et.XML(xml_child.xml)];
         switch (xml_child.mode) {
         case 'merge':
         case 'overwrite':
-            result = modules.xml_helpers.pruneXMLRestore(self.data, selector, xml_child);
+            result = modules.xml_helpers.pruneXMLRestore(this.data, selector, xml_child);
             break;
         case 'remove':
-            result = modules.xml_helpers.pruneXMLRemove(self.data, selector, xml_to_graft);
+            result = modules.xml_helpers.pruneXMLRemove(this.data, selector, xml_to_graft);
             break;
         default:
-            result = modules.xml_helpers.pruneXML(self.data, xml_to_graft, selector);
+            result = modules.xml_helpers.pruneXML(this.data, xml_to_graft, selector);
         }
     } else {
         // plist file
-        result = modules.plist_helpers.prunePLIST(self.data, xml_child.xml, selector);
+        result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
     }
     if (!result) {
         var err_msg = 'Pruning at selector "' + selector + '" from "' + filepath + '" went bad.';
         throw new Error(err_msg);
     }
-    self.is_changed = true;
+    this.is_changed = true;
 };
 
 // Some config-file target attributes are not qualified with a full leading directory, or contain wildcards.

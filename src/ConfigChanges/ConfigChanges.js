@@ -70,12 +70,10 @@ function PlatformMunger_save_all () {
 // The remove parameter tells whether to add the change or remove it.
 PlatformMunger.prototype.apply_file_munge = PlatformMunger_apply_file_munge;
 function PlatformMunger_apply_file_munge (file, munge, remove) {
-    var self = this;
-
     for (var selector in munge.parents) {
         for (var xml_child in munge.parents[selector]) {
             // this xml child is new, graft it (only if config file exists)
-            var config_file = self.config_keeper.get(self.project_dir, self.platform, file);
+            var config_file = this.config_keeper.get(this.project_dir, this.platform, file);
             if (config_file.exists) {
                 if (remove) config_file.prune_child(selector, munge.parents[selector][xml_child]);
                 else config_file.graft_child(selector, munge.parents[selector][xml_child]);
@@ -88,48 +86,46 @@ function PlatformMunger_apply_file_munge (file, munge, remove) {
 
 PlatformMunger.prototype.remove_plugin_changes = remove_plugin_changes;
 function remove_plugin_changes (pluginInfo, is_top_level) {
-    var self = this;
-    var platform_config = self.platformJson.root;
+    var platform_config = this.platformJson.root;
     var plugin_vars = is_top_level
         ? platform_config.installed_plugins[pluginInfo.id]
         : platform_config.dependent_plugins[pluginInfo.id];
     var edit_config_changes = null;
     if (pluginInfo.getEditConfigs) {
-        edit_config_changes = pluginInfo.getEditConfigs(self.platform);
+        edit_config_changes = pluginInfo.getEditConfigs(this.platform);
     }
 
     // get config munge, aka how did this plugin change various config files
-    var config_munge = self.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
+    var config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
     // global munge looks at all plugins' changes to config files
     var global_munge = platform_config.config_munge;
     var munge = mungeutil.decrement_munge(global_munge, config_munge);
 
     for (var file in munge.files) {
-        self.apply_file_munge(file, munge.files[file], /* remove = */ true);
+        this.apply_file_munge(file, munge.files[file], /* remove = */ true);
     }
 
     // Remove from installed_plugins
-    self.platformJson.removePlugin(pluginInfo.id, is_top_level);
-    return self;
+    this.platformJson.removePlugin(pluginInfo.id, is_top_level);
+    return this;
 }
 
 PlatformMunger.prototype.add_plugin_changes = add_plugin_changes;
 function add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
-    var self = this;
-    var platform_config = self.platformJson.root;
+    var platform_config = this.platformJson.root;
 
     var edit_config_changes = null;
     if (pluginInfo.getEditConfigs) {
-        edit_config_changes = pluginInfo.getEditConfigs(self.platform);
+        edit_config_changes = pluginInfo.getEditConfigs(this.platform);
     }
 
     var config_munge;
 
     if (!edit_config_changes || edit_config_changes.length === 0) {
         // get config munge, aka how should this plugin change various config files
-        config_munge = self.generate_plugin_config_munge(pluginInfo, plugin_vars);
+        config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars);
     } else {
-        var isConflictingInfo = is_conflicting(edit_config_changes, platform_config.config_munge, self, plugin_force);
+        var isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
 
         if (isConflictingInfo.conflictWithConfigxml) {
             throw new Error(pluginInfo.id +
@@ -141,53 +137,52 @@ function add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_incre
             // remove conflicting munges
             var conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
             for (var conflict_file in conflict_munge.files) {
-                self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+                this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
             }
 
             // force add new munges
-            config_munge = self.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
+            config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
         } else if (isConflictingInfo.conflictFound) {
             throw new Error('There was a conflict trying to modify attributes with <edit-config> in plugin ' + pluginInfo.id +
             '. The conflicting plugin, ' + isConflictingInfo.conflictingPlugin + ', already modified the same attributes. The conflict must be resolved before ' +
             pluginInfo.id + ' can be added. You may use --force to add the plugin and overwrite the conflicting attributes.');
         } else {
             // no conflicts, will handle edit-config
-            config_munge = self.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
+            config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
         }
     }
 
-    self = munge_helper(should_increment, self, platform_config, config_munge);
+    this._munge_helper(should_increment, platform_config, config_munge);
 
     // Move to installed/dependent_plugins
-    self.platformJson.addPlugin(pluginInfo.id, plugin_vars || {}, is_top_level);
-    return self;
+    this.platformJson.addPlugin(pluginInfo.id, plugin_vars || {}, is_top_level);
+    return this;
 }
 
 // Handle edit-config changes from config.xml
 PlatformMunger.prototype.add_config_changes = add_config_changes;
 function add_config_changes (config, should_increment) {
-    var self = this;
-    var platform_config = self.platformJson.root;
+    var platform_config = this.platformJson.root;
 
     var config_munge;
     var changes = [];
 
     if (config.getEditConfigs) {
-        var edit_config_changes = config.getEditConfigs(self.platform);
+        var edit_config_changes = config.getEditConfigs(this.platform);
         if (edit_config_changes) {
             changes = changes.concat(edit_config_changes);
         }
     }
 
     if (config.getConfigFiles) {
-        var config_files_changes = config.getConfigFiles(self.platform);
+        var config_files_changes = config.getConfigFiles(this.platform);
         if (config_files_changes) {
             changes = changes.concat(config_files_changes);
         }
     }
 
     if (changes && changes.length > 0) {
-        var isConflictingInfo = is_conflicting(changes, platform_config.config_munge, self, true /* always force overwrite other edit-config */);
+        var isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
         if (isConflictingInfo.conflictFound) {
             var conflict_munge;
             var conflict_file;
@@ -196,7 +191,7 @@ function add_config_changes (config, should_increment) {
                 // silently remove conflicting config.xml munges so new munges can be added
                 conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
                 for (conflict_file in conflict_munge.files) {
-                    self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+                    this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                 }
             }
             if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
@@ -205,21 +200,22 @@ function add_config_changes (config, should_increment) {
                 // remove conflicting plugin.xml munges
                 conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
                 for (conflict_file in conflict_munge.files) {
-                    self.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
+                    this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                 }
             }
         }
     }
 
     // Add config.xml edit-config and config-file munges
-    config_munge = self.generate_config_xml_munge(config, changes, 'config.xml');
-    self = munge_helper(should_increment, self, platform_config, config_munge);
+    config_munge = this.generate_config_xml_munge(config, changes, 'config.xml');
+    this._munge_helper(should_increment, platform_config, config_munge);
 
     // Move to installed/dependent_plugins
-    return self;
+    return this;
 }
 
-function munge_helper (should_increment, self, platform_config, config_munge) {
+/** @private */
+PlatformMunger.prototype._munge_helper = function (should_increment, platform_config, config_munge) {
     // global munge looks at all changes to config files
 
     // TODO: The should_increment param is only used by cordova-cli and is going away soon.
@@ -235,26 +231,24 @@ function munge_helper (should_increment, self, platform_config, config_munge) {
     }
 
     for (var file in munge.files) {
-        self.apply_file_munge(file, munge.files[file]);
+        this.apply_file_munge(file, munge.files[file]);
     }
 
-    return self;
-}
+    return this;
+};
 
 // Load the global munge from platform json and apply all of it.
 // Used by cordova prepare to re-generate some config file from platform
 // defaults and the global munge.
 PlatformMunger.prototype.reapply_global_munge = reapply_global_munge;
 function reapply_global_munge () {
-    var self = this;
-
-    var platform_config = self.platformJson.root;
+    var platform_config = this.platformJson.root;
     var global_munge = platform_config.config_munge;
     for (var file in global_munge.files) {
-        self.apply_file_munge(file, global_munge.files[file]);
+        this.apply_file_munge(file, global_munge.files[file]);
     }
 
-    return self;
+    return this;
 }
 
 // generate_plugin_config_munge
@@ -293,11 +287,9 @@ function generate_config_xml_munge (config, config_changes, type) {
 // Generate the munge object from plugin.xml + vars
 PlatformMunger.prototype.generate_plugin_config_munge = generate_plugin_config_munge;
 function generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
-    var self = this;
-
     vars = vars || {};
     var munge = { files: {} };
-    var changes = pluginInfo.getConfigFiles(self.platform);
+    var changes = pluginInfo.getConfigFiles(this.platform);
 
     if (edit_config_changes) {
         Array.prototype.push.apply(changes, edit_config_changes);
@@ -327,7 +319,8 @@ function generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
     return munge;
 }
 
-function is_conflicting (editchanges, config_munge, self, force) {
+/** @private */
+PlatformMunger.prototype._is_conflicting = function (editchanges, config_munge, force) {
     var files = config_munge.files;
     var conflictFound = false;
     var conflictWithConfigxml = false;
@@ -343,7 +336,7 @@ function is_conflicting (editchanges, config_munge, self, force) {
 
             // Check if the edit target will resolve to an existing target
             if (!target || target.length === 0) {
-                var file_xml = self.config_keeper.get(self.project_dir, self.platform, editchange.file).data;
+                var file_xml = this.config_keeper.get(this.project_dir, this.platform, editchange.file).data;
                 var resolveEditTarget = xml_helpers.resolveParent(file_xml, editchange.target);
                 var resolveTarget;
 
@@ -399,25 +392,24 @@ function is_conflicting (editchanges, config_munge, self, force) {
         configxmlMunge: configxmlMunge,
         conflictWithConfigxml: conflictWithConfigxml
     };
-}
+};
 
 // Go over the prepare queue and apply the config munges for each plugin
 // that has been (un)installed.
 PlatformMunger.prototype.process = PlatformMunger_process;
 function PlatformMunger_process (plugins_dir) {
-    var self = this;
-    var platform_config = self.platformJson.root;
+    var platform_config = this.platformJson.root;
 
     // Uninstallation first
     platform_config.prepare_queue.uninstalled.forEach(u => {
-        var pluginInfo = self.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
-        self.remove_plugin_changes(pluginInfo, u.topLevel);
+        var pluginInfo = this.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
+        this.remove_plugin_changes(pluginInfo, u.topLevel);
     });
 
     // Now handle installation
     platform_config.prepare_queue.installed.forEach(u => {
-        var pluginInfo = self.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
-        self.add_plugin_changes(pluginInfo, u.vars, u.topLevel, true, u.force);
+        var pluginInfo = this.pluginInfoProvider.get(path.join(plugins_dir, u.plugin));
+        this.add_plugin_changes(pluginInfo, u.vars, u.topLevel, true, u.force);
     });
 
     // Empty out installed/ uninstalled queues.
