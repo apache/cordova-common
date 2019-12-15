@@ -17,8 +17,8 @@
     under the License.
 */
 
-var events = require('./events');
-var Q = require('q');
+const events = require('./events');
+const Q = require('q');
 
 function ActionStack () {
     this.stack = [];
@@ -46,21 +46,21 @@ ActionStack.prototype = {
         events.emit('verbose', 'Beginning processing of action stack for ' + platform + ' project...');
 
         while (this.stack.length) {
-            var action = this.stack.shift();
-            var handler = action.handler.run;
-            var action_params = action.handler.params;
+            const action = this.stack.shift();
+            const handler = action.handler.run;
+            const action_params = action.handler.params;
 
             try {
                 handler.apply(null, action_params);
             } catch (e) {
                 events.emit('warn', 'Error during processing of action! Attempting to revert...');
                 this.stack.unshift(action);
-                var issue = 'Uh oh!\n';
+                let issue = 'Uh oh!\n';
                 // revert completed tasks
                 while (this.completed.length) {
-                    var undo = this.completed.shift();
-                    var revert = undo.reverter.run;
-                    var revert_params = undo.reverter.params;
+                    const undo = this.completed.shift();
+                    const revert = undo.reverter.run;
+                    const revert_params = undo.reverter.params;
 
                     try {
                         revert.apply(null, revert_params);

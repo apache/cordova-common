@@ -17,15 +17,15 @@
        under the License.
 */
 
-var Q = require('q');
-var fs = require('fs-extra');
-var path = require('path');
+const Q = require('q');
+const fs = require('fs-extra');
+const path = require('path');
 
-var ActionStack = require('./ActionStack');
-var PlatformJson = require('./PlatformJson');
-var CordovaError = require('./CordovaError');
-var PlatformMunger = require('./ConfigChanges/ConfigChanges').PlatformMunger;
-var PluginInfoProvider = require('./PluginInfo/PluginInfoProvider');
+const ActionStack = require('./ActionStack');
+const PlatformJson = require('./PlatformJson');
+const CordovaError = require('./CordovaError');
+const PlatformMunger = require('./ConfigChanges/ConfigChanges').PlatformMunger;
+const PluginInfoProvider = require('./PluginInfo/PluginInfoProvider');
 
 /**
  * @constructor
@@ -41,7 +41,7 @@ function PluginManager (platform, locations, ideProject) {
     this.locations = locations;
     this.project = ideProject;
 
-    var platformJson = PlatformJson.load(locations.root, platform);
+    const platformJson = PlatformJson.load(locations.root, platform);
     this.munger = new PlatformMunger(platform, locations.root, platformJson, new PluginInfoProvider());
 }
 
@@ -88,7 +88,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
     // Set default to empty object to play safe when accesing properties
     options = options || {};
 
-    var actions = new ActionStack();
+    const actions = new ActionStack();
 
     // gather all files need to be handled during operation ...
     plugin.getFilesAndFrameworks(this.platform, options)
@@ -96,11 +96,11 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
         .concat(plugin.getJsModules(this.platform))
         // ... put them into stack ...
         .forEach(item => {
-            var installer = this.project.getInstaller(item.itemType);
-            var uninstaller = this.project.getUninstaller(item.itemType);
-            var actionArgs = [item, plugin, this.project, options];
+            const installer = this.project.getInstaller(item.itemType);
+            const uninstaller = this.project.getUninstaller(item.itemType);
+            const actionArgs = [item, plugin, this.project, options];
 
-            var action;
+            let action;
             if (operation === PluginManager.INSTALL) {
                 action = actions.createAction(installer, actionArgs, uninstaller, actionArgs);
             } else /* op === PluginManager.UNINSTALL */{
@@ -129,7 +129,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
             // Save everything (munge and plugin/modules metadata)
             this.munger.save_all();
 
-            var metadata = this.munger.platformJson.generateMetadata();
+            const metadata = this.munger.platformJson.generateMetadata();
             fs.writeFileSync(path.join(this.locations.www, 'cordova_plugins.js'), metadata, 'utf-8');
 
             // CB-11022 save plugin metadata to both www and platform_www if options.usePlatformWww is specified

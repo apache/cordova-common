@@ -14,7 +14,7 @@
  *
 */
 
-var _ = require('underscore');
+const _ = require('underscore');
 
 // add the count of [key1][key2]...[keyN] to obj
 // return true if it didn't exist before
@@ -24,7 +24,7 @@ exports.deep_add = function deep_add (obj, keys /* or key1, key2 .... */) {
     }
 
     return exports.process_munge(obj, true/* createParents */, (parentArray, k) => {
-        var found = _.find(parentArray, element => element.xml === k.xml);
+        const found = _.find(parentArray, element => element.xml === k.xml);
         if (found) {
             found.after = found.after || k.after;
             found.count += k.count;
@@ -42,9 +42,9 @@ exports.deep_remove = function deep_remove (obj, keys /* or key1, key2 .... */) 
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    var result = exports.process_munge(obj, false/* createParents */, (parentArray, k) => {
-        var index = -1;
-        var found = _.find(parentArray, element => {
+    const result = exports.process_munge(obj, false/* createParents */, (parentArray, k) => {
+        let index = -1;
+        const found = _.find(parentArray, element => {
             index++;
             return element.xml === k.xml;
         });
@@ -85,7 +85,7 @@ exports.process_munge = function process_munge (obj, createParents, func, keys /
     if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
-    var k = keys[0];
+    const k = keys[0];
     if (keys.length === 1) {
         return func(obj, k);
     } else if (keys.length === 2) {
@@ -110,15 +110,15 @@ exports.process_munge = function process_munge (obj, createParents, func, keys /
 // Returns a munge object containing values that exist in munge
 // but not in base.
 exports.increment_munge = function increment_munge (base, munge) {
-    var diff = { files: {} };
+    const diff = { files: {} };
 
-    for (var file in munge.files) {
-        for (var selector in munge.files[file].parents) {
-            for (var xml_child in munge.files[file].parents[selector]) {
-                var val = munge.files[file].parents[selector][xml_child];
+    for (const file in munge.files) {
+        for (const selector in munge.files[file].parents) {
+            for (const xml_child in munge.files[file].parents[selector]) {
+                const val = munge.files[file].parents[selector][xml_child];
                 // if node not in base, add it to diff and base
                 // else increment it's value in base without adding to diff
-                var newlyAdded = exports.deep_add(base, [file, selector, val]);
+                const newlyAdded = exports.deep_add(base, [file, selector, val]);
                 if (newlyAdded) {
                     exports.deep_add(diff, file, selector, val);
                 }
@@ -133,15 +133,15 @@ exports.increment_munge = function increment_munge (base, munge) {
 // nodes that reached zero value are removed from base and added to the returned munge
 // object.
 exports.decrement_munge = function decrement_munge (base, munge) {
-    var zeroed = { files: {} };
+    const zeroed = { files: {} };
 
-    for (var file in munge.files) {
-        for (var selector in munge.files[file].parents) {
-            for (var xml_child in munge.files[file].parents[selector]) {
-                var val = munge.files[file].parents[selector][xml_child];
+    for (const file in munge.files) {
+        for (const selector in munge.files[file].parents) {
+            for (const xml_child in munge.files[file].parents[selector]) {
+                const val = munge.files[file].parents[selector][xml_child];
                 // if node not in base, add it to diff and base
                 // else increment it's value in base without adding to diff
-                var removed = exports.deep_remove(base, [file, selector, val]);
+                const removed = exports.deep_remove(base, [file, selector, val]);
                 if (removed) {
                     exports.deep_add(zeroed, file, selector, val);
                 }

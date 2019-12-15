@@ -21,14 +21,14 @@
  * contains XML utility functions, some of which are specific to elementtree
  */
 
-var fs = require('fs-extra');
-var path = require('path');
-var _ = require('underscore');
-var et = require('elementtree');
-var stripBom = require('strip-bom');
+const fs = require('fs-extra');
+const path = require('path');
+const _ = require('underscore');
+const et = require('elementtree');
+const stripBom = require('strip-bom');
 
-var ROOT = /^\/([^/]*)/;
-var ABSOLUTE = /^\/([^/]*)\/(.*)/;
+const ROOT = /^\/([^/]*)/;
+const ABSOLUTE = /^\/([^/]*)\/(.*)/;
 
 module.exports = {
     // compare two et.XML nodes, see if they match
@@ -44,7 +44,7 @@ module.exports = {
 
         if (!attribMatch(one, two)) return false;
 
-        for (var i = 0; i < one._children.length; i++) {
+        for (let i = 0; i < one._children.length; i++) {
             if (!module.exports.equalNodes(one._children[i], two._children[i])) {
                 return false;
             }
@@ -55,12 +55,12 @@ module.exports = {
 
     // adds node to doc at selector, creating parent if it doesn't exist
     graftXML: function (doc, nodes, selector, after) {
-        var parent = module.exports.resolveParent(doc, selector);
+        let parent = module.exports.resolveParent(doc, selector);
         if (!parent) {
             // Try to create the parent recursively if necessary
             try {
-                var parentToCreate = et.XML('<' + path.basename(selector) + '/>');
-                var parentSelector = path.dirname(selector);
+                const parentToCreate = et.XML('<' + path.basename(selector) + '/>');
+                const parentSelector = path.dirname(selector);
 
                 this.graftXML(doc, [parentToCreate], parentSelector);
             } catch (e) {
@@ -73,8 +73,8 @@ module.exports = {
         nodes.forEach(node => {
             // check if child is unique first
             if (uniqueChild(node, parent)) {
-                var children = parent.getchildren();
-                var insertIdx = after ? findInsertIdx(children, after) : children.length;
+                const children = parent.getchildren();
+                const insertIdx = after ? findInsertIdx(children, after) : children.length;
 
                 // TODO: replace with parent.insert after the bug in ElementTree is fixed
                 parent.getchildren().splice(insertIdx, 0, node);
@@ -87,15 +87,15 @@ module.exports = {
     // adds new attributes to doc at selector
     // Will only merge if attribute has not been modified already or --force is used
     graftXMLMerge: function (doc, nodes, selector, xml) {
-        var target = module.exports.resolveParent(doc, selector);
+        const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
         // saves the attributes of the original xml before making changes
         xml.oldAttrib = _.extend({}, target.attrib);
 
         nodes.forEach(node => {
-            var attributes = node.attrib;
-            for (var attribute in attributes) {
+            const attributes = node.attrib;
+            for (const attribute in attributes) {
                 target.attrib[attribute] = node.attrib[attribute];
             }
         });
@@ -106,22 +106,22 @@ module.exports = {
     // overwrite all attributes to doc at selector with new attributes
     // Will only overwrite if attribute has not been modified already or --force is used
     graftXMLOverwrite: function (doc, nodes, selector, xml) {
-        var target = module.exports.resolveParent(doc, selector);
+        const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
         // saves the attributes of the original xml before making changes
         xml.oldAttrib = _.extend({}, target.attrib);
 
         // remove old attributes from target
-        var targetAttributes = target.attrib;
-        for (var targetAttribute in targetAttributes) {
+        const targetAttributes = target.attrib;
+        for (const targetAttribute in targetAttributes) {
             delete targetAttributes[targetAttribute];
         }
 
         // add new attributes to target
         nodes.forEach(node => {
-            var attributes = node.attrib;
-            for (var attribute in attributes) {
+            const attributes = node.attrib;
+            for (const attribute in attributes) {
                 target.attrib[attribute] = node.attrib[attribute];
             }
         });
@@ -131,11 +131,11 @@ module.exports = {
 
     // removes node from doc at selector
     pruneXML: function (doc, nodes, selector) {
-        var parent = module.exports.resolveParent(doc, selector);
+        const parent = module.exports.resolveParent(doc, selector);
         if (!parent) return false;
 
         nodes.forEach(node => {
-            var matchingKid = findChild(node, parent);
+            const matchingKid = findChild(node, parent);
             if (matchingKid !== undefined) {
                 // stupid elementtree takes an index argument it doesn't use
                 // and does not conform to the python lib
@@ -148,7 +148,7 @@ module.exports = {
 
     // restores attributes from doc at selector
     pruneXMLRestore: function (doc, selector, xml) {
-        var target = module.exports.resolveParent(doc, selector);
+        const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
         if (xml.oldAttrib) {
@@ -159,12 +159,12 @@ module.exports = {
     },
 
     pruneXMLRemove: function (doc, selector, nodes) {
-        var target = module.exports.resolveParent(doc, selector);
+        const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
         nodes.forEach(node => {
-            var attributes = node.attrib;
-            for (var attribute in attributes) {
+            const attributes = node.attrib;
+            for (const attribute in attributes) {
                 if (target.attrib[attribute]) {
                     delete target.attrib[attribute];
                 }
@@ -175,12 +175,12 @@ module.exports = {
     },
 
     parseElementtreeSync: function (filename) {
-        var contents = stripBom(fs.readFileSync(filename, 'utf-8'));
+        const contents = stripBom(fs.readFileSync(filename, 'utf-8'));
         return new et.ElementTree(et.XML(contents));
     },
 
     resolveParent: function (doc, selector) {
-        var parent, tagName, subSelector;
+        let parent, tagName, subSelector;
 
         // handle absolute selector (which elementtree doesn't like)
         if (ROOT.test(selector)) {
@@ -218,17 +218,17 @@ function uniqueChild (node, parent) {
 // insert an element C, and the rule is that the order of children has to be
 // As, Bs, Cs. After will be equal to "C;B;A".
 function findInsertIdx (children, after) {
-    var childrenTags = children.map(child => child.tag);
-    var afters = after.split(';');
-    var afterIndexes = afters.map(current => childrenTags.lastIndexOf(current));
-    var foundIndex = _.find(afterIndexes, index => index !== -1);
+    const childrenTags = children.map(child => child.tag);
+    const afters = after.split(';');
+    const afterIndexes = afters.map(current => childrenTags.lastIndexOf(current));
+    const foundIndex = _.find(afterIndexes, index => index !== -1);
 
     // add to the beginning if no matching nodes are found
     return typeof foundIndex === 'undefined' ? 0 : foundIndex + 1;
 }
 
-var BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
-var SINGLETONS = ['content', 'author', 'name'];
+const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
+const SINGLETONS = ['content', 'author', 'name'];
 function mergeXml (src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
     if (BLACKLIST.includes(src.tag)) return;
@@ -257,11 +257,11 @@ function mergeXml (src, dest, platform, clobber) {
     removeDuplicatePreferences(dest);
 
     function mergeChild (srcChild) {
-        var srcTag = srcChild.tag;
-        var destChild = new et.Element(srcTag);
-        var foundChild;
-        var query = srcTag + '';
-        var shouldMerge = true;
+        const srcTag = srcChild.tag;
+        let destChild = new et.Element(srcTag);
+        let foundChild;
+        const query = srcTag + '';
+        let shouldMerge = true;
 
         if (BLACKLIST.includes(srcTag)) return;
 
@@ -273,7 +273,7 @@ function mergeXml (src, dest, platform, clobber) {
             }
         } else {
             // Check for an exact match and if you find one don't add
-            var mergeCandidates = dest.findall(query)
+            const mergeCandidates = dest.findall(query)
                 .filter(foundChild =>
                     foundChild && textMatch(srcChild, foundChild) && attribMatch(srcChild, foundChild)
                 );
@@ -291,7 +291,7 @@ function mergeXml (src, dest, platform, clobber) {
 
     function removeDuplicatePreferences (xml) {
         // reduce preference tags to a hashtable to remove dupes
-        var prefHash = xml.findall('preference[@name][@value]').reduce((previousValue, currentValue) => {
+        const prefHash = xml.findall('preference[@name][@value]').reduce((previousValue, currentValue) => {
             previousValue[currentValue.attrib.name] = currentValue.attrib.value;
             return previousValue;
         }, {});
@@ -303,7 +303,7 @@ function mergeXml (src, dest, platform, clobber) {
 
         // write new preferences
         Object.keys(prefHash).forEach(function (key) {
-            var element = et.SubElement(xml, 'preference');
+            const element = et.SubElement(xml, 'preference');
             element.set('name', key);
             element.set('value', this[key]);
         }, prefHash);
@@ -314,21 +314,21 @@ function mergeXml (src, dest, platform, clobber) {
 module.exports.mergeXml = mergeXml;
 
 function textMatch (elm1, elm2) {
-    var text1 = elm1.text ? elm1.text.replace(/\s+/, '') : '';
-    var text2 = elm2.text ? elm2.text.replace(/\s+/, '') : '';
+    const text1 = elm1.text ? elm1.text.replace(/\s+/, '') : '';
+    const text2 = elm2.text ? elm2.text.replace(/\s+/, '') : '';
     return (text1 === '' || text1 === text2);
 }
 
 function attribMatch (one, two) {
-    var oneAttribKeys = Object.keys(one.attrib);
-    var twoAttribKeys = Object.keys(two.attrib);
+    const oneAttribKeys = Object.keys(one.attrib);
+    const twoAttribKeys = Object.keys(two.attrib);
 
     if (oneAttribKeys.length !== twoAttribKeys.length) {
         return false;
     }
 
-    for (var i = 0; i < oneAttribKeys.length; i++) {
-        var attribName = oneAttribKeys[i];
+    for (let i = 0; i < oneAttribKeys.length; i++) {
+        const attribName = oneAttribKeys[i];
 
         if (one.attrib[attribName] !== two.attrib[attribName]) {
             return false;

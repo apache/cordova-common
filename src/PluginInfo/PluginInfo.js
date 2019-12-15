@@ -25,10 +25,10 @@ is compatible with a given engine version.
 TODO (kamrik): refactor this to not use sync functions and return promises.
 */
 
-var path = require('path');
-var fs = require('fs-extra');
-var xml_helpers = require('../util/xml-helpers');
-var CordovaError = require('../CordovaError');
+const path = require('path');
+const fs = require('fs-extra');
+const xml_helpers = require('../util/xml-helpers');
+const CordovaError = require('../CordovaError');
 
 function PluginInfo (dirname) {
     // METHODS
@@ -48,32 +48,31 @@ function PluginInfo (dirname) {
     }
 
     function _parsePreference (prefTag) {
-        var name = prefTag.attrib.name.toUpperCase();
-        var def = prefTag.attrib.default || null;
+        const name = prefTag.attrib.name.toUpperCase();
+        const def = prefTag.attrib.default || null;
         return { preference: name, default: def };
     }
 
     // <asset>
     this.getAssets = getAssets;
     function getAssets (platform) {
-        var assets = _getTags(this._et, 'asset', platform, _parseAsset);
+        const assets = _getTags(this._et, 'asset', platform, _parseAsset);
         return assets;
     }
 
     function _parseAsset (tag) {
-        var src = tag.attrib.src;
-        var target = tag.attrib.target;
+        const src = tag.attrib.src;
+        const target = tag.attrib.target;
 
         if (!src || !target) {
-            var msg =
+            const msg =
                 'Malformed <asset> tag. Both "src" and "target" attributes' +
                 'must be specified in\n' +
-                this.filepath
-                ;
+                this.filepath;
             throw new Error(msg);
         }
 
-        var asset = {
+        const asset = {
             itemType: 'asset',
             src: src,
             target: target
@@ -89,7 +88,7 @@ function PluginInfo (dirname) {
     //     subdir="some/path/here" />
     this.getDependencies = getDependencies;
     function getDependencies (platform) {
-        var deps = _getTags(
+        const deps = _getTags(
             this._et,
             'dependency',
             platform,
@@ -99,7 +98,7 @@ function PluginInfo (dirname) {
     }
 
     function _parseDependency (tag) {
-        var dep = {
+        const dep = {
             id: tag.attrib.id,
             version: tag.attrib.version || '',
             url: tag.attrib.url || '',
@@ -110,10 +109,9 @@ function PluginInfo (dirname) {
         dep.git_ref = dep.commit;
 
         if (!dep.id) {
-            var msg =
+            const msg =
                 '<dependency> tag is missing id attribute in ' +
-                this.filepath
-                ;
+                this.filepath;
             throw new CordovaError(msg);
         }
         return dep;
@@ -122,12 +120,12 @@ function PluginInfo (dirname) {
     // <config-file> tag
     this.getConfigFiles = getConfigFiles;
     function getConfigFiles (platform) {
-        var configFiles = _getTags(this._et, 'config-file', platform, _parseConfigFile);
+        const configFiles = _getTags(this._et, 'config-file', platform, _parseConfigFile);
         return configFiles;
     }
 
     function _parseConfigFile (tag) {
-        var configFile = {
+        const configFile = {
             target: tag.attrib.target,
             parent: tag.attrib.parent,
             after: tag.attrib.after,
@@ -141,12 +139,12 @@ function PluginInfo (dirname) {
 
     this.getEditConfigs = getEditConfigs;
     function getEditConfigs (platform) {
-        var editConfigs = _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
+        const editConfigs = _getTags(this._et, 'edit-config', platform, _parseEditConfigs);
         return editConfigs;
     }
 
     function _parseEditConfigs (tag) {
-        var editConfig = {
+        const editConfig = {
             file: tag.attrib.file,
             target: tag.attrib.target,
             mode: tag.attrib.mode,
@@ -159,7 +157,7 @@ function PluginInfo (dirname) {
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
     this.getInfo = getInfo;
     function getInfo (platform) {
-        var infos = _getTags(
+        let infos = _getTags(
             this._et,
             'info',
             platform,
@@ -176,7 +174,7 @@ function PluginInfo (dirname) {
     // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
     this.getSourceFiles = getSourceFiles;
     function getSourceFiles (platform) {
-        var sourceFiles = _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
+        const sourceFiles = _getTagsInPlatform(this._et, 'source-file', platform, _parseSourceFile);
         return sourceFiles;
     }
 
@@ -196,7 +194,7 @@ function PluginInfo (dirname) {
     // <header-file src="CDVFoo.h" />
     this.getHeaderFiles = getHeaderFiles;
     function getHeaderFiles (platform) {
-        var headerFiles = _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
+        const headerFiles = _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
             itemType: 'header-file',
             src: tag.attrib.src,
             targetDir: tag.attrib['target-dir'],
@@ -210,7 +208,7 @@ function PluginInfo (dirname) {
     // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
     this.getResourceFiles = getResourceFiles;
     function getResourceFiles (platform) {
-        var resourceFiles = _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
+        const resourceFiles = _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
             itemType: 'resource-file',
             src: tag.attrib.src,
             target: tag.attrib.target,
@@ -227,7 +225,7 @@ function PluginInfo (dirname) {
     // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
     this.getLibFiles = getLibFiles;
     function getLibFiles (platform) {
-        var libFiles = _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
+        const libFiles = _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
             itemType: 'lib-file',
             src: tag.attrib.src,
             arch: tag.attrib.arch,
@@ -256,12 +254,12 @@ function PluginInfo (dirname) {
     // </podspec>
     this.getPodSpecs = getPodSpecs;
     function getPodSpecs (platform) {
-        var podSpecs = _getTagsInPlatform(this._et, 'podspec', platform, tag => {
-            var declarations = null;
-            var sources = null;
-            var libraries = null;
-            var config = tag.find('config');
-            var pods = tag.find('pods');
+        const podSpecs = _getTagsInPlatform(this._et, 'podspec', platform, tag => {
+            let declarations = null;
+            let sources = null;
+            let libraries = null;
+            const config = tag.find('config');
+            const pods = tag.find('pods');
             if (config != null) {
                 sources = config.findall('source').map(t => ({
                     url: t.attrib.url
@@ -295,7 +293,7 @@ function PluginInfo (dirname) {
     // <hook type="before_build" src="scripts/beforeBuild.js" />
     this.getHookScripts = getHookScripts;
     function getHookScripts (hook, platforms) {
-        var scriptElements = this._et.findall('./hook');
+        let scriptElements = this._et.findall('./hook');
 
         if (platforms) {
             platforms.forEach(platform => {
@@ -312,12 +310,12 @@ function PluginInfo (dirname) {
 
     this.getJsModules = getJsModules;
     function getJsModules (platform) {
-        var modules = _getTags(this._et, 'js-module', platform, _parseJsModule);
+        const modules = _getTags(this._et, 'js-module', platform, _parseJsModule);
         return modules;
     }
 
     function _parseJsModule (tag) {
-        var ret = {
+        const ret = {
             itemType: 'js-module',
             name: tag.attrib.name,
             src: tag.attrib.src,
@@ -350,15 +348,15 @@ function PluginInfo (dirname) {
 
     this.getFrameworks = function (platform, options) {
         return _getTags(this._et, 'framework', platform, el => {
-            var src = el.attrib.src;
+            let src = el.attrib.src;
             if (options) {
-                var vars = options.cli_variables || {};
+                let vars = options.cli_variables || {};
 
                 if (Object.keys(vars).length === 0) {
                     // get variable defaults from plugin.xml for removal
                     vars = this.getPreferences(platform);
                 }
-                var regExp;
+                let regExp;
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
                 Object.keys(vars).forEach(name => {
@@ -368,7 +366,7 @@ function PluginInfo (dirname) {
                     }
                 });
             }
-            var ret = {
+            const ret = {
                 itemType: 'framework',
                 type: el.attrib.type,
                 parent: el.attrib.parent,
@@ -391,7 +389,7 @@ function PluginInfo (dirname) {
     function getFilesAndFrameworks (platform, options) {
         // Please avoid changing the order of the calls below, files will be
         // installed in this order.
-        var items = [].concat(
+        const items = [].concat(
             this.getSourceFiles(platform),
             this.getHeaderFiles(platform),
             this.getResourceFiles(platform),
@@ -409,8 +407,8 @@ function PluginInfo (dirname) {
     }
 
     this.dir = dirname;
-    var et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
-    var pelem = et.getroot();
+    const et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
+    const pelem = et.getroot();
     this.id = pelem.attrib.id;
     this.version = pelem.attrib.version;
 
@@ -426,7 +424,7 @@ function PluginInfo (dirname) {
         this.keywords = this.keywords.split(',').map(s => s.trim());
     }
     this.getKeywordsAndPlatforms = () => {
-        var ret = this.keywords || [];
+        const ret = this.keywords || [];
         return ret.concat('ecosystem:cordova').concat(addCordova(this.getPlatformsArray()));
     };
 } // End of PluginInfo constructor.
@@ -434,7 +432,7 @@ function PluginInfo (dirname) {
 // Helper function used to prefix every element of an array with cordova-
 // Useful when we want to modify platforms to be cordova-platform
 function addCordova (someArray) {
-    var newArray = someArray.map(element => 'cordova-' + element);
+    const newArray = someArray.map(element => 'cordova-' + element);
     return newArray;
 }
 
@@ -443,11 +441,11 @@ function addCordova (someArray) {
 // for the given platform. If transform is given and is a function, it is
 // applied to each element.
 function _getTags (pelem, tag, platform, transform) {
-    var platformTag = pelem.find('./platform[@name="' + platform + '"]');
-    var tagsInRoot = pelem.findall(tag);
+    const platformTag = pelem.find('./platform[@name="' + platform + '"]');
+    let tagsInRoot = pelem.findall(tag);
     tagsInRoot = tagsInRoot || [];
-    var tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
-    var tags = tagsInRoot.concat(tagsInPlatform);
+    const tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
+    let tags = tagsInRoot.concat(tagsInPlatform);
     if (typeof transform === 'function') {
         tags = tags.map(transform);
     }
@@ -456,8 +454,8 @@ function _getTags (pelem, tag, platform, transform) {
 
 // Same as _getTags() but only looks inside a platform section.
 function _getTagsInPlatform (pelem, tag, platform, transform) {
-    var platformTag = pelem.find('./platform[@name="' + platform + '"]');
-    var tags = platformTag ? platformTag.findall(tag) : [];
+    const platformTag = pelem.find('./platform[@name="' + platform + '"]');
+    let tags = platformTag ? platformTag.findall(tag) : [];
     if (typeof transform === 'function') {
         tags = tags.map(transform);
     }
@@ -473,6 +471,6 @@ module.exports = PluginInfo;
 // Backwards compat:
 PluginInfo.PluginInfo = PluginInfo;
 PluginInfo.loadPluginsDir = dir => {
-    var PluginInfoProvider = require('./PluginInfoProvider');
+    const PluginInfoProvider = require('./PluginInfoProvider');
     return new PluginInfoProvider().getAllWithinSearchPath(dir);
 };

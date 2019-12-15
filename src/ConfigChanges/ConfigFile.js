@@ -14,8 +14,8 @@
  *
 */
 
-var fs = require('fs-extra');
-var path = require('path');
+const fs = require('fs-extra');
+const path = require('path');
 
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
@@ -54,7 +54,7 @@ function ConfigFile (project_dir, platform, file_tag) {
 ConfigFile.prototype.load = ConfigFile_load;
 function ConfigFile_load () {
     // config file may be in a place not exactly specified in the target
-    var filepath = this.filepath = resolveConfigFilePath(this.project_dir, this.platform, this.file_tag);
+    const filepath = this.filepath = resolveConfigFilePath(this.project_dir, this.platform, this.file_tag);
 
     if (!filepath || !fs.existsSync(filepath)) {
         this.exists = false;
@@ -63,7 +63,7 @@ function ConfigFile_load () {
     this.exists = true;
     this.mtime = fs.statSync(this.filepath).mtime;
 
-    var ext = path.extname(filepath);
+    const ext = path.extname(filepath);
     // Windows8 uses an appxmanifest, and wp8 will likely use
     // the same in a future release
     if (ext === '.xml' || ext === '.appxmanifest' || ext === '.storyboard' || ext === '.jsproj') {
@@ -87,17 +87,17 @@ ConfigFile.prototype.save = function ConfigFile_save () {
         fs.writeFileSync(this.filepath, this.data.write({ indent: 4 }), 'utf-8');
     } else {
         // plist
-        var regExp = /<string>[ \t\r\n]+?<\/string>/g;
+        const regExp = /<string>[ \t\r\n]+?<\/string>/g;
         fs.writeFileSync(this.filepath, modules.plist.build(this.data, { indent: '\t', offset: -1 }).replace(regExp, '<string></string>'));
     }
     this.is_changed = false;
 };
 
 ConfigFile.prototype.graft_child = function ConfigFile_graft_child (selector, xml_child) {
-    var filepath = this.filepath;
-    var result;
+    const filepath = this.filepath;
+    let result;
     if (this.type === 'xml') {
-        var xml_to_graft = [modules.et.XML(xml_child.xml)];
+        const xml_to_graft = [modules.et.XML(xml_child.xml)];
         switch (xml_child.mode) {
         case 'merge':
             result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
@@ -125,10 +125,10 @@ ConfigFile.prototype.graft_child = function ConfigFile_graft_child (selector, xm
 };
 
 ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xml_child) {
-    var filepath = this.filepath;
-    var result;
+    const filepath = this.filepath;
+    let result;
     if (this.type === 'xml') {
-        var xml_to_graft = [modules.et.XML(xml_child.xml)];
+        const xml_to_graft = [modules.et.XML(xml_child.xml)];
         switch (xml_child.mode) {
         case 'merge':
         case 'overwrite':
@@ -145,7 +145,7 @@ ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xm
         result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
     }
     if (!result) {
-        var err_msg = 'Pruning at selector "' + selector + '" from "' + filepath + '" went bad.';
+        const err_msg = 'Pruning at selector "' + selector + '" from "' + filepath + '" went bad.';
         throw new Error(err_msg);
     }
     this.is_changed = true;
@@ -155,8 +155,8 @@ ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xm
 // Resolve to a real path in this function.
 // TODO: getIOSProjectname is slow because of glob, try to avoid calling it several times per project.
 function resolveConfigFilePath (project_dir, platform, file) {
-    var filepath = path.join(project_dir, file);
-    var matches;
+    let filepath = path.join(project_dir, file);
+    let matches;
 
     file = path.normalize(file);
 
@@ -167,8 +167,8 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
         // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
-            var plistName = getIOSProjectname(project_dir) + '-Info.plist';
-            for (var i = 0; i < matches.length; i++) {
+            const plistName = getIOSProjectname(project_dir) + '-Info.plist';
+            for (let i = 0; i < matches.length; i++) {
                 if (matches[i].includes(plistName)) {
                     filepath = matches[i];
                     break;
@@ -182,7 +182,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
     // only if none of the options above are satisfied does this get called
     // TODO: Move this out of cordova-common and into the platforms somehow
     if (platform === 'android' && !fs.existsSync(filepath)) {
-        var config_file;
+        let config_file;
 
         if (file === 'AndroidManifest.xml') {
             filepath = path.join(project_dir, 'app', 'src', 'main', 'AndroidManifest.xml');
@@ -226,12 +226,12 @@ function resolveConfigFilePath (project_dir, platform, file) {
 // Find out the real name of an iOS or OSX project
 // TODO: glob is slow, need a better way or caching, or avoid using more than once.
 function getIOSProjectname (project_dir) {
-    var matches = modules.glob.sync(path.join(project_dir, '*.xcodeproj'));
-    var iospath;
+    const matches = modules.glob.sync(path.join(project_dir, '*.xcodeproj'));
+    let iospath;
     if (matches.length === 1) {
         iospath = path.basename(matches[0], '.xcodeproj');
     } else {
-        var msg;
+        let msg;
         if (matches.length === 0) {
             msg = 'Does not appear to be an xcode project, no xcode project file in ' + project_dir;
         } else {
@@ -246,7 +246,7 @@ function getIOSProjectname (project_dir) {
 function isBinaryPlist (filename) {
     // I wish there was a synchronous way to read only the first 6 bytes of a
     // file. This is wasteful :/
-    var buf = '' + fs.readFileSync(filename, 'utf8');
+    const buf = '' + fs.readFileSync(filename, 'utf8');
     // binary plists start with a magic header, "bplist"
     return buf.substring(0, 6) === 'bplist';
 }

@@ -17,10 +17,10 @@
     under the License.
 */
 
-var fs = require('fs-extra');
-var path = require('path');
-var PluginInfo = require('./PluginInfo');
-var events = require('../events');
+const fs = require('fs-extra');
+const path = require('path');
+const PluginInfo = require('./PluginInfo');
+const events = require('../events');
 const glob = require('glob');
 
 function PluginInfoProvider () {
@@ -29,7 +29,7 @@ function PluginInfoProvider () {
 }
 
 PluginInfoProvider.prototype.get = function (dirName) {
-    var absPath = path.resolve(dirName);
+    const absPath = path.resolve(dirName);
     if (!this._cache[absPath]) {
         this._cache[absPath] = new PluginInfo(dirName);
     }
@@ -39,7 +39,7 @@ PluginInfoProvider.prototype.get = function (dirName) {
 // Normally you don't need to put() entries, but it's used
 // when copying plugins, and in unit tests.
 PluginInfoProvider.prototype.put = function (pluginInfo) {
-    var absPath = path.resolve(pluginInfo.dir);
+    const absPath = path.resolve(pluginInfo.dir);
     this._cache[absPath] = pluginInfo;
 };
 
@@ -48,7 +48,7 @@ PluginInfoProvider.prototype.put = function (pluginInfo) {
 // each of them and return as array.
 // Should load them all in parallel and return a promise, but not yet.
 PluginInfoProvider.prototype.getAllWithinSearchPath = function (dirName) {
-    var absPath = path.resolve(dirName);
+    const absPath = path.resolve(dirName);
     if (!this._getAllCache[absPath]) {
         this._getAllCache[absPath] = getAllHelper(absPath, this);
     }
