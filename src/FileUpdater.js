@@ -66,21 +66,22 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     if (!sourceStats) {
         if (!targetStats) return false;
 
-        // The target exists but the source is null, so the target should be deleted.
+        // The target exists but the source not, so we delete the target.
         log(`delete ${targetPath} (no source)`);
         fs.removeSync(targetFullPath);
         return true;
     }
 
     if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
-        // The target exists. But if the directory status doesn't match the source, delete it.
+        // The target exists but the directory status doesn't match the source.
+        // So we delete it and let it be created again by the code below.
         log(`delete ${targetPath} (wrong type)`);
         fs.removeSync(targetFullPath);
         targetStats = null;
     }
 
     if (sourceStats.isDirectory() && !targetStats) {
-        // The target directory does not exist, so it should be created.
+        // The target directory does not exist, so we create it.
         log(`mkdir ${targetPath}`);
         fs.ensureDirSync(targetFullPath);
         return true;
@@ -89,11 +90,12 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     if (sourceStats.isFile()) {
         // The source is a file and the target either is one too or missing.
 
-        // If the caller did not specify that all files should be copied,
-        // check if the source has been modified since it was copied to the target, or if
-        // the file sizes are different. (The latter catches most cases in which something
-        // was done to the file after copying.) Comparison is >= rather than > to allow
-        // for timestamps lacking sub-second precision in some filesystems.
+        // If the caller did not specify that all files should be copied, check
+        // if the source has been modified since it was copied to the target, or
+        // if the file sizes are different. (The latter catches most cases in
+        // which something was done to the file after copying.) Comparison is >=
+        // rather than > to allow for timestamps lacking sub-second precision in
+        // some filesystems.
         const needsUpdate = !targetStats || copyAll ||
             sourceStats.size !== targetStats.size ||
             sourceStats.mtime.getTime() >= targetStats.mtime.getTime();
