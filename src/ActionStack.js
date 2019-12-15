@@ -20,13 +20,13 @@
 const events = require('./events');
 const Q = require('q');
 
-function ActionStack () {
-    this.stack = [];
-    this.completed = [];
-}
+class ActionStack {
+    constructor () {
+        this.stack = [];
+        this.completed = [];
+    }
 
-ActionStack.prototype = {
-    createAction: function (handler, action_params, reverter, revert_params) {
+    createAction (handler, action_params, reverter, revert_params) {
         return {
             handler: {
                 run: handler,
@@ -37,12 +37,14 @@ ActionStack.prototype = {
                 params: revert_params
             }
         };
-    },
-    push: function (tx) {
+    }
+
+    push (tx) {
         this.stack.push(tx);
-    },
+    }
+
     // Returns a promise.
-    process: function (platform) {
+    process (platform) {
         events.emit('verbose', `Beginning processing of action stack for ${platform} project...`);
 
         while (this.stack.length) {
@@ -78,6 +80,6 @@ ActionStack.prototype = {
 
         return Q();
     }
-};
+}
 
 module.exports = ActionStack;

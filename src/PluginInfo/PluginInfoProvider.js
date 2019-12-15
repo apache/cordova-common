@@ -23,37 +23,39 @@ const PluginInfo = require('./PluginInfo');
 const events = require('../events');
 const glob = require('glob');
 
-function PluginInfoProvider () {
-    this._cache = {};
-    this._getAllCache = {};
+class PluginInfoProvider {
+    constructor () {
+        this._cache = {};
+        this._getAllCache = {};
+    }
+
+    get (dirName) {
+        const absPath = path.resolve(dirName);
+        if (!this._cache[absPath]) {
+            this._cache[absPath] = new PluginInfo(dirName);
+        }
+        return this._cache[absPath];
+    }
+
+    // Normally you don't need to put() entries, but it's used
+    // when copying plugins, and in unit tests.
+    put (pluginInfo) {
+        const absPath = path.resolve(pluginInfo.dir);
+        this._cache[absPath] = pluginInfo;
+    }
+
+    // Used for plugin search path processing.
+    // Given a dir containing multiple plugins, create a PluginInfo object for
+    // each of them and return as array.
+    // Should load them all in parallel and return a promise, but not yet.
+    getAllWithinSearchPath (dirName) {
+        const absPath = path.resolve(dirName);
+        if (!this._getAllCache[absPath]) {
+            this._getAllCache[absPath] = getAllHelper(absPath, this);
+        }
+        return this._getAllCache[absPath];
+    }
 }
-
-PluginInfoProvider.prototype.get = function (dirName) {
-    const absPath = path.resolve(dirName);
-    if (!this._cache[absPath]) {
-        this._cache[absPath] = new PluginInfo(dirName);
-    }
-    return this._cache[absPath];
-};
-
-// Normally you don't need to put() entries, but it's used
-// when copying plugins, and in unit tests.
-PluginInfoProvider.prototype.put = function (pluginInfo) {
-    const absPath = path.resolve(pluginInfo.dir);
-    this._cache[absPath] = pluginInfo;
-};
-
-// Used for plugin search path processing.
-// Given a dir containing multiple plugins, create a PluginInfo object for
-// each of them and return as array.
-// Should load them all in parallel and return a promise, but not yet.
-PluginInfoProvider.prototype.getAllWithinSearchPath = function (dirName) {
-    const absPath = path.resolve(dirName);
-    if (!this._getAllCache[absPath]) {
-        this._getAllCache[absPath] = getAllHelper(absPath, this);
-    }
-    return this._getAllCache[absPath];
-};
 
 function getAllHelper (absPath, provider) {
     if (!fs.existsSync(absPath)) {
