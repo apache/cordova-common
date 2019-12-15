@@ -112,13 +112,13 @@ ConfigFile.prototype.graft_child = function ConfigFile_graft_child (selector, xm
             result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
         }
         if (!result) {
-            throw new Error('Unable to graft xml at selector "' + selector + '" from "' + filepath + '" during config install');
+            throw new Error(`Unable to graft xml at selector "${selector}" from "${filepath}" during config install`);
         }
     } else {
         // plist file
         result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
         if (!result) {
-            throw new Error('Unable to graft plist "' + filepath + '" during config install');
+            throw new Error(`Unable to graft plist "${filepath}" during config install`);
         }
     }
     this.is_changed = true;
@@ -145,8 +145,7 @@ ConfigFile.prototype.prune_child = function ConfigFile_prune_child (selector, xm
         result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
     }
     if (!result) {
-        const err_msg = 'Pruning at selector "' + selector + '" from "' + filepath + '" went bad.';
-        throw new Error(err_msg);
+        throw new Error(`Pruning at selector "${selector}" from "${filepath}" went bad.`);
     }
     this.is_changed = true;
 };
@@ -167,7 +166,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
         // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
-            const plistName = getIOSProjectname(project_dir) + '-Info.plist';
+            const plistName = `${getIOSProjectname(project_dir)}-Info.plist`;
             for (let i = 0; i < matches.length; i++) {
                 if (matches[i].includes(plistName)) {
                     filepath = matches[i];
@@ -231,13 +230,10 @@ function getIOSProjectname (project_dir) {
     if (matches.length === 1) {
         iospath = path.basename(matches[0], '.xcodeproj');
     } else {
-        let msg;
-        if (matches.length === 0) {
-            msg = 'Does not appear to be an xcode project, no xcode project file in ' + project_dir;
-        } else {
-            msg = 'There are multiple *.xcodeproj dirs in ' + project_dir;
-        }
-        throw new Error(msg);
+        const msg = matches.length === 0
+            ? 'Does not appear to be an xcode project, no xcode project file'
+            : 'There are multiple *.xcodeproj dirs';
+        throw new Error(`${msg} in ${project_dir}`);
     }
     return iospath;
 }

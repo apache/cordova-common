@@ -78,7 +78,7 @@ function PlatformMunger_apply_file_munge (file, munge, remove) {
                 if (remove) config_file.prune_child(selector, munge.parents[selector][xml_child]);
                 else config_file.graft_child(selector, munge.parents[selector][xml_child]);
             } else {
-                events.emit('warn', 'config file ' + file + ' requested for changes not found at ' + config_file.filepath + ', ignoring');
+                events.emit('warn', `config file ${file} requested for changes not found at ${config_file.filepath}, ignoring`);
             }
         }
     }
@@ -128,8 +128,7 @@ function add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_incre
         const isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
 
         if (isConflictingInfo.conflictWithConfigxml) {
-            throw new Error(pluginInfo.id +
-                ' cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.');
+            throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
         }
         if (plugin_force) {
             events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
@@ -143,9 +142,7 @@ function add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_incre
             // force add new munges
             config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
         } else if (isConflictingInfo.conflictFound) {
-            throw new Error('There was a conflict trying to modify attributes with <edit-config> in plugin ' + pluginInfo.id +
-            '. The conflicting plugin, ' + isConflictingInfo.conflictingPlugin + ', already modified the same attributes. The conflict must be resolved before ' +
-            pluginInfo.id + ' can be added. You may use --force to add the plugin and overwrite the conflicting attributes.');
+            throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
         } else {
             // no conflicts, will handle edit-config
             config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
@@ -301,7 +298,7 @@ function generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
             // interp vars
             if (vars) {
                 Object.keys(vars).forEach(key => {
-                    const regExp = new RegExp('\\$' + key, 'g');
+                    const regExp = new RegExp(`\\$${key}`, 'g');
                     stringified = stringified.replace(regExp, vars[key]);
                 });
             }

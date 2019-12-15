@@ -43,7 +43,7 @@ ActionStack.prototype = {
     },
     // Returns a promise.
     process: function (platform) {
-        events.emit('verbose', 'Beginning processing of action stack for ' + platform + ' project...');
+        events.emit('verbose', `Beginning processing of action stack for ${platform} project...`);
 
         while (this.stack.length) {
             const action = this.stack.shift();
@@ -66,7 +66,7 @@ ActionStack.prototype = {
                         revert.apply(null, revert_params);
                     } catch (err) {
                         events.emit('warn', 'Error during reversion of action! We probably really messed up your project now, sorry! D:');
-                        issue += 'A reversion action failed: ' + err.message + '\n';
+                        issue += `A reversion action failed: ${err.message}\n`;
                     }
                 }
                 e.message = issue + e.message;

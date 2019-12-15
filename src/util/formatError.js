@@ -46,7 +46,7 @@ module.exports = function formatError (error, isVerbose) {
 
     if (typeof message === 'string' && !message.toUpperCase().startsWith('ERROR:')) {
         // Needed for backward compatibility with external tools
-        message = 'Error: ' + message;
+        message = `Error: ${message}`;
     }
 
     return message;
