@@ -311,7 +311,7 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
  * Creates a dictionary map of all files and directories under a path.
  */
 function mapDirectory (rootDir, subDir, include, exclude) {
-    const dirMap = { '': { subDir: subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
+    const dirMap = { '': { subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
     mapSubdirectory(rootDir, subDir, '', include, exclude, dirMap);
     return dirMap;
 
@@ -333,13 +333,13 @@ function mapDirectory (rootDir, subDir, include, exclude) {
                     // match an include glob.
                     if (mapSubdirectory(rootDir, subDir, relativePath, include, exclude, dirMap) ||
                             matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir: subDir, stats: stats };
+                        dirMap[relativePath] = { subDir, stats };
                         itemMapped = true;
                     }
                 } else if (stats.isFile()) {
                     // Files are included only if they match an include glob.
                     if (matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir: subDir, stats: stats };
+                        dirMap[relativePath] = { subDir, stats };
                         itemMapped = true;
                     }
                 }
@@ -394,7 +394,7 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
 }
 
 module.exports = {
-    updatePath: updatePath,
-    updatePaths: updatePaths,
-    mergeAndUpdateDir: mergeAndUpdateDir
+    updatePath,
+    updatePaths,
+    mergeAndUpdateDir
 };
