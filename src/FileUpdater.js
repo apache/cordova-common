@@ -55,11 +55,13 @@ const fastGlob = require('fast-glob');
  *     and everything was up to date
  */
 function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log = () => {}) {
-    let updated = false;
-
     const rootDir = (options && options.rootDir) || '';
     const copyAll = (options && options.all) || false;
     const targetFullPath = path.join(rootDir, targetPath);
+
+    // Source or target could be a device, socket or pipe. We just skip these.
+    const isSpecial = stats => stats && !stats.isFile() && !stats.isDirectory();
+    if (isSpecial(targetStats) || isSpecial(sourceStats)) return false;
 
     if (!sourceStats) {
         if (!targetStats) return false;
@@ -77,7 +79,6 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
         log(`delete ${targetPath}`);
         fs.removeSync(targetFullPath);
         targetStats = null;
-        updated = true;
     }
 
     if (!targetStats) {
@@ -85,20 +86,21 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
             // The target directory does not exist, so it should be created.
             log(`mkdir ${targetPath}`);
             fs.ensureDirSync(targetFullPath);
-            updated = true;
         } else if (sourceStats.isFile()) {
             // The target file does not exist, so it should be copied from the source.
             log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (new file)'}`);
             fs.copySync(sourceFullPath, targetFullPath);
-            updated = true;
         }
-    } else if (sourceStats.isFile() && targetStats.isFile()) {
+        return true;
+    }
+
+    if (sourceStats.isFile()) {
         // The source and target paths both exist and are files.
         if (copyAll) {
             // The caller specified all files should be copied.
             log(`copy  ${sourcePath} ${targetPath}`);
             fs.copySync(sourceFullPath, targetFullPath);
-            updated = true;
+            return true;
         } else {
             // Copy if the source has been modified since it was copied to the target, or if
             // the file sizes are different. (The latter catches most cases in which something
@@ -108,12 +110,12 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
                     sourceStats.size !== targetStats.size) {
                 log(`copy  ${sourcePath} ${targetPath} (updated file)`);
                 fs.copySync(sourceFullPath, targetFullPath);
-                updated = true;
+                return true;
             }
         }
     }
 
-    return updated;
+    return false;
 }
 
 /**
