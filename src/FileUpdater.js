@@ -294,7 +294,9 @@ function mapDirectory (rootDir, subDir, include, exclude) {
         cwd: pathToMap,
         ignore: exclude
     })
-        .map(({ path, stats }) => ({ [path]: { subDir, stats } }))
+        .map(({ path: p, stats }) => ({
+            [path.normalize(p)]: { subDir, stats }
+        }))
         .reduce(
             (dirMap, fragment) => Object.assign(dirMap, fragment),
             { '': { subDir, stats: fs.statSync(pathToMap) } }
