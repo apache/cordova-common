@@ -106,12 +106,14 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
             // the file sizes are different. (The latter catches most cases in which something
             // was done to the file after copying.) Comparison is >= rather than > to allow
             // for timestamps lacking sub-second precision in some filesystems.
-            if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
-                    sourceStats.size !== targetStats.size) {
-                log(`copy  ${sourcePath} ${targetPath} (updated file)`);
-                fs.copySync(sourceFullPath, targetFullPath);
-                return true;
-            }
+            const needsUpdate =
+                sourceStats.size !== targetStats.size ||
+                sourceStats.mtime.getTime() >= targetStats.mtime.getTime();
+            if (!needsUpdate) return false;
+
+            log(`copy  ${sourcePath} ${targetPath} (updated file)`);
+            fs.copySync(sourceFullPath, targetFullPath);
+            return true;
         }
     }
 
