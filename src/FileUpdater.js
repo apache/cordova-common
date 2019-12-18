@@ -21,7 +21,7 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const minimatch = require('minimatch');
+const fastGlob = require('fast-glob');
 
 /**
  * Logging callback used in the FileUpdater methods.
@@ -54,70 +54,64 @@ const minimatch = require('minimatch');
  * @return {boolean} true if any changes were made, or false if the force flag is not set
  *     and everything was up to date
  */
-function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log) {
-    let updated = false;
-
+function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, options, log = () => {}) {
     const rootDir = (options && options.rootDir) || '';
     const copyAll = (options && options.all) || false;
+    const targetFullPath = path.join(rootDir, targetPath);
 
-    const targetFullPath = path.join(rootDir || '', targetPath);
+    // Source or target could be a device, socket or pipe. We just skip these.
+    const isSpecial = stats => stats && !stats.isFile() && !stats.isDirectory();
+    if (isSpecial(targetStats) || isSpecial(sourceStats)) return false;
 
-    if (sourceStats) {
-        const sourceFullPath = path.join(rootDir || '', sourcePath);
+    if (!sourceStats) {
+        if (!targetStats) return false;
 
-        if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
-            // The target exists. But if the directory status doesn't match the source, delete it.
-            log(`delete ${targetPath}`);
-            fs.removeSync(targetFullPath);
-            targetStats = null;
-            updated = true;
-        }
-
-        if (!targetStats) {
-            if (sourceStats.isDirectory()) {
-                // The target directory does not exist, so it should be created.
-                log(`mkdir ${targetPath}`);
-                fs.ensureDirSync(targetFullPath);
-                updated = true;
-            } else if (sourceStats.isFile()) {
-                // The target file does not exist, so it should be copied from the source.
-                log(`copy  ${sourcePath} ${targetPath}${copyAll ? '' : ' (new file)'}`);
-                fs.copySync(sourceFullPath, targetFullPath);
-                updated = true;
-            }
-        } else if (sourceStats.isFile() && targetStats.isFile()) {
-            // The source and target paths both exist and are files.
-            if (copyAll) {
-                // The caller specified all files should be copied.
-                log(`copy  ${sourcePath} ${targetPath}`);
-                fs.copySync(sourceFullPath, targetFullPath);
-                updated = true;
-            } else {
-                // Copy if the source has been modified since it was copied to the target, or if
-                // the file sizes are different. (The latter catches most cases in which something
-                // was done to the file after copying.) Comparison is >= rather than > to allow
-                // for timestamps lacking sub-second precision in some filesystems.
-                if (sourceStats.mtime.getTime() >= targetStats.mtime.getTime() ||
-                        sourceStats.size !== targetStats.size) {
-                    log(`copy  ${sourcePath} ${targetPath} (updated file)`);
-                    fs.copySync(sourceFullPath, targetFullPath);
-                    updated = true;
-                }
-            }
-        }
-    } else if (targetStats) {
-        // The target exists but the source is null, so the target should be deleted.
-        log(`delete ${targetPath}${copyAll ? '' : ' (no source)'}`);
+        // The target exists but the source not, so we delete the target.
+        log(`delete ${targetPath} (no source)`);
         fs.removeSync(targetFullPath);
-        updated = true;
+        return true;
     }
 
-    return updated;
+    if (targetStats && (targetStats.isDirectory() !== sourceStats.isDirectory())) {
+        // The target exists but the directory status doesn't match the source.
+        // So we delete it and let it be created again by the code below.
+        log(`delete ${targetPath} (wrong type)`);
+        fs.removeSync(targetFullPath);
+        targetStats = null;
+    }
+
+    if (sourceStats.isDirectory() && !targetStats) {
+        // The target directory does not exist, so we create it.
+        log(`mkdir ${targetPath}`);
+        fs.ensureDirSync(targetFullPath);
+        return true;
+    }
+
+    if (sourceStats.isFile()) {
+        // The source is a file and the target either is one too or missing.
+
+        // If the caller did not specify that all files should be copied, check
+        // if the source has been modified since it was copied to the target, or
+        // if the file sizes are different. (The latter catches most cases in
+        // which something was done to the file after copying.) Comparison is >=
+        // rather than > to allow for timestamps lacking sub-second precision in
+        // some filesystems.
+        const needsUpdate = !targetStats || copyAll ||
+            sourceStats.size !== targetStats.size ||
+            sourceStats.mtime.getTime() >= targetStats.mtime.getTime();
+        if (!needsUpdate) return false;
+
+        const type = targetStats ? 'updated' : 'new';
+        log(`copy  ${sourcePath} ${targetPath} (${type} file)`);
+        fs.copySync(path.join(rootDir, sourcePath), targetFullPath);
+        return true;
+    }
+
+    return false;
 }
 
 /**
  * Helper for updatePath and updatePaths functions. Queries stats for source and target
- * and ensures target directory exists before copying a file.
  */
 function updatePathInternal (sourcePath, targetPath, options, log) {
     const rootDir = (options && options.rootDir) || '';
@@ -133,12 +127,6 @@ function updatePathInternal (sourcePath, targetPath, options, log) {
         }
 
         sourceStats = fs.statSync(sourceFullPath);
-
-        // Create the target's parent directory if it doesn't exist.
-        const parentDir = path.dirname(targetFullPath);
-        if (!fs.existsSync(parentDir)) {
-            fs.ensureDirSync(parentDir);
-        }
     }
 
     return updatePathWithStats(sourcePath, sourceStats, targetPath, targetStats, options, log);
@@ -173,8 +161,6 @@ function updatePath (sourcePath, targetPath, options, log) {
         throw new Error('A target path is required.');
     }
 
-    log = log || (() => { });
-
     return updatePathInternal(sourcePath, targetPath, options, log);
 }
 
@@ -200,17 +186,11 @@ function updatePaths (pathMap, options, log) {
         throw new Error('An object mapping from target paths to source paths is required.');
     }
 
-    log = log || (() => { });
-
-    let updated = false;
-
-    // Iterate in sorted order to ensure directories are created before files under them.
-    Object.keys(pathMap).sort().forEach(targetPath => {
+    // Iterate in sorted order for nicer logs
+    return Object.keys(pathMap).sort().map(targetPath => {
         const sourcePath = pathMap[targetPath];
-        updated = updatePathInternal(sourcePath, targetPath, options, log) || updated;
-    });
-
-    return updated;
+        return updatePathInternal(sourcePath, targetPath, options, log);
+    }).some(updated => updated);
 }
 
 /**
@@ -253,8 +233,6 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
         throw new Error('A target directory path is required.');
     }
 
-    log = log || (() => { });
-
     const rootDir = (options && options.rootDir) || '';
 
     let include = (options && options.include) || ['**'];
@@ -272,85 +250,57 @@ function mergeAndUpdateDir (sourceDirs, targetDir, options, log) {
     }
 
     // Scan the files in each of the source directories.
-    const sourceMaps = sourceDirs.map(sourceDir =>
-        path.join(rootDir, sourceDir)
-    ).map(sourcePath => {
+    const sourceMaps = sourceDirs.map(sourceDir => {
+        const sourcePath = path.join(rootDir, sourceDir);
         if (!fs.existsSync(sourcePath)) {
             throw new Error(`Source directory does not exist: ${sourcePath}`);
         }
-        return mapDirectory(rootDir, path.relative(rootDir, sourcePath), include, exclude);
+
+        return mapDirectory(rootDir, sourceDir, include, exclude);
     });
 
     // Scan the files in the target directory, if it exists.
-    let targetMap = {};
     const targetFullPath = path.join(rootDir, targetDir);
-    if (fs.existsSync(targetFullPath)) {
-        targetMap = mapDirectory(rootDir, targetDir, include, exclude);
-    }
-
+    const targetMap = fs.existsSync(targetFullPath)
+        ? mapDirectory(rootDir, targetDir, include, exclude)
+        : {};
     const pathMap = mergePathMaps(sourceMaps, targetMap, targetDir);
 
-    let updated = false;
-
-    // Iterate in sorted order to ensure directories are created before files under them.
-    Object.keys(pathMap).sort().forEach(subPath => {
+    // Iterate in sorted order for nicer logs
+    return Object.keys(pathMap).sort().map(subPath => {
         const entry = pathMap[subPath];
-        updated = updatePathWithStats(
+        return updatePathWithStats(
             entry.sourcePath,
             entry.sourceStats,
             entry.targetPath,
             entry.targetStats,
             options,
-            log) || updated;
-    });
-
-    return updated;
+            log
+        );
+    }).some(updated => updated);
 }
 
 /**
  * Creates a dictionary map of all files and directories under a path.
  */
 function mapDirectory (rootDir, subDir, include, exclude) {
-    const dirMap = { '': { subDir, stats: fs.statSync(path.join(rootDir, subDir)) } };
-    mapSubdirectory(rootDir, subDir, '', include, exclude, dirMap);
-    return dirMap;
+    const pathToMap = path.join(rootDir, subDir);
 
-    function mapSubdirectory (rootDir, subDir, relativeDir, include, exclude, dirMap) {
-        let itemMapped = false;
-        const items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
-
-        items.forEach(item => {
-            const relativePath = path.join(relativeDir, item);
-            if (!matchGlobArray(relativePath, exclude)) {
-                // Stats obtained here (required at least to know where to recurse in directories)
-                // are saved for later, where the modified times may also be used. This minimizes
-                // the number of file I/O operations performed.
-                const fullPath = path.join(rootDir, subDir, relativePath);
-                const stats = fs.statSync(fullPath);
-
-                if (stats.isDirectory()) {
-                    // Directories are included if either something under them is included or they
-                    // match an include glob.
-                    if (mapSubdirectory(rootDir, subDir, relativePath, include, exclude, dirMap) ||
-                            matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir, stats };
-                        itemMapped = true;
-                    }
-                } else if (stats.isFile()) {
-                    // Files are included only if they match an include glob.
-                    if (matchGlobArray(relativePath, include)) {
-                        dirMap[relativePath] = { subDir, stats };
-                        itemMapped = true;
-                    }
-                }
-            }
-        });
-        return itemMapped;
-    }
-
-    function matchGlobArray (path, globs) {
-        return globs.some(elem => minimatch(path, elem, { dot: true }));
-    }
+    return fastGlob.sync(include, {
+        fs, // we pass in fs here, to be able to mock it in our tests
+        dot: true,
+        stats: true,
+        onlyFiles: false,
+        cwd: pathToMap,
+        ignore: exclude
+    })
+        .map(({ path: p, stats }) => ({
+            [path.normalize(p)]: { subDir, stats }
+        }))
+        .reduce(
+            (dirMap, fragment) => Object.assign(dirMap, fragment),
+            { '': { subDir, stats: fs.statSync(pathToMap) } }
+        );
 }
 
 /**
@@ -360,34 +310,29 @@ function mapDirectory (rootDir, subDir, include, exclude) {
 function mergePathMaps (sourceMaps, targetMap, targetDir) {
     // Merge multiple source maps together, along with target path info.
     // Entries in later source maps override those in earlier source maps.
-    // Target stats will be filled in below for targets that exist.
-    const pathMap = {};
-    sourceMaps.forEach(sourceMap => {
-        Object.keys(sourceMap).forEach(sourceSubPath => {
-            const sourceEntry = sourceMap[sourceSubPath];
-            pathMap[sourceSubPath] = {
-                targetPath: path.join(targetDir, sourceSubPath),
-                targetStats: null,
-                sourcePath: path.join(sourceEntry.subDir, sourceSubPath),
-                sourceStats: sourceEntry.stats
-            };
-        });
+    const sourceMap = Object.assign({}, ...sourceMaps);
+
+    const allKeys = [].concat(Object.keys(sourceMap), Object.keys(targetMap));
+    const pathMap = allKeys.reduce((acc, subPath) => (
+        Object.assign(acc, { [subPath]: {
+            targetPath: path.join(targetDir, subPath),
+            targetStats: null,
+            sourcePath: null,
+            sourceStats: null
+        } })
+    ), {});
+
+    Object.entries(sourceMap).forEach(([subPath, { subDir, stats }]) => {
+        Object.assign(
+            pathMap[subPath],
+            { sourcePath: path.join(subDir, subPath), sourceStats: stats }
+        );
     });
 
     // Fill in target stats for targets that exist, and create entries
     // for targets that don't have any corresponding sources.
-    Object.keys(targetMap).forEach(subPath => {
-        const entry = pathMap[subPath];
-        if (entry) {
-            entry.targetStats = targetMap[subPath].stats;
-        } else {
-            pathMap[subPath] = {
-                targetPath: path.join(targetDir, subPath),
-                targetStats: targetMap[subPath].stats,
-                sourcePath: null,
-                sourceStats: null
-            };
-        }
+    Object.entries(targetMap).forEach(([subPath, { stats }]) => {
+        Object.assign(pathMap[subPath], { targetStats: stats });
     });
 
     return pathMap;
