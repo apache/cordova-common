@@ -220,33 +220,27 @@ function mergeXml (src, dest, platform, clobber) {
 
     function mergeChild (srcChild) {
         const srcTag = srcChild.tag;
-        let destChild = new et.Element(srcTag);
-        let foundChild;
         const query = srcTag + '';
+        let destChild;
         let shouldMerge = true;
 
         if (BLACKLIST.includes(srcTag)) return;
 
         if (SINGLETONS.includes(srcTag)) {
-            foundChild = dest.find(query);
-            if (foundChild) {
-                destChild = foundChild;
-                dest.remove(destChild);
-            }
+            destChild = dest.find(query);
         } else {
             // Check for an exact match and if you find one don't add
-            const mergeCandidates = dest.findall(query)
-                .filter(foundChild =>
-                    foundChild && textMatch(srcChild, foundChild) && attribMatch(srcChild, foundChild)
-                );
-
-            if (mergeCandidates.length > 0) {
-                destChild = mergeCandidates[0];
-                dest.remove(destChild);
-                shouldMerge = false;
-            }
+            destChild = dest.findall(query).find(el =>
+                textMatch(srcChild, el) && attribMatch(srcChild, el)
+            );
+            if (destChild) shouldMerge = false;
         }
 
+        if (destChild) {
+            dest.remove(destChild);
+        } else {
+            destChild = new et.Element(srcTag);
+        }
         mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
         dest.append(destChild);
     }
