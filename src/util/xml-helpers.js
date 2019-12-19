@@ -31,23 +31,12 @@ module.exports = {
     // compare two et.XML nodes, see if they match
     // compares tagName, text, attributes and children (recursively)
     equalNodes: function (one, two) {
-        if (one.tag !== two.tag) {
-            return false;
-        } else if (one.text.trim() !== two.text.trim()) {
-            return false;
-        } else if (one._children.length !== two._children.length) {
-            return false;
-        }
-
-        if (!attribMatch(one, two)) return false;
-
-        for (let i = 0; i < one._children.length; i++) {
-            if (!module.exports.equalNodes(one._children[i], two._children[i])) {
-                return false;
-            }
-        }
-
-        return true;
+        return one.tag === two.tag &&
+            one.len() === two.len() &&
+            one.text.trim() === two.text.trim() &&
+            attribMatch(one, two) &&
+            _.zip(one.getchildren(), two.getchildren())
+                .every(([c1, c2]) => module.exports.equalNodes(c1, c2));
     },
 
     // adds node to doc at selector, creating parent if it doesn't exist
