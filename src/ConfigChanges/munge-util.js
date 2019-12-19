@@ -123,21 +123,17 @@ exports.decrement_munge = (base, munge) => {
     return mungeItems(base, munge, exports.deep_remove);
 };
 
-function mungeItems (base, munge, mungeOperation) {
+function mungeItems (base, { files }, mungeOperation) {
     const diff = { files: {} };
 
-    for (const file in munge.files) {
-        for (const selector in munge.files[file].parents) {
-            for (const xml_child in munge.files[file].parents[selector]) {
-                const val = munge.files[file].parents[selector][xml_child];
+    for (const file in files) {
+        for (const selector in files[file].parents) {
+            for (const element of files[file].parents[selector]) {
                 // if node not in base, add it to diff and base
                 // else increment it's value in base without adding to diff
 
                 const hasChanges = mungeOperation(base, [file, selector, element]);
-
-                if (hasChanges) {
-                    exports.deep_add(diff, file, selector, val);
-                }
+                if (hasChanges) exports.deep_add(diff, [file, selector, element]);
             }
         }
     }
