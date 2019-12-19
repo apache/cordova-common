@@ -272,21 +272,8 @@ function textMatch (elm1, elm2) {
     return (text1 === '' || text1 === text2);
 }
 
-function attribMatch (one, two) {
-    const oneAttribKeys = Object.keys(one.attrib);
-    const twoAttribKeys = Object.keys(two.attrib);
-
-    if (oneAttribKeys.length !== twoAttribKeys.length) {
-        return false;
-    }
-
-    for (let i = 0; i < oneAttribKeys.length; i++) {
-        const attribName = oneAttribKeys[i];
-
-        if (one.attrib[attribName] !== two.attrib[attribName]) {
-            return false;
-        }
-    }
-
-    return true;
+function attribMatch (a, b) {
+    const aKeys = a.keys();
+    return aKeys.length === b.keys().length &&
+        aKeys.every(key => a.get(key) === b.get(key));
 }
