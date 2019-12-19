@@ -44,27 +44,23 @@ exports.deep_remove = function deep_remove (obj, keys /* or key1, key2 .... */) 
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    const result = process_munge(obj, false/* createParents */, (parentArray, k) => {
-        let index = -1;
-        const found = _.find(parentArray, element => {
-            index++;
-            return element.xml === k.xml;
-        });
-        if (found) {
-            if (parentArray[index].oldAttrib) {
-                k.oldAttrib = _.extend({}, parentArray[index].oldAttrib);
-            }
-            found.count -= k.count;
-            if (found.count > 0) {
-                return false;
-            } else {
-                parentArray.splice(index, 1);
-            }
-        }
-        return undefined;
-    }, keys);
+    return process_munge(obj, false/* createParents */, (parentArray, k) => {
+        const index = _.findIndex(parentArray, element => element.xml === k.xml);
 
-    return typeof result === 'undefined' ? true : result;
+        if (index < 0) return true;
+
+        const found = parentArray[index];
+
+        if (found.oldAttrib) {
+            k.oldAttrib = _.extend({}, found.oldAttrib);
+        }
+        found.count -= k.count;
+
+        if (found.count > 0) return false;
+
+        parentArray.splice(index, 1);
+        return true;
+    }, keys);
 };
 
 // search for [key1][key2]...[keyN]
