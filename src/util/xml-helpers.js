@@ -180,12 +180,12 @@ function findChild (node, parent) {
 // As, Bs, Cs. After will be equal to "C;B;A".
 function findInsertIdx (children, after) {
     const childrenTags = children.map(child => child.tag);
-    const afters = after.split(';');
-    const afterIndexes = afters.map(current => childrenTags.lastIndexOf(current));
-    const foundIndex = _.find(afterIndexes, index => index !== -1);
+    const foundIndex = after.split(';')
+        .map(tag => childrenTags.lastIndexOf(tag))
+        .find(index => index !== -1);
 
     // add to the beginning if no matching nodes are found
-    return typeof foundIndex === 'undefined' ? 0 : foundIndex + 1;
+    return foundIndex === undefined ? 0 : foundIndex + 1;
 }
 
 const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
