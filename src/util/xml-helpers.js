@@ -27,9 +27,6 @@ const _ = require('underscore');
 const et = require('elementtree');
 const stripBom = require('strip-bom');
 
-const ROOT = /^\/([^/]*)/;
-const ABSOLUTE = /^\/([^/]*)\/(.*)/;
-
 module.exports = {
     // compare two et.XML nodes, see if they match
     // compares tagName, text, attributes and children (recursively)
@@ -149,27 +146,13 @@ module.exports = {
     },
 
     resolveParent: function (doc, selector) {
-        let parent, tagName, subSelector;
+        if (!selector.startsWith('/')) return doc.find(selector);
 
-        // handle absolute selector (which elementtree doesn't like)
-        if (ROOT.test(selector)) {
-            tagName = selector.match(ROOT)[1];
-            // test for wildcard "any-tag" root selector
-            if (tagName === '*' || tagName === doc._root.tag) {
-                parent = doc._root;
-
-                // could be an absolute path, but not selecting the root
-                if (ABSOLUTE.test(selector)) {
-                    subSelector = selector.match(ABSOLUTE)[2];
-                    parent = parent.find(subSelector);
-                }
-            } else {
-                return false;
-            }
-        } else {
-            parent = doc.find(selector);
-        }
-        return parent;
+        // elementtree does not implement absolute selectors so we build an
+        // extended tree where we can use an equivalent relative selector
+        const überRoot = et.Element('über-root');
+        überRoot.append(doc.getroot());
+        return überRoot.find(`.${selector}`);
     }
 };
 
