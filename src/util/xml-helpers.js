@@ -119,11 +119,8 @@ module.exports = {
         if (!target) return false;
 
         nodes.forEach(node => {
-            const attributes = node.attrib;
-            for (const attribute in attributes) {
-                if (target.attrib[attribute]) {
-                    delete target.attrib[attribute];
-                }
+            for (const attribute in node.attrib) {
+                delete target.attrib[attribute];
             }
         });
 
