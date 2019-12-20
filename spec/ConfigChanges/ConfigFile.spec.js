@@ -63,12 +63,12 @@ describe('ConfigFile tests', function () {
                 expect(configFile.resolveConfigFilePath('project_dir', 'android', 'AndroidManifest.xml')).toBe(androidManifestPath);
             });
 
-            it('should return android's resource config.xml file path', function () {
+            it('should return android config.xml file path', function () {
                 var configPath = path.join(projectDir, 'res', 'xml', 'config.xml');
                 expect(configFile.resolveConfigFilePath('project_dir', 'android', 'config.xml')).toBe(configPath);
             });
 
-            it('should return strings.xml file path', function () {
+            it('should return android strings.xml file path', function () {
                 var stringsPath = path.join(projectDir, 'res', 'values', 'strings.xml');
                 expect(configFile.resolveConfigFilePath('project_dir', 'android', 'strings.xml')).toBe(stringsPath);
             });
@@ -85,13 +85,13 @@ describe('ConfigFile tests', function () {
                 expect(configFile.resolveConfigFilePath('project_dir', 'osx', 'config.xml')).toBe(configPath);
             });
 
-            it('should return file path when path is normalized', function () {
+            it('should return android resource file path when path is normalized', function () {
                 var file = path.join('res', 'xml');
                 var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
                 expect(configFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
             });
 
-            it('should return file path when path is not normalized', function () {
+            it('should return android resource file path when path is not normalized', function () {
                 var file = 'res/xml';
                 var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
                 expect(configFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
