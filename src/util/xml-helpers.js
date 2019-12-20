@@ -92,11 +92,7 @@ module.exports = {
 
         nodes.forEach(node => {
             const matchingKid = findChild(node, parent);
-            if (matchingKid !== undefined) {
-                // stupid elementtree takes an index argument it doesn't use
-                // and does not conform to the python lib
-                parent.remove(matchingKid);
-            }
+            if (matchingKid) parent.remove(matchingKid);
         });
 
         return true;
