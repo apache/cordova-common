@@ -43,15 +43,13 @@ class ConfigKeeper {
 
         const fake_path = path.join(project_dir, platform, file);
 
-        if (this._cache.has(fake_path)) {
-            return this._cache.get(fake_path);
+        if (!this._cache.has(fake_path)) {
+            // File was not cached, need to load.
+            const config_file = new ConfigFile(project_dir, platform, file);
+            this._cache.set(fake_path, config_file);
         }
 
-        // File was not cached, need to load.
-        const config_file = new ConfigFile(project_dir, platform, file);
-        this._cache.set(fake_path, config_file);
-
-        return config_file;
+        return this._cache.get(fake_path);
     }
 
     save_all () {
