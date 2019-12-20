@@ -72,8 +72,8 @@ class PlatformMunger {
                 const config_file = this.config_keeper.get(this.project_dir, this.platform, file);
 
                 if (config_file.exists) {
-                    if (remove) config_file.prune_child(selector, munge.parents[selector][xml_child]);
-                    else config_file.graft_child(selector, munge.parents[selector][xml_child]);
+                    const operation = remove ? 'prune_child' : 'graft_child';
+                    config_file[operation](selector, munge.parents[selector][xml_child]);
                 } else {
                     events.emit('warn', `config file ${file} requested for changes not found at ${config_file.filepath}, ignoring`);
                 }
