@@ -132,9 +132,9 @@ module.exports = {
 
         // elementtree does not implement absolute selectors so we build an
         // extended tree where we can use an equivalent relative selector
-        const überRoot = et.Element('über-root');
-        überRoot.append(doc.getroot());
-        return überRoot.find(`.${selector}`);
+        const metaRoot = et.Element('meta-root');
+        metaRoot.append(doc.getroot());
+        return metaRoot.find(`.${selector}`);
     }
 };
 
