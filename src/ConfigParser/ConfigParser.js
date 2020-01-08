@@ -18,7 +18,7 @@
 */
 
 const et = require('elementtree');
-const xml = require('../util/xml-helpers');
+const { parseElementtreeSync } = require('../util/xml-helpers');
 const CordovaError = require('../CordovaError');
 const fs = require('fs-extra');
 const events = require('../events');
@@ -31,7 +31,7 @@ class ConfigParser {
         this.path = path;
 
         try {
-            this.doc = xml.parseElementtreeSync(path);
+            this.doc = parseElementtreeSync(path);
             this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
             et.register_namespace(this.cdvNamespacePrefix, CDV_XMLNS_URI);
         } catch (e) {
