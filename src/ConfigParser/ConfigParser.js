@@ -295,20 +295,14 @@ class ConfigParser {
      * @param {Array}  platforms Platforms to look for scripts into (root scripts will be included as well).
      * @return {Array}               Script elements.
      */
-    getHookScripts (hook, platforms) {
-        let scriptElements = this.doc.findall('./hook');
-
-        if (platforms) {
-            platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(this.doc.findall(`./platform[@name="${platform}"]/hook`));
-            });
-        }
-
-        function filterScriptByHookType (el) {
-            return el.attrib.src && el.attrib.type && el.attrib.type.toLowerCase() === hook;
-        }
-
-        return scriptElements.filter(filterScriptByHookType);
+    getHookScripts (hook, platforms = []) {
+        return this.doc.findall('./hook')
+            .concat(...platforms.map(platform =>
+                this.doc.findall(`./platform[@name="${platform}"]/hook`)
+            ))
+            .filter(({ attrib: { src, type } }) =>
+                src && type && type.toLowerCase() === hook
+            );
     }
 
     /**
