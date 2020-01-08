@@ -359,10 +359,8 @@ function addCordova (someArray) {
 // for the given platform. If transform is given and is a function, it is
 // applied to each element.
 function _getTags (pelem, tag, platform, transform) {
-    const platformTag = pelem.find(`./platform[@name="${platform}"]`);
-    const tagsInRoot = pelem.findall(tag) || [];
-    const tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
-    let tags = tagsInRoot.concat(tagsInPlatform);
+    let tags = pelem.findall(tag)
+        .concat(_getTagsInPlatform(pelem, tag, platform));
 
     if (typeof transform === 'function') {
         tags = tags.map(transform);
