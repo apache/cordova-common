@@ -179,79 +179,36 @@ class ConfigParser {
     /**
      * Returns all resources for the platform specified.
      *
-     * @param  {String} platform     The platform.
-     * @param {string}  resourceName Type of static resources to return.
-     *                               "icon" and "splash" currently supported.
-     * @return {Array}               Resources for the platform specified.
+     * @param {string} platform     The platform.
+     * @param {string} resourceName Type of static resources to return.
+     *                              "icon" and "splash" currently supported.
+     * @return {ImageResources}     Resources for the platform specified.
      */
     getStaticResources (platform, resourceName) {
-        const ret = [];
-        let staticResources = [];
-        if (platform) { // platform specific icons
-            this.doc.findall(`./platform[@name="${platform}"]/${resourceName}`).forEach(elt => {
-                elt.platform = platform; // mark as platform specific resource
-                staticResources.push(elt);
-            });
-        }
-        // root level resources
-        staticResources = staticResources.concat(this.doc.findall(resourceName));
-        // parse resource elements
-        staticResources.forEach(elt => {
-            const res = {};
-            res.src = elt.attrib.src;
-            res.target = elt.attrib.target || undefined;
-            res.density = elt.attrib.density || elt.attrib[`${this.cdvNamespacePrefix}:density`] || elt.attrib['gap:density'];
-            res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
-            res.width = +elt.attrib.width || undefined;
-            res.height = +elt.attrib.height || undefined;
-            res.background = elt.attrib.background || undefined;
-            res.foreground = elt.attrib.foreground || undefined;
-
-            // default icon
-            if (!res.width && !res.height && !res.density) {
-                ret.defaultResource = res;
-            }
-            ret.push(res);
+        const normalizedAttrs = ({ attrib }) => ({
+            density: attrib[`${this.cdvNamespacePrefix}:density`] ||
+                attrib['gap:density'],
+            ...attrib
         });
 
-        /**
-         * Returns resource with specified width and/or height.
-         *
-         * @param  {number} width Width of resource.
-         * @param  {number} height Height of resource.
-         * @return {Resource} Resource object or null if not found.
-         */
-        ret.getBySize = (width, height) => {
-            return ret.filter(res => {
-                if (!res.width && !res.height) {
-                    return false;
-                }
-                return ((!res.width || (width === res.width)) &&
-                    (!res.height || (height === res.height)));
-            })[0] || null;
-        };
+        // platform specific icons
+        const platformResources = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]/${resourceName}`)
+                .map(elt => new ImageResource(normalizedAttrs(elt), { platform }))
+            : [];
 
-        /**
-         * Returns resource with specified density.
-         *
-         * @param  {string} density Density of resource.
-         * @return {Resource}       Resource object or null if not found.
-         */
-        ret.getByDensity = density => {
-            return ret.filter(res => res.density === density)[0] || null;
-        };
+        // root level resources
+        const commonResources = this.doc.findall(resourceName)
+            .map(elt => new ImageResource(normalizedAttrs(elt)));
 
-        /** Returns default icons */
-        ret.getDefault = () => ret.defaultResource;
-
-        return ret;
+        return new ImageResources(...platformResources, ...commonResources);
     }
 
     /**
      * Returns all icons for specific platform.
      *
      * @param  {string} platform Platform name
-     * @return {Resource[]}      Array of icon objects.
+     * @return {ImageResources}  Array of icon objects.
      */
     getIcons (platform) {
         return this.getStaticResources(platform, 'icon');
@@ -261,7 +218,7 @@ class ConfigParser {
      * Returns all splash images for specific platform.
      *
      * @param  {string} platform Platform name
-     * @return {Resource[]}      Array of Splash objects.
+     * @return {ImageResources}  Array of Splash objects.
      */
     getSplashScreens (platform) {
         return this.getStaticResources(platform, 'splash');
@@ -285,14 +242,7 @@ class ConfigParser {
             : [];
 
         return [].concat(platformResources, globalResources)
-            .map(({ attrib }) => ({
-                platform: platform || null,
-                src: attrib.src,
-                target: attrib.target,
-                versions: attrib.versions,
-                deviceTarget: attrib['device-target'],
-                arch: attrib.arch
-            }));
+            .map(({ attrib }) => new FileResource(attrib, { platform }));
     }
 
     /**
@@ -592,4 +542,76 @@ function featureToPlugin (featureElement) {
 
     return plugin;
 }
+
+class BaseResource {
+    constructor (attrs, { platform = null } = {}) {
+        // null means resource is shared between platforms
+        this.platform = platform || null;
+        this.src = attrs.src;
+        this.target = attrs.target || undefined;
+    }
+}
+
+class ImageResource extends BaseResource {
+    constructor (attrs, opts) {
+        super(attrs, opts);
+        this.density = attrs.density;
+        this.width = Number(attrs.width) || undefined;
+        this.height = Number(attrs.height) || undefined;
+        this.background = attrs.background || undefined;
+        this.foreground = attrs.foreground || undefined;
+    }
+}
+
+class FileResource extends BaseResource {
+    constructor (attrs, opts) {
+        super(attrs, opts);
+        this.versions = attrs.versions;
+        this.deviceTarget = attrs['device-target'];
+        this.arch = attrs.arch;
+    }
+}
+
+class ImageResources extends Array {
+    constructor (...args) {
+        super(...args);
+
+        // The spread is necessary to avoid infinite recursion
+        this.defaultResource = [...this].filter(res =>
+            !res.width && !res.height && !res.density
+        ).pop();
+    }
+
+    /**
+     * Returns resource with specified width and/or height.
+     * @param  {number} width Width of resource.
+     * @param  {number} height Height of resource.
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getBySize (width, height) {
+        return this.find(res =>
+            (res.width || res.height) &&
+            (!res.width || (width === res.width)) &&
+            (!res.height || (height === res.height))
+        ) || null;
+    }
+
+    /**
+     * Returns resource with specified density.
+     * @param  {string} density Density of resource.
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getByDensity (density) {
+        return this.find(res => res.density === density) || null;
+    }
+
+    /**
+     * Returns the default icon
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getDefault () {
+        return this.defaultResource;
+    }
+}
+
 module.exports = ConfigParser;
