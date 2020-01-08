@@ -40,18 +40,18 @@ class PluginInfo {
         }
 
         this._et = xml_helpers.parseElementtreeSync(this.filepath);
-        const pelem = this._et.getroot();
+        const root = this._et.getroot();
 
-        this.id = pelem.attrib.id;
-        this.version = pelem.attrib.version;
+        this.id = root.attrib.id;
+        this.version = root.attrib.version;
 
         // Optional fields
         const optTags = 'name description license repo issue info'.split(' ');
         for (const tag of optTags) {
-            this[tag] = pelem.findtext(tag);
+            this[tag] = root.findtext(tag);
         }
 
-        const keywordText = pelem.findtext('keywords');
+        const keywordText = root.findtext('keywords');
         this.keywords = keywordText && keywordText.split(',').map(s => s.trim());
     }
 
