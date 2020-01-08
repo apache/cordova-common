@@ -311,14 +311,8 @@ class PluginInfo {
     getKeywordsAndPlatforms () {
         return (this.keywords || [])
             .concat('ecosystem:cordova')
-            .concat(addCordova(this.getPlatformsArray()));
+            .concat(this.getPlatformsArray().map(p => `cordova-${p}`));
     }
-}
-
-// Helper function used to prefix every element of an array with cordova-
-// Useful when we want to modify platforms to be cordova-platform
-function addCordova (someArray) {
-    return someArray.map(element => `cordova-${element}`);
 }
 
 // Helper function used by most of the getSomething methods of PluginInfo.
