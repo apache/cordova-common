@@ -220,21 +220,15 @@ class PluginInfo {
             const config = tag.find('config');
             const pods = tag.find('pods');
 
-            const sources = config !== null
-                ? config.findall('source')
-                    .map(el => ({ source: el.attrib.url }))
-                    .reduce((acc, val) => Object.assign(acc, { [val.source]: val }), {})
-                : null;
+            const sources = config && config.findall('source')
+                .map(el => ({ source: el.attrib.url }))
+                .reduce((acc, val) => Object.assign(acc, { [val.source]: val }), {});
 
-            const declarations = pods !== null
-                ? pods.attrib
-                : null;
+            const declarations = pods && pods.attrib;
 
-            const libraries = pods !== null
-                ? pods.findall('pod')
-                    .map(t => t.attrib)
-                    .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {})
-                : null;
+            const libraries = pods && pods.findall('pod')
+                .map(t => t.attrib)
+                .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {});
 
             return { declarations, sources, libraries };
         });
