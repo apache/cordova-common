@@ -60,17 +60,17 @@ class PluginInfo {
     // Used to require a variable to be specified via --variable when installing the plugin.
     // returns { key : default | null}
     getPreferences (platform) {
-        return _getTags(this._et, 'preference', platform, el => ({
-            [el.attrib.name.toUpperCase()]: el.attrib.default || null
+        return _getTags(this._et, 'preference', platform, ({ attrib }) => ({
+            [attrib.name.toUpperCase()]: attrib.default || null
         }))
             .reduce((acc, pref) => Object.assign(acc, pref), {});
     }
 
     // <asset>
     getAssets (platform) {
-        return _getTags(this._et, 'asset', platform, tag => {
-            const src = tag.attrib.src;
-            const target = tag.attrib.target;
+        return _getTags(this._et, 'asset', platform, ({ attrib }) => {
+            const src = attrib.src;
+            const target = attrib.target;
 
             if (!src || !target) {
                 throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in ${this.filepath}`);
@@ -87,18 +87,18 @@ class PluginInfo {
     //     commit="428931ada3891801"
     //     subdir="some/path/here" />
     getDependencies (platform) {
-        return _getTags(this._et, 'dependency', platform, tag => {
-            if (!tag.attrib.id) {
+        return _getTags(this._et, 'dependency', platform, ({ attrib }) => {
+            if (!attrib.id) {
                 throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
             }
 
             return {
-                id: tag.attrib.id,
-                version: tag.attrib.version || '',
-                url: tag.attrib.url || '',
-                subdir: tag.attrib.subdir || '',
-                commit: tag.attrib.commit,
-                git_ref: tag.attrib.commit
+                id: attrib.id,
+                version: attrib.version || '',
+                url: attrib.url || '',
+                subdir: attrib.subdir || '',
+                commit: attrib.commit,
+                git_ref: attrib.commit
             };
         });
     }
@@ -138,13 +138,13 @@ class PluginInfo {
     // <source-file src="src/ios/someLib.a" framework="true" />
     // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
     getSourceFiles (platform) {
-        return _getTagsInPlatform(this._et, 'source-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'source-file', platform, ({ attrib }) => ({
             itemType: 'source-file',
-            src: tag.attrib.src,
-            framework: isStrTrue(tag.attrib.framework),
-            weak: isStrTrue(tag.attrib.weak),
-            compilerFlags: tag.attrib['compiler-flags'],
-            targetDir: tag.attrib['target-dir']
+            src: attrib.src,
+            framework: isStrTrue(attrib.framework),
+            weak: isStrTrue(attrib.weak),
+            compilerFlags: attrib['compiler-flags'],
+            targetDir: attrib['target-dir']
         }));
     }
 
@@ -152,11 +152,11 @@ class PluginInfo {
     // Example:
     // <header-file src="CDVFoo.h" />
     getHeaderFiles (platform) {
-        return _getTagsInPlatform(this._et, 'header-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'header-file', platform, ({ attrib }) => ({
             itemType: 'header-file',
-            src: tag.attrib.src,
-            targetDir: tag.attrib['target-dir'],
-            type: tag.attrib.type
+            src: attrib.src,
+            targetDir: attrib['target-dir'],
+            type: attrib.type
         }));
     }
 
@@ -164,14 +164,14 @@ class PluginInfo {
     // Example:
     // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
     getResourceFiles (platform) {
-        return _getTagsInPlatform(this._et, 'resource-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'resource-file', platform, ({ attrib }) => ({
             itemType: 'resource-file',
-            src: tag.attrib.src,
-            target: tag.attrib.target,
-            versions: tag.attrib.versions,
-            deviceTarget: tag.attrib['device-target'],
-            arch: tag.attrib.arch,
-            reference: tag.attrib.reference
+            src: attrib.src,
+            target: attrib.target,
+            versions: attrib.versions,
+            deviceTarget: attrib['device-target'],
+            arch: attrib.arch,
+            reference: attrib.reference
         }));
     }
 
@@ -179,13 +179,13 @@ class PluginInfo {
     // Example:
     // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
     getLibFiles (platform) {
-        return _getTagsInPlatform(this._et, 'lib-file', platform, tag => ({
+        return _getTagsInPlatform(this._et, 'lib-file', platform, ({ attrib }) => ({
             itemType: 'lib-file',
-            src: tag.attrib.src,
-            arch: tag.attrib.arch,
-            Include: tag.attrib.Include,
-            versions: tag.attrib.versions,
-            deviceTarget: tag.attrib['device-target'] || tag.attrib.target
+            src: attrib.src,
+            arch: attrib.arch,
+            Include: attrib.Include,
+            versions: attrib.versions,
+            deviceTarget: attrib['device-target'] || attrib.target
         }));
     }
 
@@ -247,11 +247,11 @@ class PluginInfo {
     }
 
     getEngines () {
-        return this._et.findall('engines/engine').map(n => ({
-            name: n.attrib.name,
-            version: n.attrib.version,
-            platform: n.attrib.platform,
-            scriptSrc: n.attrib.scriptSrc
+        return this._et.findall('engines/engine').map(({ attrib }) => ({
+            name: attrib.name,
+            version: attrib.version,
+            platform: attrib.platform,
+            scriptSrc: attrib.scriptSrc
         }));
     }
 
@@ -279,20 +279,20 @@ class PluginInfo {
         // Replaces plugin variables in s if they exist
         const expandVars = s => varExpansions.reduce((acc, fn) => fn(acc), s);
 
-        return _getTags(this._et, 'framework', platform, el => ({
+        return _getTags(this._et, 'framework', platform, ({ attrib }) => ({
             itemType: 'framework',
-            type: el.attrib.type,
-            parent: el.attrib.parent,
-            custom: isStrTrue(el.attrib.custom),
-            embed: isStrTrue(el.attrib.embed),
-            src: expandVars(el.attrib.src),
-            spec: el.attrib.spec,
-            weak: isStrTrue(el.attrib.weak),
-            versions: el.attrib.versions,
-            targetDir: el.attrib['target-dir'],
-            deviceTarget: el.attrib['device-target'] || el.attrib.target,
-            arch: el.attrib.arch,
-            implementation: el.attrib.implementation
+            type: attrib.type,
+            parent: attrib.parent,
+            custom: isStrTrue(attrib.custom),
+            embed: isStrTrue(attrib.embed),
+            src: expandVars(attrib.src),
+            spec: attrib.spec,
+            weak: isStrTrue(attrib.weak),
+            versions: attrib.versions,
+            targetDir: attrib['target-dir'],
+            deviceTarget: attrib['device-target'] || attrib.target,
+            arch: attrib.arch,
+            implementation: attrib.implementation
         }));
     }
 
