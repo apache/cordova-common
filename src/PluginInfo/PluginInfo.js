@@ -269,24 +269,23 @@ class PluginInfo {
     }
 
     getFrameworks (platform, options) {
+        const { cli_variables = {} } = options || {};
+        const vars = Object.keys(cli_variables).length === 0
+            // get variable defaults from plugin.xml for removal
+            ? this.getPreferences(platform)
+            : cli_variables;
+
         return _getTags(this._et, 'framework', platform, el => {
             let src = el.attrib.src;
-            if (options) {
-                let vars = options.cli_variables || {};
 
-                if (Object.keys(vars).length === 0) {
-                    // get variable defaults from plugin.xml for removal
-                    vars = this.getPreferences(platform);
+            // Iterate over plugin variables.
+            // Replace them in framework src if they exist
+            Object.keys(vars).forEach(name => {
+                if (vars[name]) {
+                    const regExp = new RegExp(`\\$${name}`, 'g');
+                    src = src.replace(regExp, vars[name]);
                 }
-                // Iterate over plugin variables.
-                // Replace them in framework src if they exist
-                Object.keys(vars).forEach(name => {
-                    if (vars[name]) {
-                        const regExp = new RegExp(`\\$${name}`, 'g');
-                        src = src.replace(regExp, vars[name]);
-                    }
-                });
-            }
+            });
 
             return {
                 itemType: 'framework',
