@@ -17,19 +17,19 @@
     under the License.
 */
 
-/*
-A class for holidng the information currently stored in plugin.xml
-It should also be able to answer questions like whether the plugin
-is compatible with a given engine version.
-
-TODO (kamrik): refactor this to not use sync functions and return promises.
-*/
+// TODO (kamrik): refactor this to not use sync functions and return promises.
 
 const path = require('path');
 const fs = require('fs-extra');
 const { parseElementtreeSync } = require('../util/xml-helpers');
 const CordovaError = require('../CordovaError');
 
+/**
+ * A class for holding the information currently stored in plugin.xml
+ *
+ * It should also be able to answer questions like whether the plugin
+ * is compatible with a given engine version.
+ */
 class PluginInfo {
     constructor (dirname) {
         this.dir = dirname;
@@ -55,10 +55,16 @@ class PluginInfo {
         this.keywords = keywordText && keywordText.split(',').map(s => s.trim());
     }
 
-    // <preference> tag
-    // Example: <preference name="API_KEY" />
-    // Used to require a variable to be specified via --variable when installing the plugin.
-    // returns { key : default | null}
+    /**
+     * <preference> tag
+     *
+     * Used to require a variable to be specified via --variable when installing the plugin.
+     *
+     * @example <preference name="API_KEY" />
+     *
+     * @param {string} platform
+     * @return {Object} { key : default | null}
+    */
     getPreferences (platform) {
         return _getTags(this._et, 'preference', platform, ({ attrib }) => ({
             [attrib.name.toUpperCase()]: attrib.default || null
@@ -66,7 +72,11 @@ class PluginInfo {
             .reduce((acc, pref) => Object.assign(acc, pref), {});
     }
 
-    // <asset>
+    /**
+     * <asset>
+     *
+     * @param {string} platform
+     */
     getAssets (platform) {
         return _getTags(this._et, 'asset', platform, ({ attrib }) => {
             const src = attrib.src;
@@ -80,12 +90,17 @@ class PluginInfo {
         });
     }
 
-    // <dependency>
-    // Example:
-    // <dependency id="com.plugin.id"
-    //     url="https://github.com/myuser/someplugin"
-    //     commit="428931ada3891801"
-    //     subdir="some/path/here" />
+    /**
+     * <dependency>
+     *
+     * @example
+     * <dependency id="com.plugin.id"
+     *  url="https://github.com/myuser/someplugin"
+     *  commit="428931ada3891801"
+     *  subdir="some/path/here" />
+     *
+     * @param {string} platform
+     */
     getDependencies (platform) {
         return _getTags(this._et, 'dependency', platform, ({ attrib }) => {
             if (!attrib.id) {
@@ -103,7 +118,11 @@ class PluginInfo {
         });
     }
 
-    // <config-file> tag
+    /**
+     * <config-file> tag
+     *
+     * @param {string} platform
+     */
     getConfigFiles (platform) {
         return _getTags(this._et, 'config-file', platform, tag => ({
             target: tag.attrib.target,
@@ -116,6 +135,11 @@ class PluginInfo {
         }));
     }
 
+    /**
+     * <edit-config> tag
+     *
+     * @param {string} platform
+     */
     getEditConfigs (platform) {
         return _getTags(this._et, 'edit-config', platform, tag => ({
             file: tag.attrib.file,
@@ -125,7 +149,11 @@ class PluginInfo {
         }));
     }
 
-    // <info> tags, both global and within a <platform>
+    /**
+     * <info> tags, both global and within a <platform>
+     *
+     * @param {string} platform
+     */
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
     getInfo (platform) {
         return _getTags(this._et, 'info', platform, elem => elem.text)
@@ -133,10 +161,15 @@ class PluginInfo {
             .filter(Boolean);
     }
 
-    // <source-file>
-    // Examples:
-    // <source-file src="src/ios/someLib.a" framework="true" />
-    // <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
+    /**
+     * <source-file>
+     *
+     * @example
+     * <source-file src="src/ios/someLib.a" framework="true" />
+     * <source-file src="src/ios/someLib.a" compiler-flags="-fno-objc-arc" />
+     *
+     * @param {string} platform
+     */
     getSourceFiles (platform) {
         return _getTagsInPlatform(this._et, 'source-file', platform, ({ attrib }) => ({
             itemType: 'source-file',
@@ -148,9 +181,13 @@ class PluginInfo {
         }));
     }
 
-    // <header-file>
-    // Example:
-    // <header-file src="CDVFoo.h" />
+    /**
+     * <header-file>
+     *
+     * @example <header-file src="CDVFoo.h" />
+     *
+     * @param {string} platform
+     */
     getHeaderFiles (platform) {
         return _getTagsInPlatform(this._et, 'header-file', platform, ({ attrib }) => ({
             itemType: 'header-file',
@@ -160,9 +197,20 @@ class PluginInfo {
         }));
     }
 
-    // <resource-file>
-    // Example:
-    // <resource-file src="FooPluginStrings.xml" target="res/values/FooPluginStrings.xml" device-target="win" arch="x86" versions="&gt;=8.1" />
+    /**
+     * <resource-file>
+     *
+     * @example
+     * <resource-file
+     *     src="FooPluginStrings.xml"
+     *     target="res/values/FooPluginStrings.xml"
+     *     device-target="win"
+     *     arch="x86"
+     *     versions=">=8.1"
+     * />
+     *
+     * @param {string} platform
+     */
     getResourceFiles (platform) {
         return _getTagsInPlatform(this._et, 'resource-file', platform, ({ attrib }) => ({
             itemType: 'resource-file',
@@ -175,9 +223,14 @@ class PluginInfo {
         }));
     }
 
-    // <lib-file>
-    // Example:
-    // <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
+    /**
+     * <lib-file>
+     *
+     * @example
+     * <lib-file src="src/BlackBerry10/native/device/libfoo.so" arch="device" />
+     *
+     * @param {string} platform
+     */
     getLibFiles (platform) {
         return _getTagsInPlatform(this._et, 'lib-file', platform, ({ attrib }) => ({
             itemType: 'lib-file',
@@ -189,22 +242,27 @@ class PluginInfo {
         }));
     }
 
-    // <podspec>
-    // Example:
-    // <podspec>
-    //   <config>
-    //     <source url="https://github.com/brightcove/BrightcoveSpecs.git" />
-    //     <source url="https://github.com/CocoaPods/Specs.git"/>
-    //   </config>
-    //   <pods use-frameworks="true" inhibit-all-warnings="true">
-    //     <pod name="PromiseKit" />
-    //     <pod name="Foobar1" spec="~> 2.0.0" />
-    //     <pod name="Foobar2" git="git@github.com:hoge/foobar1.git" />
-    //     <pod name="Foobar3" git="git@github.com:hoge/foobar2.git" branch="next" />
-    //     <pod name="Foobar4" swift-version="4.1" />
-    //     <pod name="Foobar5" swift-version="3.0" />
-    //   </pods>
-    // </podspec>
+    /**
+     * <podspec>
+     *
+     * @example
+     *  <podspec>
+     *      <config>
+     *          <source url="https://github.com/brightcove/BrightcoveSpecs.git" />
+     *          <source url="https://github.com/CocoaPods/Specs.git"/>
+     *      </config>
+     *      <pods use-frameworks="true" inhibit-all-warnings="true">
+     *          <pod name="PromiseKit" />
+     *          <pod name="Foobar1" spec="~> 2.0.0" />
+     *          <pod name="Foobar2" git="git@github.com:hoge/foobar1.git" />
+     *          <pod name="Foobar3" git="git@github.com:hoge/foobar2.git" branch="next" />
+     *          <pod name="Foobar4" swift-version="4.1" />
+     *          <pod name="Foobar5" swift-version="3.0" />
+     *      </pods>
+     *  </podspec>
+     *
+     * @param {string} platform
+     */
     getPodSpecs (platform) {
         return _getTagsInPlatform(this._et, 'podspec', platform, tag => {
             const config = tag.find('config');
@@ -224,9 +282,15 @@ class PluginInfo {
         });
     }
 
-    // <hook>
-    // Example:
-    // <hook type="before_build" src="scripts/beforeBuild.js" />
+    /**
+     * <hook>
+     *
+     * @example
+     * <hook type="before_build" src="scripts/beforeBuild.js" />
+     *
+     * @param {string} hook
+     * @param {string} platforms
+     */
     getHookScripts (hook, platforms) {
         return _getTags(this._et, 'hook', platforms)
             .filter(({ attrib }) =>
@@ -235,6 +299,11 @@ class PluginInfo {
             );
     }
 
+    /**
+     * <js-module>
+     *
+     * @param {string} platform
+     */
     getJsModules (platform) {
         return _getTags(this._et, 'js-module', platform, tag => ({
             itemType: 'js-module',
