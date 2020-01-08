@@ -64,7 +64,7 @@ class PluginInfo {
      * @return {Object} { key : default | null}
     */
     getPreferences (platform) {
-        return _getTags(this._et, 'preference', platform).map(({ attrib }) => ({
+        return this._getTags('preference', platform).map(({ attrib }) => ({
             [attrib.name.toUpperCase()]: attrib.default || null
         }))
             .reduce((acc, pref) => Object.assign(acc, pref), {});
@@ -76,7 +76,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getAssets (platform) {
-        return _getTags(this._et, 'asset', platform).map(({ attrib }) => {
+        return this._getTags('asset', platform).map(({ attrib }) => {
             const src = attrib.src;
             const target = attrib.target;
 
@@ -100,7 +100,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getDependencies (platform) {
-        return _getTags(this._et, 'dependency', platform).map(({ attrib }) => {
+        return this._getTags('dependency', platform).map(({ attrib }) => {
             if (!attrib.id) {
                 throw new CordovaError(`<dependency> tag is missing id attribute in ${this.filepath}`);
             }
@@ -122,7 +122,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getConfigFiles (platform) {
-        return _getTags(this._et, 'config-file', platform).map(tag => ({
+        return this._getTags('config-file', platform).map(tag => ({
             target: tag.attrib.target,
             parent: tag.attrib.parent,
             after: tag.attrib.after,
@@ -139,7 +139,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getEditConfigs (platform) {
-        return _getTags(this._et, 'edit-config', platform).map(tag => ({
+        return this._getTags('edit-config', platform).map(tag => ({
             file: tag.attrib.file,
             target: tag.attrib.target,
             mode: tag.attrib.mode,
@@ -154,7 +154,7 @@ class PluginInfo {
      */
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
     getInfo (platform) {
-        return _getTags(this._et, 'info', platform).map(elem => elem.text)
+        return this._getTags('info', platform).map(elem => elem.text)
             // Filter out any undefined or empty strings.
             .filter(Boolean);
     }
@@ -169,7 +169,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getSourceFiles (platform) {
-        return _getTagsInPlatform(this._et, 'source-file', platform).map(({ attrib }) => ({
+        return this._getTagsInPlatform('source-file', platform).map(({ attrib }) => ({
             itemType: 'source-file',
             src: attrib.src,
             framework: isStrTrue(attrib.framework),
@@ -187,7 +187,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getHeaderFiles (platform) {
-        return _getTagsInPlatform(this._et, 'header-file', platform).map(({ attrib }) => ({
+        return this._getTagsInPlatform('header-file', platform).map(({ attrib }) => ({
             itemType: 'header-file',
             src: attrib.src,
             targetDir: attrib['target-dir'],
@@ -210,7 +210,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getResourceFiles (platform) {
-        return _getTagsInPlatform(this._et, 'resource-file', platform).map(({ attrib }) => ({
+        return this._getTagsInPlatform('resource-file', platform).map(({ attrib }) => ({
             itemType: 'resource-file',
             src: attrib.src,
             target: attrib.target,
@@ -230,7 +230,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getLibFiles (platform) {
-        return _getTagsInPlatform(this._et, 'lib-file', platform).map(({ attrib }) => ({
+        return this._getTagsInPlatform('lib-file', platform).map(({ attrib }) => ({
             itemType: 'lib-file',
             src: attrib.src,
             arch: attrib.arch,
@@ -262,7 +262,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getPodSpecs (platform) {
-        return _getTagsInPlatform(this._et, 'podspec', platform).map(tag => {
+        return this._getTagsInPlatform('podspec', platform).map(tag => {
             const config = tag.find('config');
             const pods = tag.find('pods');
 
@@ -290,7 +290,7 @@ class PluginInfo {
      * @param {string} platforms
      */
     getHookScripts (hook, platforms) {
-        return _getTags(this._et, 'hook', platforms)
+        return this._getTags('hook', platforms)
             .filter(({ attrib }) =>
                 attrib.src && attrib.type &&
                 attrib.type.toLowerCase() === hook
@@ -303,7 +303,7 @@ class PluginInfo {
      * @param {string} platform
      */
     getJsModules (platform) {
-        return _getTags(this._et, 'js-module', platform).map(tag => ({
+        return this._getTags('js-module', platform).map(tag => ({
             itemType: 'js-module',
             name: tag.attrib.name,
             src: tag.attrib.src,
@@ -346,7 +346,7 @@ class PluginInfo {
         // Replaces plugin variables in s if they exist
         const expandVars = s => varExpansions.reduce((acc, fn) => fn(acc), s);
 
-        return _getTags(this._et, 'framework', platform).map(({ attrib }) => ({
+        return this._getTags('framework', platform).map(({ attrib }) => ({
             itemType: 'framework',
             type: attrib.type,
             parent: attrib.parent,
@@ -380,24 +380,39 @@ class PluginInfo {
             .concat('ecosystem:cordova')
             .concat(this.getPlatformsArray().map(p => `cordova-${p}`));
     }
-}
 
-// Helper function used by most of the getSomething methods of PluginInfo.
-// Get all elements of a given name. Both in root and in platform sections
-// for the given platform.
-function _getTags (pelem, tag, platform) {
-    return pelem.findall(tag)
-        .concat(_getTagsInPlatform(pelem, tag, platform));
-}
+    /**
+     * Helper method used by most of the getSomething methods of PluginInfo.
+     *
+     * Get all elements of a given name. Both in root and in platform sections
+     * for the given platform.
+     *
+     * @private
+     *
+     * @param {string} tag
+     * @param {string|string[]} platform
+     */
+    _getTags (tag, platform) {
+        return this._et.findall(tag)
+            .concat(this._getTagsInPlatform(tag, platform));
+    }
 
-// Same as _getTags() but only looks inside a platform section.
-function _getTagsInPlatform (pelem, tag, platform) {
-    const platforms = [].concat(platform);
+    /**
+     * Same as _getTags() but only looks inside a platform section.
+     *
+     * @private
+     *
+     * @param {string} tag
+     * @param {string|string[]} platform
+     */
+    _getTagsInPlatform (tag, platform) {
+        const platforms = [].concat(platform);
 
-    return [].concat(...platforms.map(platform => {
-        const platformTag = pelem.find(`./platform[@name="${platform}"]`);
-        return platformTag ? platformTag.findall(tag) : [];
-    }));
+        return [].concat(...platforms.map(platform => {
+            const platformTag = this._et.find(`./platform[@name="${platform}"]`);
+            return platformTag ? platformTag.findall(tag) : [];
+        }));
+    }
 }
 
 // Check if x is a string 'true'.
