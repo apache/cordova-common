@@ -23,6 +23,8 @@ const CordovaError = require('../CordovaError');
 const fs = require('fs-extra');
 const events = require('../events');
 
+const CDV_XMLNS_URI = 'http://cordova.apache.org/ns/1.0';
+
 /** Wraps a config.xml file */
 class ConfigParser {
     constructor (path) {
@@ -31,7 +33,7 @@ class ConfigParser {
         try {
             this.doc = xml.parseElementtreeSync(path);
             this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
-            et.register_namespace(this.cdvNamespacePrefix, 'http://cordova.apache.org/ns/1.0');
+            et.register_namespace(this.cdvNamespacePrefix, CDV_XMLNS_URI);
         } catch (e) {
             events.emit('error', `Parsing ${path} failed`);
             throw e;
@@ -592,7 +594,7 @@ function getCordovaNamespacePrefix (doc) {
     let prefix = 'cdv';
     for (let j = 0; j < rootAtribs.length; j++) {
         if (rootAtribs[j].startsWith('xmlns:') &&
-            doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
+            doc.getroot().attrib[rootAtribs[j]] === CDV_XMLNS_URI) {
             const strings = rootAtribs[j].split(':');
             prefix = strings[1];
             break;
