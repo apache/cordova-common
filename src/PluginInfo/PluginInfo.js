@@ -65,15 +65,10 @@ class PluginInfo {
     // Used to require a variable to be specified via --variable when installing the plugin.
     // returns { key : default | null}
     getPreferences (platform) {
-        return _getTags(this._et, 'preference', platform, prefTag => {
-            const name = prefTag.attrib.name.toUpperCase();
-            const def = prefTag.attrib.default || null;
-            return { preference: name, default: def };
-        })
-            .reduce((preferences, pref) => {
-                preferences[pref.preference] = pref.default;
-                return preferences;
-            }, {});
+        return _getTags(this._et, 'preference', platform, el => ({
+            [el.attrib.name.toUpperCase()]: el.attrib.default || null
+        }))
+            .reduce((acc, pref) => Object.assign(acc, pref), {});
     }
 
     // <asset>
