@@ -217,10 +217,6 @@ class PluginInfo {
     // </podspec>
     getPodSpecs (platform) {
         return _getTagsInPlatform(this._et, 'podspec', platform, tag => {
-            const omitUndefinedValues = obj => Object.entries(obj)
-                .filter(([, value]) => value !== undefined)
-                .reduce((acc, [key, value]) => Object.assign(acc, { [key]: value }), {});
-
             const config = tag.find('config');
             const pods = tag.find('pods');
 
@@ -231,12 +227,12 @@ class PluginInfo {
                 : null;
 
             const declarations = pods !== null
-                ? omitUndefinedValues(pods.attrib)
+                ? pods.attrib
                 : null;
 
             const libraries = pods !== null
                 ? pods.findall('pod')
-                    .map(t => omitUndefinedValues(t.attrib))
+                    .map(t => t.attrib)
                     .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {})
                 : null;
 
