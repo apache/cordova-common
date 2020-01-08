@@ -74,8 +74,7 @@ class ConfigParser {
     }
 
     setName (name) {
-        const el = findOrCreate(this.doc, 'name');
-        el.text = name;
+        findOrCreate(this.doc, 'name').text = name;
     }
 
     shortName () {
@@ -84,9 +83,7 @@ class ConfigParser {
 
     setShortName (shortname) {
         const el = findOrCreate(this.doc, 'name');
-        if (!el.text) {
-            el.text = shortname;
-        }
+        if (!el.text) el.text = shortname;
         el.attrib.short = shortname;
     }
 
@@ -95,8 +92,7 @@ class ConfigParser {
     }
 
     setDescription (text) {
-        const el = findOrCreate(this.doc, 'description');
-        el.text = text;
+        findOrCreate(this.doc, 'description').text = text;
     }
 
     version () {
