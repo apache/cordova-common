@@ -354,21 +354,18 @@ class ConfigParser {
     addPlugin (attributes, variables) {
         if (!attributes && !attributes.name) return;
 
+        // support arbitrary object as variables source
+        variables = variables || [];
+        if (typeof variables === 'object' && !Array.isArray(variables)) {
+            variables = Object.entries(variables)
+                .map(([name, value]) => ({ name, value }));
+        }
+
         const el = et.SubElement(this.doc.getroot(), 'plugin', attributes);
 
-        // support arbitrary object as variables source
-        if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
-            variables = Object.keys(variables).map(variableName => ({
-                name: variableName,
-                value: variables[variableName]
-            }));
-        }
-
-        if (variables) {
-            variables.forEach(({ name, value }) => {
-                et.SubElement(el, 'variable', { name, value });
-            });
-        }
+        variables.forEach(({ name, value }) => {
+            et.SubElement(el, 'variable', { name, value });
+        });
     }
 
     /**
