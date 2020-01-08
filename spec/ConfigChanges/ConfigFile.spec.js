@@ -19,6 +19,7 @@ var rewire = require('rewire');
 var configFile = rewire('../../src/ConfigChanges/ConfigFile');
 var fs = require('fs-extra');
 var path = require('path');
+const readChunk = require('read-chunk');
 
 describe('ConfigFile tests', function () {
     describe('instance methods', () => {
@@ -34,12 +35,12 @@ describe('ConfigFile tests', function () {
     describe('static methods', () => {
         describe('isBinaryPlist', () => {
             it('should return false if not binary', function () {
-                spyOn(fs, 'readFileSync').and.returnValue('not bplist');
+                spyOn(readChunk, 'sync').and.returnValue('not bplist');
                 expect(configFile.isBinaryPlist('someFile')).toBe(false);
             });
 
             it('should return true if binary', function () {
-                spyOn(fs, 'readFileSync').and.returnValue('bplist');
+                spyOn(readChunk, 'sync').and.returnValue('bplist');
                 expect(configFile.isBinaryPlist('someFile')).toBe(true);
             });
         });

@@ -16,6 +16,7 @@
 
 const fs = require('fs-extra');
 const path = require('path');
+const readChunk = require('read-chunk');
 
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
@@ -59,6 +60,7 @@ class ConfigFile {
             this.exists = false;
             return;
         }
+
         this.exists = true;
         this.mtime = fs.statSync(this.filepath).mtime;
 
@@ -93,10 +95,10 @@ class ConfigFile {
     }
 
     graft_child (selector, xml_child) {
-        const filepath = this.filepath;
         let result;
         if (this.type === 'xml') {
             const xml_to_graft = [modules.et.XML(xml_child.xml)];
+
             switch (xml_child.mode) {
             case 'merge':
                 result = modules.xml_helpers.graftXMLMerge(this.data, xml_to_graft, selector, xml_child);
@@ -110,24 +112,27 @@ class ConfigFile {
             default:
                 result = modules.xml_helpers.graftXML(this.data, xml_to_graft, selector, xml_child.after);
             }
+
             if (!result) {
-                throw new Error(`Unable to graft xml at selector "${selector}" from "${filepath}" during config install`);
+                throw new Error(`Unable to graft xml at selector "${selector}" from "${this.filepath}" during config install`);
             }
         } else {
             // plist file
             result = modules.plist_helpers.graftPLIST(this.data, xml_child.xml, selector);
+
             if (!result) {
-                throw new Error(`Unable to graft plist "${filepath}" during config install`);
+                throw new Error(`Unable to graft plist "${this.filepath}" during config install`);
             }
         }
         this.is_changed = true;
     }
 
     prune_child (selector, xml_child) {
-        const filepath = this.filepath;
         let result;
+
         if (this.type === 'xml') {
             const xml_to_graft = [modules.et.XML(xml_child.xml)];
+
             switch (xml_child.mode) {
             case 'merge':
             case 'overwrite':
@@ -144,8 +149,9 @@ class ConfigFile {
             result = modules.plist_helpers.prunePLIST(this.data, xml_child.xml, selector);
         }
         if (!result) {
-            throw new Error(`Pruning at selector "${selector}" from "${filepath}" went bad.`);
+            throw new Error(`Pruning at selector "${selector}" from "${this.filepath}" went bad.`);
         }
+
         this.is_changed = true;
     }
 }
@@ -167,12 +173,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
             const plistName = `${getIOSProjectname(project_dir)}-Info.plist`;
-            for (let i = 0; i < matches.length; i++) {
-                if (matches[i].includes(plistName)) {
-                    filepath = matches[i];
-                    break;
-                }
-            }
+            filepath = matches.find(m => m.includes(plistName)) || filepath;
         }
         return filepath;
     }
@@ -215,6 +216,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
             matches = modules.glob.sync(path.join(project_dir, '**', 'config.xml'));
             if (matches.length) filepath = matches[0];
         }
+
         return filepath;
     }
 
@@ -225,26 +227,23 @@ function resolveConfigFilePath (project_dir, platform, file) {
 // Find out the real name of an iOS or OSX project
 // TODO: glob is slow, need a better way or caching, or avoid using more than once.
 function getIOSProjectname (project_dir) {
-    const matches = modules.glob.sync(path.join(project_dir, '*.xcodeproj'));
-    let iospath;
-    if (matches.length === 1) {
-        iospath = path.basename(matches[0], '.xcodeproj');
-    } else {
+    const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir });
+
+    if (matches.length !== 1) {
         const msg = matches.length === 0
             ? 'Does not appear to be an xcode project, no xcode project file'
             : 'There are multiple *.xcodeproj dirs';
+
         throw new Error(`${msg} in ${project_dir}`);
     }
-    return iospath;
+
+    return path.basename(matches[0], '.xcodeproj');
 }
 
 // determine if a plist file is binary
+// i.e. they start with the magic header "bplist"
 function isBinaryPlist (filename) {
-    // I wish there was a synchronous way to read only the first 6 bytes of a
-    // file. This is wasteful :/
-    const buf = '' + fs.readFileSync(filename, 'utf8');
-    // binary plists start with a magic header, "bplist"
-    return buf.substring(0, 6) === 'bplist';
+    return readChunk.sync(filename, 0, 6).toString() === 'bplist';
 }
 
 module.exports = ConfigFile;
