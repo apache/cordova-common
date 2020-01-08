@@ -18,29 +18,24 @@
 */
 
 // contains PLIST utility functions
-const __ = require('underscore');
+const _ = require('underscore');
 const plist = require('plist');
 
 // adds node to doc at selector
 module.exports.graftPLIST = graftPLIST;
 function graftPLIST (doc, xml, selector) {
     const obj = plist.parse(`<plist>${xml}</plist>`);
+    const node = doc[selector];
 
-    let node = doc[selector];
     if (node && Array.isArray(node) && Array.isArray(obj)) {
-        node = node.concat(obj);
-        for (let i = 0; i < node.length; i++) {
-            for (let j = i + 1; j < node.length; ++j) {
-                if (nodeEqual(node[i], node[j])) { node.splice(j--, 1); }
-            }
-        }
-        doc[selector] = node;
+        const isNew = item => !node.some(nodeChild => nodeEqual(item, nodeChild));
+        doc[selector] = node.concat(obj.filter(isNew));
     } else {
         // plist uses objects for <dict>. If we have two dicts we merge them instead of
         // overriding the old one. See CB-6472
-        if (node && __.isObject(node) && __.isObject(obj) && !__.isDate(node) && !__.isDate(obj)) { // arrays checked above
-            __.extend(obj, node);
-        }
+        const isDict = o => _.isObject(o) && !_.isDate(o); // arrays checked above
+        if (isDict(node) && isDict(obj)) _.extend(obj, node);
+
         doc[selector] = obj;
     }
 
@@ -52,19 +47,21 @@ module.exports.prunePLIST = prunePLIST;
 function prunePLIST (doc, xml, selector) {
     const obj = plist.parse(`<plist>${xml}</plist>`);
 
-    pruneOBJECT(doc, selector, obj);
+    pruneObject(doc, selector, obj);
 
     return true;
 }
 
-function pruneOBJECT (doc, selector, fragment) {
+function pruneObject (doc, selector, fragment) {
     if (Array.isArray(fragment) && Array.isArray(doc[selector])) {
         let empty = true;
+
         for (const i in fragment) {
             for (const j in doc[selector]) {
-                empty = pruneOBJECT(doc[selector], j, fragment[i]) && empty;
+                empty = pruneObject(doc[selector], j, fragment[i]) && empty;
             }
         }
+
         if (empty) {
             delete doc[selector];
             return true;
@@ -78,13 +75,16 @@ function pruneOBJECT (doc, selector, fragment) {
 }
 
 function nodeEqual (node1, node2) {
-    if (typeof node1 !== typeof node2) { return false; } else if (typeof node1 === 'string') {
+    if (typeof node1 !== typeof node2) {
+        return false;
+    } else if (typeof node1 === 'string') {
         node2 = escapeRE(node2).replace(/\\\$\(\S+\)/gm, '(.*?)');
         return new RegExp(`^${node2}$`).test(node1);
     } else {
         for (const key in node2) {
             if (!nodeEqual(node1[key], node2[key])) return false;
         }
+
         return true;
     }
 }
