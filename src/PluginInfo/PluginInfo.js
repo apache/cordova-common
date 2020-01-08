@@ -270,39 +270,35 @@ class PluginInfo {
 
     getFrameworks (platform, options) {
         const { cli_variables = {} } = options || {};
+
         const vars = Object.keys(cli_variables).length === 0
-            // get variable defaults from plugin.xml for removal
             ? this.getPreferences(platform)
             : cli_variables;
 
-        return _getTags(this._et, 'framework', platform, el => {
-            let src = el.attrib.src;
+        const varExpansions = Object.entries(vars)
+            .filter(([, value]) => value)
+            .map(([name, value]) =>
+                s => s.replace(new RegExp(`\\$${name}`, 'g'), value)
+            );
 
-            // Iterate over plugin variables.
-            // Replace them in framework src if they exist
-            Object.keys(vars).forEach(name => {
-                if (vars[name]) {
-                    const regExp = new RegExp(`\\$${name}`, 'g');
-                    src = src.replace(regExp, vars[name]);
-                }
-            });
+        // Replaces plugin variables in s if they exist
+        const expandVars = s => varExpansions.reduce((acc, fn) => fn(acc), s);
 
-            return {
-                itemType: 'framework',
-                type: el.attrib.type,
-                parent: el.attrib.parent,
-                custom: isStrTrue(el.attrib.custom),
-                embed: isStrTrue(el.attrib.embed),
-                src,
-                spec: el.attrib.spec,
-                weak: isStrTrue(el.attrib.weak),
-                versions: el.attrib.versions,
-                targetDir: el.attrib['target-dir'],
-                deviceTarget: el.attrib['device-target'] || el.attrib.target,
-                arch: el.attrib.arch,
-                implementation: el.attrib.implementation
-            };
-        });
+        return _getTags(this._et, 'framework', platform, el => ({
+            itemType: 'framework',
+            type: el.attrib.type,
+            parent: el.attrib.parent,
+            custom: isStrTrue(el.attrib.custom),
+            embed: isStrTrue(el.attrib.embed),
+            src: expandVars(el.attrib.src),
+            spec: el.attrib.spec,
+            weak: isStrTrue(el.attrib.weak),
+            versions: el.attrib.versions,
+            targetDir: el.attrib['target-dir'],
+            deviceTarget: el.attrib['device-target'] || el.attrib.target,
+            arch: el.attrib.arch,
+            implementation: el.attrib.implementation
+        }));
     }
 
     getFilesAndFrameworks (platform, options) {
