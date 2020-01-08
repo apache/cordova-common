@@ -233,19 +233,11 @@ class PluginInfo {
     // Example:
     // <hook type="before_build" src="scripts/beforeBuild.js" />
     getHookScripts (hook, platforms) {
-        let scriptElements = this._et.findall('./hook');
-
-        if (platforms) {
-            platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(this._et.findall(`./platform[@name="${platform}"]/hook`));
-            });
-        }
-
-        function filterScriptByHookType (el) {
-            return el.attrib.src && el.attrib.type && el.attrib.type.toLowerCase() === hook;
-        }
-
-        return scriptElements.filter(filterScriptByHookType);
+        return _getTags(this._et, 'hook', platforms)
+            .filter(({ attrib }) =>
+                attrib.src && attrib.type &&
+                attrib.type.toLowerCase() === hook
+            );
     }
 
     getJsModules (platform) {
