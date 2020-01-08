@@ -27,7 +27,7 @@ TODO (kamrik): refactor this to not use sync functions and return promises.
 
 const path = require('path');
 const fs = require('fs-extra');
-const xml_helpers = require('../util/xml-helpers');
+const { parseElementtreeSync } = require('../util/xml-helpers');
 const CordovaError = require('../CordovaError');
 
 class PluginInfo {
@@ -39,7 +39,7 @@ class PluginInfo {
             throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
         }
 
-        this._et = xml_helpers.parseElementtreeSync(this.filepath);
+        this._et = parseElementtreeSync(this.filepath);
         const root = this._et.getroot();
 
         this.id = root.attrib.id;
