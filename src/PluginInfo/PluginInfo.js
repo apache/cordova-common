@@ -32,32 +32,27 @@ const CordovaError = require('../CordovaError');
 
 class PluginInfo {
     constructor (dirname) {
+        this.dir = dirname;
         this.filepath = path.join(dirname, 'plugin.xml');
 
         if (!fs.existsSync(this.filepath)) {
             throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
         }
 
-        this.dir = dirname;
-
-        const et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
-        const pelem = et.getroot();
+        this._et = xml_helpers.parseElementtreeSync(this.filepath);
+        const pelem = this._et.getroot();
 
         this.id = pelem.attrib.id;
         this.version = pelem.attrib.version;
 
         // Optional fields
-        this.name = pelem.findtext('name');
-        this.description = pelem.findtext('description');
-        this.license = pelem.findtext('license');
-        this.repo = pelem.findtext('repo');
-        this.issue = pelem.findtext('issue');
-        this.keywords = pelem.findtext('keywords');
-        this.info = pelem.findtext('info');
-
-        if (this.keywords) {
-            this.keywords = this.keywords.split(',').map(s => s.trim());
+        const optTags = 'name description license repo issue info'.split(' ');
+        for (const tag of optTags) {
+            this[tag] = pelem.findtext(tag);
         }
+
+        const keywordText = pelem.findtext('keywords');
+        this.keywords = keywordText && keywordText.split(',').map(s => s.trim());
     }
 
     // <preference> tag
