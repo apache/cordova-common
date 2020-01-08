@@ -17,8 +17,6 @@
     under the License.
 */
 
-// TODO (kamrik): refactor this to not use sync functions and return promises.
-
 const path = require('path');
 const fs = require('fs-extra');
 const { parseElementtreeSync } = require('../util/xml-helpers');
