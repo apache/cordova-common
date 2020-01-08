@@ -33,13 +33,16 @@ const CordovaError = require('../CordovaError');
 class PluginInfo {
     constructor (dirname) {
         this.filepath = path.join(dirname, 'plugin.xml');
+
         if (!fs.existsSync(this.filepath)) {
             throw new CordovaError(`Cannot find plugin.xml for plugin "${path.basename(dirname)}". Please try adding it again.`);
         }
 
         this.dir = dirname;
+
         const et = this._et = xml_helpers.parseElementtreeSync(this.filepath);
         const pelem = et.getroot();
+
         this.id = pelem.attrib.id;
         this.version = pelem.attrib.version;
 
@@ -51,6 +54,7 @@ class PluginInfo {
         this.issue = pelem.findtext('issue');
         this.keywords = pelem.findtext('keywords');
         this.info = pelem.findtext('info');
+
         if (this.keywords) {
             this.keywords = this.keywords.split(',').map(s => s.trim());
         }
@@ -79,7 +83,7 @@ class PluginInfo {
             const target = tag.attrib.target;
 
             if (!src || !target) {
-                throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in\n${this.filepath}`);
+                throw new Error(`Malformed <asset> tag. Both "src" and "target" attributes must be specified in ${this.filepath}`);
             }
 
             return { itemType: 'asset', src, target };
@@ -213,30 +217,29 @@ class PluginInfo {
     // </podspec>
     getPodSpecs (platform) {
         return _getTagsInPlatform(this._et, 'podspec', platform, tag => {
-            let declarations = null;
-            let sources = null;
-            let libraries = null;
+            const omitUndefinedValues = obj => Object.entries(obj)
+                .filter(([, value]) => value !== undefined)
+                .reduce((acc, [key, value]) => Object.assign(acc, { [key]: value }), {});
+
             const config = tag.find('config');
             const pods = tag.find('pods');
-            if (config != null) {
-                sources = config.findall('source').map(t => ({
-                    url: t.attrib.url
-                })).reduce((acc, val) => {
-                    return Object.assign({}, acc, { [val.url]: { source: val.url } });
-                }, {});
-            }
-            if (pods != null) {
-                declarations = Object.keys(pods.attrib).reduce((acc, key) => {
-                    return pods.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: pods.attrib[key] });
-                }, {});
-                libraries = pods.findall('pod').map(t => {
-                    return Object.keys(t.attrib).reduce((acc, key) => {
-                        return t.attrib[key] === undefined ? acc : Object.assign({}, acc, { [key]: t.attrib[key] });
-                    }, {});
-                }).reduce((acc, val) => {
-                    return Object.assign({}, acc, { [val.name]: val });
-                }, {});
-            }
+
+            const sources = config !== null
+                ? config.findall('source')
+                    .map(el => ({ source: el.attrib.url }))
+                    .reduce((acc, val) => Object.assign(acc, { [val.source]: val }), {})
+                : null;
+
+            const declarations = pods !== null
+                ? omitUndefinedValues(pods.attrib)
+                : null;
+
+            const libraries = pods !== null
+                ? pods.findall('pod')
+                    .map(t => omitUndefinedValues(t.attrib))
+                    .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {})
+                : null;
+
             return { declarations, sources, libraries };
         });
     }
@@ -281,9 +284,7 @@ class PluginInfo {
     }
 
     getPlatforms () {
-        return this._et.findall('platform').map(n => ({
-            name: n.attrib.name
-        }));
+        return this._et.findall('platform').map(n => ({ name: n.attrib.name }));
     }
 
     getPlatformsArray () {
@@ -300,16 +301,16 @@ class PluginInfo {
                     // get variable defaults from plugin.xml for removal
                     vars = this.getPreferences(platform);
                 }
-                let regExp;
                 // Iterate over plugin variables.
                 // Replace them in framework src if they exist
                 Object.keys(vars).forEach(name => {
                     if (vars[name]) {
-                        regExp = new RegExp(`\\$${name}`, 'g');
+                        const regExp = new RegExp(`\\$${name}`, 'g');
                         src = src.replace(regExp, vars[name]);
                     }
                 });
             }
+
             return {
                 itemType: 'framework',
                 type: el.attrib.type,
@@ -359,13 +360,14 @@ function addCordova (someArray) {
 // applied to each element.
 function _getTags (pelem, tag, platform, transform) {
     const platformTag = pelem.find(`./platform[@name="${platform}"]`);
-    let tagsInRoot = pelem.findall(tag);
-    tagsInRoot = tagsInRoot || [];
+    const tagsInRoot = pelem.findall(tag) || [];
     const tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
     let tags = tagsInRoot.concat(tagsInPlatform);
+
     if (typeof transform === 'function') {
         tags = tags.map(transform);
     }
+
     return tags;
 }
 
@@ -373,9 +375,11 @@ function _getTags (pelem, tag, platform, transform) {
 function _getTagsInPlatform (pelem, tag, platform, transform) {
     const platformTag = pelem.find(`./platform[@name="${platform}"]`);
     let tags = platformTag ? platformTag.findall(tag) : [];
+
     if (typeof transform === 'function') {
         tags = tags.map(transform);
     }
+
     return tags;
 }
 
@@ -385,6 +389,7 @@ function isStrTrue (x) {
 }
 
 module.exports = PluginInfo;
+
 // Backwards compat:
 PluginInfo.PluginInfo = PluginInfo;
 PluginInfo.loadPluginsDir = dir => {
