@@ -104,6 +104,10 @@ describe('config.xml parser', function () {
             it('Test 011 : should return the value of a platform-specific preference', function () {
                 expect(cfg.getPreference('android-minSdkVersion', 'android')).toEqual('10');
             });
+            it('returns the global preference if no platform-specific preference exists', () => {
+                expect(cfg.doc.find('./platform/preference[@name="fullscreen"]')).toBe(null);
+                expect(cfg.getPreference('fullscreen', 'atari')).toEqual('true');
+            });
             it('Test 012 : should return an empty string for a non-existing preference', function () {
                 expect(cfg.getPreference('zimzooo!')).toEqual('');
             });
@@ -114,6 +118,14 @@ describe('config.xml parser', function () {
             it('should allow setting the platform specific preference', function () {
                 cfg.setPreference('android-minSdkVersion', 'android', '11');
                 expect(cfg.getPreference('android-minSdkVersion', 'android')).toEqual('11');
+            });
+            it('should overwrite an existing preference', () => {
+                const children = [...cfg.doc.getroot().getchildren()];
+                expect(cfg.getPreference('fullscreen')).toEqual('true');
+
+                cfg.setPreference('fullscreen', 'false');
+                expect(cfg.getPreference('fullscreen')).toEqual('false');
+                expect(cfg.doc.getroot().getchildren()).toEqual(children);
             });
         });
         describe('global preference', function () {
