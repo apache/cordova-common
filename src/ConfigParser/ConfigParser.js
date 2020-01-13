@@ -362,32 +362,30 @@ class ConfigParser {
      * @returns {object} plugin including any variables
      */
     getPlugin (id) {
-        if (!id) {
-            return undefined;
-        }
+        if (!id) return undefined;
+
         const pluginElement = this.doc.find(`./plugin/[@name="${id}"]`);
+
         if (pluginElement === null) {
             const legacyFeature = this.doc.find(`./feature/param[@name="id"][@value="${id}"]/..`);
+
             if (legacyFeature) {
                 events.emit('log', `Found deprecated feature entry for ${id} in config.xml.`);
                 return featureToPlugin(legacyFeature);
             }
+
             return undefined;
         }
-        const plugin = {};
 
-        plugin.name = pluginElement.attrib.name;
-        plugin.spec = pluginElement.attrib.spec || pluginElement.attrib.src || pluginElement.attrib.version;
-        plugin.variables = {};
-        const variableElements = pluginElement.findall('variable');
-        variableElements.forEach(varElement => {
-            const name = varElement.attrib.name;
-            const value = varElement.attrib.value;
-            if (name) {
-                plugin.variables[name] = value;
-            }
-        });
-        return plugin;
+        const { name, spec, src, version } = pluginElement.attrib;
+
+        const varFragments = pluginElement.findall('variable')
+            .map(({ attrib: { name, value } }) =>
+                name ? { [name]: value } : null
+            );
+        const variables = Object.assign({}, ...varFragments);
+
+        return { name, spec: spec || src || version, variables };
     }
 
     /**
