@@ -460,51 +460,32 @@ class ConfigParser {
 
     /* Get all the access tags */
     getAccesses () {
-        const accesses = this.doc.findall('./access');
-        return accesses.map(access => {
-            const minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
-            const requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
-            const requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
-            const allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
-            const allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean (DEPRECATED) */
-            const allows_arbitrary_loads_for_media = access.attrib['allows-arbitrary-loads-for-media']; /* Boolean */
-            const allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
-
-            return {
-                origin: access.attrib.origin,
-                minimum_tls_version,
-                requires_forward_secrecy,
-                requires_certificate_transparency,
-                allows_arbitrary_loads_in_web_content,
-                allows_arbitrary_loads_in_media,
-                allows_arbitrary_loads_for_media,
-                allows_local_networking
-            };
-        });
+        return this.doc.findall('./access').map(element => ({
+            origin: element.attrib.origin,
+            minimum_tls_version: element.get('minimum-tls-version'),
+            requires_forward_secrecy: element.get('requires-forward-secrecy'),
+            requires_certificate_transparency: element.get('requires-certificate-transparency'),
+            allows_arbitrary_loads_in_web_content: element.get('allows-arbitrary-loads-in-web-content'),
+            allows_arbitrary_loads_in_media: element.get('allows-arbitrary-loads-in-media'),
+            allows_arbitrary_loads_for_media: element.get('allows-arbitrary-loads-for-media'),
+            allows_local_networkin: element.get('allows-local-networking')
+        }));
     }
 
     /* Get all the allow-navigation tags */
     getAllowNavigations () {
-        const allow_navigations = this.doc.findall('./allow-navigation');
-        return allow_navigations.map(allow_navigation => {
-            const minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
-            const requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
-            const requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
-
-            return {
-                href: allow_navigation.attrib.href,
-                minimum_tls_version,
-                requires_forward_secrecy,
-                requires_certificate_transparency
-            };
-        });
+        return this.doc.findall('./allow-navigation').map(element => ({
+            href: element.attrib.href,
+            minimum_tls_version: element.get('minimum-tls-version'),
+            requires_forward_secrecy: element.get('requires-forward-secrecy'),
+            requires_certificate_transparenc: element.get('requires-certificate-transparency')
+        }));
     }
 
     /* Get all the allow-intent tags */
     getAllowIntents () {
-        const allow_intents = this.doc.findall('./allow-intent');
-        return allow_intents.map(allow_intent => ({
-            href: allow_intent.attrib.href
+        return this.doc.findall('./allow-intent').map(element => ({
+            href: element.attrib.href
         }));
     }
 
