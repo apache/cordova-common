@@ -590,17 +590,12 @@ function findOrCreate (doc, name) {
 }
 
 function getCordovaNamespacePrefix (doc) {
-    const rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
-    let prefix = 'cdv';
-    for (let j = 0; j < rootAtribs.length; j++) {
-        if (rootAtribs[j].startsWith('xmlns:') &&
-            doc.getroot().attrib[rootAtribs[j]] === CDV_XMLNS_URI) {
-            const strings = rootAtribs[j].split(':');
-            prefix = strings[1];
-            break;
-        }
-    }
-    return prefix;
+    const attrs = doc.getroot().attrib;
+    const nsAttr = Object.keys(attrs).find(key =>
+        key.startsWith('xmlns:') && attrs[key] === CDV_XMLNS_URI
+    );
+
+    return nsAttr ? nsAttr.split(':')[1] : 'cdv';
 }
 
 /**
