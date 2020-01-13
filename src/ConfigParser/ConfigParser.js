@@ -120,47 +120,24 @@ class ConfigParser {
     }
 
     getGlobalPreference (name) {
-        return findElementAttributeValue(name, this.doc.findall('preference'));
+        return this._getPrefElem(name).attrib.value;
     }
 
     setGlobalPreference (name, value) {
-        let pref = this.doc.find(`preference[@name="${name}"]`);
-        if (!pref) {
-            pref = new et.Element('preference');
-            pref.attrib.name = name;
-            this.doc.getroot().append(pref);
-        }
-        pref.attrib.value = value;
+        this._getPrefElem(name, { create: true }).attrib.value = value;
     }
 
     getPlatformPreference (name, platform) {
-        return findElementAttributeValue(name, this.doc.findall(`./platform[@name="${platform}"]/preference`));
+        return this._getPrefElem(name, { platform }).attrib.value;
     }
 
     setPlatformPreference (name, platform, value) {
-        const platformEl = this.doc.find(`./platform[@name="${platform}"]`);
-        if (!platformEl) {
-            throw new CordovaError(`platform does not exist (received platform: ${platform})`);
-        }
-        const elems = this.doc.findall(`./platform[@name="${platform}"]/preference`);
-        let pref = elems.filter(elem =>
-            elem.attrib.name.toLowerCase() === name.toLowerCase()
-        ).pop();
-
-        if (!pref) {
-            pref = et.SubElement(platformEl, 'preference', { name });
-        }
-        pref.attrib.value = value;
+        this._getPrefElem(name, { platform, create: true }).attrib.value = value;
     }
 
     getPreference (name, platform) {
-        let platformPreference = '';
-
-        if (platform) {
-            platformPreference = this.getPlatformPreference(name, platform);
-        }
-
-        return platformPreference || this.getGlobalPreference(name);
+        return (platform && this.getPlatformPreference(name, platform)) ||
+            this.getGlobalPreference(name);
     }
 
     setPreference (name, platform, value) {
@@ -169,11 +146,34 @@ class ConfigParser {
             platform = undefined;
         }
 
-        if (platform) {
-            this.setPlatformPreference(name, platform, value);
-        } else {
-            this.setGlobalPreference(name, value);
+        this._getPrefElem(name, { platform, create: true }).attrib.value = value;
+    }
+
+    /**
+     * Finds the element that determines the value of preference `name` within `parent`.
+     *
+     * @param {String} name preference name to search for (case insensitive)
+     * @param {{create?: boolean, platform?: string}} [opts]
+     * @return {et.Element} the last matching preference in `parent` (possibly created)
+     */
+    _getPrefElem (name, { create = false, platform } = {}) {
+        const parent = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]`).pop()
+            : this.doc.getroot();
+
+        const makeElem = create ? et.SubElement.bind(null, parent) : et.Element;
+        const getFallBackElem = () => makeElem('preference', { name, value: '' });
+
+        if (!parent) {
+            if (create) {
+                throw new CordovaError(`platform does not exist (received platform: ${platform})`);
+            }
+            return getFallBackElem();
         }
+
+        return parent.findall('preference')
+            .filter(elem => elem.attrib.name.toLowerCase() === name.toLowerCase())
+            .pop() || getFallBackElem();
     }
 
     /**
@@ -565,24 +565,6 @@ function getCordovaNamespacePrefix (doc) {
     );
 
     return nsAttr ? nsAttr.split(':')[1] : 'cdv';
-}
-
-/**
- * Finds the value of an element's attribute
- * @param  {String} attributeName Name of the attribute to search for
- * @param  {Array}  elems         An array of ElementTree nodes
- * @return {String}
- */
-function findElementAttributeValue (attributeName, elems) {
-    elems = Array.isArray(elems) ? elems : [elems];
-
-    const value = elems.filter(elem =>
-        elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
-    ).map(filteredElems =>
-        filteredElems.attrib.value
-    ).pop();
-
-    return value || '';
 }
 
 // remove child from element for each match
