@@ -448,14 +448,10 @@ class ConfigParser {
     }
 
     getEngines () {
-        const engines = this.doc.findall('./engine');
-        return engines.map(engine => {
-            const spec = engine.attrib.spec || engine.attrib.version;
-            return {
-                name: engine.attrib.name,
-                spec: spec || null
-            };
-        });
+        return this.doc.findall('./engine').map(engine => ({
+            name: engine.attrib.name,
+            spec: engine.attrib.spec || engine.attrib.version || null
+        }));
     }
 
     /* Get all the access tags */
@@ -494,16 +490,13 @@ class ConfigParser {
         const platform_edit_configs = this.doc.findall(`./platform[@name="${platform}"]/edit-config`);
         const edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
-        return edit_configs.map(tag => {
-            const editConfig = {
-                file: tag.attrib.file,
-                target: tag.attrib.target,
-                mode: tag.attrib.mode,
-                id: 'config.xml',
-                xmls: tag.getchildren()
-            };
-            return editConfig;
-        });
+        return edit_configs.map(tag => ({
+            file: tag.attrib.file,
+            target: tag.attrib.target,
+            mode: tag.attrib.mode,
+            id: 'config.xml',
+            xmls: tag.getchildren()
+        }));
     }
 
     /* Get all config-file tags */
@@ -511,18 +504,15 @@ class ConfigParser {
         const platform_config_files = this.doc.findall(`./platform[@name="${platform}"]/config-file`);
         const config_files = this.doc.findall('config-file').concat(platform_config_files);
 
-        return config_files.map(tag => {
-            const configFile = {
-                target: tag.attrib.target,
-                parent: tag.attrib.parent,
-                after: tag.attrib.after,
-                xmls: tag.getchildren(),
-                // To support demuxing via versions
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target']
-            };
-            return configFile;
-        });
+        return config_files.map(tag => ({
+            target: tag.attrib.target,
+            parent: tag.attrib.parent,
+            after: tag.attrib.after,
+            xmls: tag.getchildren(),
+            // To support demuxing via versions
+            versions: tag.attrib.versions,
+            deviceTarget: tag.attrib['device-target']
+        }));
     }
 
     write () {
