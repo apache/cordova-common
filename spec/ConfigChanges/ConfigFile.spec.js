@@ -101,6 +101,24 @@ describe('ConfigFile tests', function () {
                 var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
             });
+
+            it('should return *-Info.plist file', function () {
+                spyOn(configFile, 'getIOSProjectname').and.returnValue('AAA');
+                var projName = configFile.getIOSProjectname();
+
+                var glob = require('glob');
+                spyOn(glob, 'sync').and.callFake(arg =>
+                    arg === '*.xcodeproj' ? [projName] : [
+                        path.join('project_dir', 'Pods', 'Target Support Files', 'Pods-' + projName, 'Pods-' + projName + '-Info.plist'),
+                        path.join('project_dir', 'Pods', 'Target Support Files', 'Pods-' + projName, projName + 'Info.plist'),
+                        path.join('project_dir', projName + '-Info.plist'),
+                        path.join('project_dir', projName, projName + '-Info.plist')
+                    ]
+                );
+
+                var plistPath = path.join('project_dir', projName, projName + '-Info.plist');
+                expect(configFile.resolveConfigFilePath('project_dir', 'ios', '*-Info.plist')).toBe(plistPath);
+            });
         });
     });
 });
