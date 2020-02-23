@@ -232,6 +232,17 @@ class ConfigParser {
         };
 
         /**
+         * Returns resource with specified text in its source.
+         * @param  {string} source name to search.
+         * @return {Resource} Resource object or null if not found.
+         */
+        ret.getByName = function (name) {
+            return ret.filter(function (res) {
+                return res.src.indexOf(name) > -1;
+            })[0] || null;
+        };
+
+        /**
          * Returns resource with specified density.
          * @param  {string} density Density of resource.
          * @return {Resource}       Resource object or null if not found.
