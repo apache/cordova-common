@@ -103,21 +103,18 @@ describe('ConfigFile tests', function () {
             });
 
             it('should return *-Info.plist file', function () {
-                spyOn(configFile, 'getIOSProjectname').and.returnValue('AAA');
-                var projName = configFile.getIOSProjectname();
+                const projName = 'XXX';
+                const expectedPlistPath = `${projName}-Info.plist`;
 
-                var glob = require('glob');
-                spyOn(glob, 'sync').and.callFake(arg =>
-                    arg === '*.xcodeproj' ? [projName] : [
-                        path.join('project_dir', 'Pods', 'Target Support Files', 'Pods-' + projName, 'Pods-' + projName + '-Info.plist'),
-                        path.join('project_dir', 'Pods', 'Target Support Files', 'Pods-' + projName, projName + 'Info.plist'),
-                        path.join('project_dir', projName + '-Info.plist'),
-                        path.join('project_dir', projName, projName + '-Info.plist')
-                    ]
-                );
+                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(require('glob'), 'sync').and.returnValue([
+                    `AAA/${projName}-Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
+                    expectedPlistPath
+                ]);
 
-                var plistPath = path.join('project_dir', projName, projName + '-Info.plist');
-                expect(configFile.resolveConfigFilePath('project_dir', 'ios', '*-Info.plist')).toBe(plistPath);
+                expect(ConfigFile.resolveConfigFilePath('', 'ios', '*-Info.plist')).toBe(expectedPlistPath);
             });
         });
     });
