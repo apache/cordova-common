@@ -18,26 +18,30 @@
 */
 
 const et = require('elementtree');
-const xml = require('../util/xml-helpers');
+const { parseElementtreeSync } = require('../util/xml-helpers');
 const CordovaError = require('../CordovaError');
 const fs = require('fs-extra');
 const events = require('../events');
+
+const CDV_XMLNS_URI = 'http://cordova.apache.org/ns/1.0';
 
 /** Wraps a config.xml file */
 class ConfigParser {
     constructor (path) {
         this.path = path;
+
         try {
-            this.doc = xml.parseElementtreeSync(path);
+            this.doc = parseElementtreeSync(path);
             this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
-            et.register_namespace(this.cdvNamespacePrefix, 'http://cordova.apache.org/ns/1.0');
+            et.register_namespace(this.cdvNamespacePrefix, CDV_XMLNS_URI);
         } catch (e) {
             events.emit('error', `Parsing ${path} failed`);
             throw e;
         }
-        const r = this.doc.getroot();
-        if (r.tag !== 'widget') {
-            throw new CordovaError(`${path} has incorrect root node name (expected "widget", was "${r.tag}")`);
+
+        const root = this.doc.getroot();
+        if (root.tag !== 'widget') {
+            throw new CordovaError(`${path} has incorrect root node name (expected "widget", was "${root.tag}")`);
         }
     }
 
@@ -70,8 +74,7 @@ class ConfigParser {
     }
 
     setName (name) {
-        const el = findOrCreate(this.doc, 'name');
-        el.text = name;
+        findOrCreate(this.doc, 'name').text = name;
     }
 
     shortName () {
@@ -80,9 +83,7 @@ class ConfigParser {
 
     setShortName (shortname) {
         const el = findOrCreate(this.doc, 'name');
-        if (!el.text) {
-            el.text = shortname;
-        }
+        if (!el.text) el.text = shortname;
         el.attrib.short = shortname;
     }
 
@@ -91,8 +92,7 @@ class ConfigParser {
     }
 
     setDescription (text) {
-        const el = findOrCreate(this.doc, 'description');
-        el.text = text;
+        findOrCreate(this.doc, 'description').text = text;
     }
 
     version () {
@@ -120,49 +120,24 @@ class ConfigParser {
     }
 
     getGlobalPreference (name) {
-        return findElementAttributeValue(name, this.doc.findall('preference'));
+        return this._getPrefElem(name).attrib.value;
     }
 
     setGlobalPreference (name, value) {
-        let pref = this.doc.find(`preference[@name="${name}"]`);
-        if (!pref) {
-            pref = new et.Element('preference');
-            pref.attrib.name = name;
-            this.doc.getroot().append(pref);
-        }
-        pref.attrib.value = value;
+        this._getPrefElem(name, { create: true }).attrib.value = value;
     }
 
     getPlatformPreference (name, platform) {
-        return findElementAttributeValue(name, this.doc.findall(`./platform[@name="${platform}"]/preference`));
+        return this._getPrefElem(name, { platform }).attrib.value;
     }
 
     setPlatformPreference (name, platform, value) {
-        const platformEl = this.doc.find(`./platform[@name="${platform}"]`);
-        if (!platformEl) {
-            throw new CordovaError(`platform does not exist (received platform: ${platform})`);
-        }
-        const elems = this.doc.findall(`./platform[@name="${platform}"]/preference`);
-        let pref = elems.filter(elem =>
-            elem.attrib.name.toLowerCase() === name.toLowerCase()
-        ).pop();
-
-        if (!pref) {
-            pref = new et.Element('preference');
-            pref.attrib.name = name;
-            platformEl.append(pref);
-        }
-        pref.attrib.value = value;
+        this._getPrefElem(name, { platform, create: true }).attrib.value = value;
     }
 
     getPreference (name, platform) {
-        let platformPreference = '';
-
-        if (platform) {
-            platformPreference = this.getPlatformPreference(name, platform);
-        }
-
-        return platformPreference || this.getGlobalPreference(name);
+        return (platform && this.getPlatformPreference(name, platform)) ||
+            this.getGlobalPreference(name);
     }
 
     setPreference (name, platform, value) {
@@ -171,85 +146,69 @@ class ConfigParser {
             platform = undefined;
         }
 
-        if (platform) {
-            this.setPlatformPreference(name, platform, value);
-        } else {
-            this.setGlobalPreference(name, value);
+        this._getPrefElem(name, { platform, create: true }).attrib.value = value;
+    }
+
+    /**
+     * Finds the element that determines the value of preference `name` within `parent`.
+     *
+     * @param {String} name preference name to search for (case insensitive)
+     * @param {{create?: boolean, platform?: string}} [opts]
+     * @return {et.Element} the last matching preference in `parent` (possibly created)
+     */
+    _getPrefElem (name, { create = false, platform } = {}) {
+        const parent = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]`).pop()
+            : this.doc.getroot();
+
+        const makeElem = create ? et.SubElement.bind(null, parent) : et.Element;
+        const getFallBackElem = () => makeElem('preference', { name, value: '' });
+
+        if (!parent) {
+            if (create) {
+                throw new CordovaError(`platform does not exist (received platform: ${platform})`);
+            }
+            return getFallBackElem();
         }
+
+        return parent.findall('preference')
+            .filter(elem => elem.attrib.name.toLowerCase() === name.toLowerCase())
+            .pop() || getFallBackElem();
     }
 
     /**
      * Returns all resources for the platform specified.
-     * @param  {String} platform     The platform.
-     * @param {string}  resourceName Type of static resources to return.
-     *                               "icon" and "splash" currently supported.
-     * @return {Array}               Resources for the platform specified.
+     *
+     * @param {string} platform     The platform.
+     * @param {string} resourceName Type of static resources to return.
+     *                              "icon" and "splash" currently supported.
+     * @return {ImageResources}     Resources for the platform specified.
      */
     getStaticResources (platform, resourceName) {
-        const ret = [];
-        let staticResources = [];
-        if (platform) { // platform specific icons
-            this.doc.findall(`./platform[@name="${platform}"]/${resourceName}`).forEach(elt => {
-                elt.platform = platform; // mark as platform specific resource
-                staticResources.push(elt);
-            });
-        }
-        // root level resources
-        staticResources = staticResources.concat(this.doc.findall(resourceName));
-        // parse resource elements
-        staticResources.forEach(elt => {
-            const res = {};
-            res.src = elt.attrib.src;
-            res.target = elt.attrib.target || undefined;
-            res.density = elt.attrib.density || elt.attrib[`${this.cdvNamespacePrefix}:density`] || elt.attrib['gap:density'];
-            res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
-            res.width = +elt.attrib.width || undefined;
-            res.height = +elt.attrib.height || undefined;
-            res.background = elt.attrib.background || undefined;
-            res.foreground = elt.attrib.foreground || undefined;
-
-            // default icon
-            if (!res.width && !res.height && !res.density) {
-                ret.defaultResource = res;
-            }
-            ret.push(res);
+        const normalizedAttrs = ({ attrib }) => ({
+            density: attrib[`${this.cdvNamespacePrefix}:density`] ||
+                attrib['gap:density'],
+            ...attrib
         });
 
-        /**
-         * Returns resource with specified width and/or height.
-         * @param  {number} width Width of resource.
-         * @param  {number} height Height of resource.
-         * @return {Resource} Resource object or null if not found.
-         */
-        ret.getBySize = (width, height) => {
-            return ret.filter(res => {
-                if (!res.width && !res.height) {
-                    return false;
-                }
-                return ((!res.width || (width === res.width)) &&
-                    (!res.height || (height === res.height)));
-            })[0] || null;
-        };
+        // platform specific icons
+        const platformResources = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]/${resourceName}`)
+                .map(elt => new ImageResource(normalizedAttrs(elt), { platform }))
+            : [];
 
-        /**
-         * Returns resource with specified density.
-         * @param  {string} density Density of resource.
-         * @return {Resource}       Resource object or null if not found.
-         */
-        ret.getByDensity = density => {
-            return ret.filter(res => res.density === density)[0] || null;
-        };
+        // root level resources
+        const commonResources = this.doc.findall(resourceName)
+            .map(elt => new ImageResource(normalizedAttrs(elt)));
 
-        /** Returns default icons */
-        ret.getDefault = () => ret.defaultResource;
-
-        return ret;
+        return new ImageResources(...platformResources, ...commonResources);
     }
 
     /**
      * Returns all icons for specific platform.
+     *
      * @param  {string} platform Platform name
-     * @return {Resource[]}      Array of icon objects.
+     * @return {ImageResources}  Array of icon objects.
      */
     getIcons (platform) {
         return this.getStaticResources(platform, 'icon');
@@ -257,8 +216,9 @@ class ConfigParser {
 
     /**
      * Returns all splash images for specific platform.
+     *
      * @param  {string} platform Platform name
-     * @return {Resource[]}      Array of Splash objects.
+     * @return {ImageResources}  Array of Splash objects.
      */
     getSplashScreens (platform) {
         return this.getStaticResources(platform, 'splash');
@@ -266,61 +226,40 @@ class ConfigParser {
 
     /**
      * Returns all resource-files for a specific platform.
+     *
      * @param  {string} platform Platform name
      * @param  {boolean} includeGlobal Whether to return resource-files at the
      *                                 root level.
-     * @return {Resource[]}      Array of resource file objects.
+     * @return {FileResource[]}      Array of resource file objects.
      */
     getFileResources (platform, includeGlobal) {
-        let fileResources = [];
+        const platformResources = platform
+            ? this.doc.findall(`./platform[@name="${platform}"]/resource-file`)
+            : [];
 
-        if (platform) { // platform specific resources
-            fileResources = this.doc.findall(`./platform[@name="${platform}"]/resource-file`).map(tag => ({
-                platform,
-                src: tag.attrib.src,
-                target: tag.attrib.target,
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target'],
-                arch: tag.attrib.arch
-            }));
-        }
+        const globalResources = includeGlobal
+            ? this.doc.findall('resource-file')
+            : [];
 
-        if (includeGlobal) {
-            this.doc.findall('resource-file').forEach(tag => {
-                fileResources.push({
-                    platform: platform || null,
-                    src: tag.attrib.src,
-                    target: tag.attrib.target,
-                    versions: tag.attrib.versions,
-                    deviceTarget: tag.attrib['device-target'],
-                    arch: tag.attrib.arch
-                });
-            });
-        }
-
-        return fileResources;
+        return [].concat(platformResources, globalResources)
+            .map(({ attrib }) => new FileResource(attrib, { platform }));
     }
 
     /**
      * Returns all hook scripts for the hook type specified.
+     *
      * @param  {String} hook     The hook type.
      * @param {Array}  platforms Platforms to look for scripts into (root scripts will be included as well).
      * @return {Array}               Script elements.
      */
-    getHookScripts (hook, platforms) {
-        let scriptElements = this.doc.findall('./hook');
-
-        if (platforms) {
-            platforms.forEach(platform => {
-                scriptElements = scriptElements.concat(this.doc.findall(`./platform[@name="${platform}"]/hook`));
-            });
-        }
-
-        function filterScriptByHookType (el) {
-            return el.attrib.src && el.attrib.type && el.attrib.type.toLowerCase() === hook;
-        }
-
-        return scriptElements.filter(filterScriptByHookType);
+    getHookScripts (hook, platforms = []) {
+        return this.doc.findall('./hook')
+            .concat(...platforms.map(platform =>
+                this.doc.findall(`./platform[@name="${platform}"]/hook`)
+            ))
+            .filter(({ attrib: { src, type } }) =>
+                src && type && type.toLowerCase() === hook
+            );
     }
 
     /**
@@ -328,25 +267,24 @@ class ConfigParser {
     *
     * This function also returns any plugin's that
     * were defined using the legacy <feature> tags.
+    *
     * @return {string[]} Array of plugin IDs
     */
     getPluginIdList () {
         const plugins = this.doc.findall('plugin');
         const result = plugins.map(plugin => plugin.attrib.name);
         const features = this.doc.findall('feature');
+
         features.forEach(element => {
             const idTag = element.find('./param[@name="id"]');
-            if (idTag) {
-                result.push(idTag.attrib.value);
-            }
+            if (idTag) result.push(idTag.attrib.value);
         });
+
         return result;
     }
 
     getPlugins () {
-        return this.getPluginIdList().map(function (pluginId) {
-            return this.getPlugin(pluginId);
-        }, this);
+        return this.getPluginIdList().map(pluginId => this.getPlugin(pluginId));
     }
 
     /**
@@ -357,26 +295,19 @@ class ConfigParser {
      */
     addPlugin (attributes, variables) {
         if (!attributes && !attributes.name) return;
-        const el = new et.Element('plugin');
-        el.attrib.name = attributes.name;
-        if (attributes.spec) {
-            el.attrib.spec = attributes.spec;
-        }
 
         // support arbitrary object as variables source
-        if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
-            variables = Object.keys(variables).map(variableName => ({
-                name: variableName,
-                value: variables[variableName]
-            }));
+        variables = variables || [];
+        if (typeof variables === 'object' && !Array.isArray(variables)) {
+            variables = Object.entries(variables)
+                .map(([name, value]) => ({ name, value }));
         }
 
-        if (variables) {
-            variables.forEach(variable => {
-                el.append(new et.Element('variable', { name: variable.name, value: variable.value }));
-            });
-        }
-        this.doc.getroot().append(el);
+        const el = et.SubElement(this.doc.getroot(), 'plugin', attributes);
+
+        variables.forEach(({ name, value }) => {
+            et.SubElement(el, 'variable', { name, value });
+        });
     }
 
     /**
@@ -389,32 +320,30 @@ class ConfigParser {
      * @returns {object} plugin including any variables
      */
     getPlugin (id) {
-        if (!id) {
-            return undefined;
-        }
+        if (!id) return undefined;
+
         const pluginElement = this.doc.find(`./plugin/[@name="${id}"]`);
+
         if (pluginElement === null) {
             const legacyFeature = this.doc.find(`./feature/param[@name="id"][@value="${id}"]/..`);
+
             if (legacyFeature) {
                 events.emit('log', `Found deprecated feature entry for ${id} in config.xml.`);
                 return featureToPlugin(legacyFeature);
             }
+
             return undefined;
         }
-        const plugin = {};
 
-        plugin.name = pluginElement.attrib.name;
-        plugin.spec = pluginElement.attrib.spec || pluginElement.attrib.src || pluginElement.attrib.version;
-        plugin.variables = {};
-        const variableElements = pluginElement.findall('variable');
-        variableElements.forEach(varElement => {
-            const name = varElement.attrib.name;
-            const value = varElement.attrib.value;
-            if (name) {
-                plugin.variables[name] = value;
-            }
-        });
-        return plugin;
+        const { name, spec, src, version } = pluginElement.attrib;
+
+        const varFragments = pluginElement.findall('variable')
+            .map(({ attrib: { name, value } }) =>
+                name ? { [name]: value } : null
+            );
+        const variables = Object.assign({}, ...varFragments);
+
+        return { name, spec: spec || src || version, variables };
     }
 
     /**
@@ -423,10 +352,11 @@ class ConfigParser {
      * This function also operates on any plugin's that
      * were defined using the legacy <feature> tags.
      *
-     * @param id name of the plugin
+     * @param {string} id name of the plugin
      */
     removePlugin (id) {
         if (!id) return;
+
         const root = this.doc.getroot();
         removeChildren(root, `./plugin/[@name="${id}"]`);
         removeChildren(root, `./feature/param[@name="id"][@value="${id}"]/..`);
@@ -434,30 +364,25 @@ class ConfigParser {
 
     // Add any element to the root
     addElement (name, attributes) {
-        const el = et.Element(name);
-        for (const a in attributes) {
-            el.attrib[a] = attributes[a];
-        }
-        this.doc.getroot().append(el);
+        et.SubElement(this.doc.getroot(), name, attributes);
     }
 
     /**
      * Adds an engine. Does not check for duplicates.
+     *
      * @param  {String} name the engine name
-     * @param  {String} spec engine source location or version (optional)
+     * @param  {String} [spec] engine source location or version
      */
     addEngine (name, spec) {
         if (!name) return;
-        const el = et.Element('engine');
-        el.attrib.name = name;
-        if (spec) {
-            el.attrib.spec = spec;
-        }
-        this.doc.getroot().append(el);
+
+        const attrs = Object.assign({ name }, spec ? { spec } : null);
+        et.SubElement(this.doc.getroot(), 'engine', attrs);
     }
 
     /**
      * Removes all the engines with given name
+     *
      * @param  {String} name the engine name.
      */
     removeEngine (name) {
@@ -465,100 +390,100 @@ class ConfigParser {
     }
 
     getEngines () {
-        const engines = this.doc.findall('./engine');
-        return engines.map(engine => {
-            const spec = engine.attrib.spec || engine.attrib.version;
-            return {
-                name: engine.attrib.name,
-                spec: spec || null
-            };
-        });
-    }
-
-    /* Get all the access tags */
-    getAccesses () {
-        const accesses = this.doc.findall('./access');
-        return accesses.map(access => {
-            const minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
-            const requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
-            const requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
-            const allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
-            const allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean (DEPRECATED) */
-            const allows_arbitrary_loads_for_media = access.attrib['allows-arbitrary-loads-for-media']; /* Boolean */
-            const allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
-
-            return {
-                origin: access.attrib.origin,
-                minimum_tls_version,
-                requires_forward_secrecy,
-                requires_certificate_transparency,
-                allows_arbitrary_loads_in_web_content,
-                allows_arbitrary_loads_in_media,
-                allows_arbitrary_loads_for_media,
-                allows_local_networking
-            };
-        });
-    }
-
-    /* Get all the allow-navigation tags */
-    getAllowNavigations () {
-        const allow_navigations = this.doc.findall('./allow-navigation');
-        return allow_navigations.map(allow_navigation => {
-            const minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
-            const requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
-            const requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
-
-            return {
-                href: allow_navigation.attrib.href,
-                minimum_tls_version,
-                requires_forward_secrecy,
-                requires_certificate_transparency
-            };
-        });
-    }
-
-    /* Get all the allow-intent tags */
-    getAllowIntents () {
-        const allow_intents = this.doc.findall('./allow-intent');
-        return allow_intents.map(allow_intent => ({
-            href: allow_intent.attrib.href
+        return this.doc.findall('./engine').map(engine => ({
+            name: engine.attrib.name,
+            spec: engine.attrib.spec || engine.attrib.version || null
         }));
     }
 
-    /* Get all edit-config tags */
+    /**
+     * @typedef {Object} CommonRuleOptions
+     * @prop {string} [minimum_tls_version]
+     * @prop {StringifiedBool} [requires_forward_secrecy]
+     * @prop {StringifiedBool} [requires_certificate_transparency]
+     *
+     * @typedef {string} StringifiedBool has either the value 'true' or 'false'
+     */
+
+    /**
+     * Get all the access tags
+     *
+     * @returns {AccessRule[]}
+     *
+     * @typedef {CommonRuleOptions} AccessRule
+     * @prop {string} origin
+     * @prop {StringifiedBool} [allows_arbitrary_loads_in_web_content]
+     * @prop {StringifiedBool} [allows_arbitrary_loads_in_media] (DEPRECATED)
+     * @prop {StringifiedBool} [allows_arbitrary_loads_for_media]
+     * @prop {StringifiedBool} [allows_local_networking]
+     */
+    getAccesses () {
+        return this.doc.findall('./access').map(element => ({
+            origin: element.attrib.origin,
+            minimum_tls_version: element.get('minimum-tls-version'),
+            requires_forward_secrecy: element.get('requires-forward-secrecy'),
+            requires_certificate_transparency: element.get('requires-certificate-transparency'),
+            allows_arbitrary_loads_in_web_content: element.get('allows-arbitrary-loads-in-web-content'),
+            allows_arbitrary_loads_in_media: element.get('allows-arbitrary-loads-in-media'),
+            allows_arbitrary_loads_for_media: element.get('allows-arbitrary-loads-for-media'),
+            allows_local_networkin: element.get('allows-local-networking')
+        }));
+    }
+
+    /**
+     * Get all the allow-navigation tags
+     *
+     * @returns {AllowNavigationRule[]}
+     * @typedef {{href: string} & CommonRuleOptions} AllowNavigationRule
+     */
+    getAllowNavigations () {
+        return this.doc.findall('./allow-navigation').map(element => ({
+            href: element.attrib.href,
+            minimum_tls_version: element.get('minimum-tls-version'),
+            requires_forward_secrecy: element.get('requires-forward-secrecy'),
+            requires_certificate_transparenc: element.get('requires-certificate-transparency')
+        }));
+    }
+
+    /**
+     * Get all the allow-intent tags
+     *
+     * @returns {{href: string}[]}
+     */
+    getAllowIntents () {
+        return this.doc.findall('./allow-intent').map(element => ({
+            href: element.attrib.href
+        }));
+    }
+
+    /** Get all edit-config tags */
     getEditConfigs (platform) {
         const platform_edit_configs = this.doc.findall(`./platform[@name="${platform}"]/edit-config`);
         const edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
 
-        return edit_configs.map(tag => {
-            const editConfig = {
-                file: tag.attrib.file,
-                target: tag.attrib.target,
-                mode: tag.attrib.mode,
-                id: 'config.xml',
-                xmls: tag.getchildren()
-            };
-            return editConfig;
-        });
+        return edit_configs.map(tag => ({
+            file: tag.attrib.file,
+            target: tag.attrib.target,
+            mode: tag.attrib.mode,
+            id: 'config.xml',
+            xmls: tag.getchildren()
+        }));
     }
 
-    /* Get all config-file tags */
+    /** Get all config-file tags */
     getConfigFiles (platform) {
         const platform_config_files = this.doc.findall(`./platform[@name="${platform}"]/config-file`);
         const config_files = this.doc.findall('config-file').concat(platform_config_files);
 
-        return config_files.map(tag => {
-            const configFile = {
-                target: tag.attrib.target,
-                parent: tag.attrib.parent,
-                after: tag.attrib.after,
-                xmls: tag.getchildren(),
-                // To support demuxing via versions
-                versions: tag.attrib.versions,
-                deviceTarget: tag.attrib['device-target']
-            };
-            return configFile;
-        });
+        return config_files.map(tag => ({
+            target: tag.attrib.target,
+            parent: tag.attrib.parent,
+            after: tag.attrib.after,
+            xmls: tag.getchildren(),
+            // To support demuxing via versions
+            versions: tag.attrib.versions,
+            deviceTarget: tag.attrib['device-target']
+        }));
     }
 
     write () {
@@ -571,49 +496,22 @@ function getNodeTextSafe (el) {
 }
 
 function findOrCreate (doc, name) {
-    let ret = doc.find(name);
-    if (!ret) {
-        ret = new et.Element(name);
-        doc.getroot().append(ret);
-    }
-    return ret;
+    const parent = doc.getroot();
+    return parent.find(name) || new et.SubElement(parent, name);
 }
 
 function getCordovaNamespacePrefix (doc) {
-    const rootAtribs = Object.getOwnPropertyNames(doc.getroot().attrib);
-    let prefix = 'cdv';
-    for (let j = 0; j < rootAtribs.length; j++) {
-        if (rootAtribs[j].startsWith('xmlns:') &&
-            doc.getroot().attrib[rootAtribs[j]] === 'http://cordova.apache.org/ns/1.0') {
-            const strings = rootAtribs[j].split(':');
-            prefix = strings[1];
-            break;
-        }
-    }
-    return prefix;
+    const attrs = doc.getroot().attrib;
+    const nsAttr = Object.keys(attrs).find(key =>
+        key.startsWith('xmlns:') && attrs[key] === CDV_XMLNS_URI
+    );
+
+    return nsAttr ? nsAttr.split(':')[1] : 'cdv';
 }
 
-/**
- * Finds the value of an element's attribute
- * @param  {String} attributeName Name of the attribute to search for
- * @param  {Array}  elems         An array of ElementTree nodes
- * @return {String}
- */
-function findElementAttributeValue (attributeName, elems) {
-    elems = Array.isArray(elems) ? elems : [elems];
-
-    const value = elems.filter(elem =>
-        elem.attrib.name.toLowerCase() === attributeName.toLowerCase()
-    ).map(filteredElems =>
-        filteredElems.attrib.value
-    ).pop();
-
-    return value || '';
-}
-
+// remove child from element for each match
 function removeChildren (el, selector) {
-    const matches = el.findall(selector);
-    matches.forEach(child => el.remove(child));
+    el.findall(selector).forEach(child => el.remove(child));
 }
 
 function featureToPlugin (featureElement) {
@@ -625,6 +523,7 @@ function featureToPlugin (featureElement) {
     nodes.forEach(element => {
         const n = element.attrib.name;
         const v = element.attrib.value;
+
         if (n === 'id') {
             plugin.name = v;
         } else if (n === 'version') {
@@ -643,4 +542,86 @@ function featureToPlugin (featureElement) {
 
     return plugin;
 }
+
+/**
+ * The attribute target is only used for the Windows & Electron platforms
+ */
+class BaseResource {
+    constructor (attrs, { platform = null } = {}) {
+        // null means resource is shared between platforms
+        this.platform = platform || null;
+        this.src = attrs.src;
+        this.target = attrs.target || undefined;
+    }
+}
+
+/**
+ * The attributes density, background, and foreground are only used for the
+ * Android platform
+ */
+class ImageResource extends BaseResource {
+    constructor (attrs, opts) {
+        super(attrs, opts);
+        this.density = attrs.density;
+        this.width = Number(attrs.width) || undefined;
+        this.height = Number(attrs.height) || undefined;
+        this.background = attrs.background || undefined;
+        this.foreground = attrs.foreground || undefined;
+    }
+}
+
+class FileResource extends BaseResource {
+    constructor (attrs, opts) {
+        super(attrs, opts);
+        this.versions = attrs.versions;
+        this.deviceTarget = attrs['device-target'];
+        this.arch = attrs.arch;
+    }
+}
+
+class ImageResources extends Array {
+    constructor (...args) {
+        super(...args);
+
+        // The spread is necessary to avoid infinite recursion
+        this.defaultResource = [...this].filter(res =>
+            !res.width && !res.height && !res.density
+        ).pop();
+    }
+
+    /**
+     * Returns resource with specified width and/or height.
+     * @param  {number} width Width of resource.
+     * @param  {number} height Height of resource.
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getBySize (width, height) {
+        return this.find(res =>
+            (res.width || res.height) &&
+            (!res.width || (width === res.width)) &&
+            (!res.height || (height === res.height))
+        ) || null;
+    }
+
+    /**
+     * Returns resource with specified density.
+     *
+     * Only used by Android platform.
+     *
+     * @param  {string} density Density of resource.
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getByDensity (density) {
+        return this.find(res => res.density === density) || null;
+    }
+
+    /**
+     * Returns the default icon
+     * @return {ImageResource} Resource object or null if not found.
+     */
+    getDefault () {
+        return this.defaultResource;
+    }
+}
+
 module.exports = ConfigParser;
