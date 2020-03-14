@@ -16,12 +16,16 @@
 */
 
 var rewire = require('rewire');
-var ConfigFile = rewire('../../src/ConfigChanges/ConfigFile');
 var fs = require('fs-extra');
 var path = require('path');
 const readChunk = require('read-chunk');
 
 describe('ConfigFile tests', function () {
+    let ConfigFile;
+    beforeEach(() => {
+        ConfigFile = rewire('../../src/ConfigChanges/ConfigFile');
+    });
+
     describe('instance methods', () => {
         describe('save', () => {
             it('calls fs.writeFileSync', function () {
