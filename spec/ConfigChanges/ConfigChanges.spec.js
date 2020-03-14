@@ -472,7 +472,7 @@ describe('config-changes module', function () {
 
                 var munger = new configChanges.PlatformMunger('ios', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
-                expect(spy).toHaveBeenCalledWith(path.join(temp, 'SampleApp', 'SampleApp-Info.plist').replace(/\\/g, '/'), 'utf8');
+                expect(spy).toHaveBeenCalledWith(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf8');
             });
             it('Test 026 : should move successfully installed plugins from queue to installed plugins section, and include/retain vars if applicable', function () {
                 fs.copySync(android_two_project, temp);
