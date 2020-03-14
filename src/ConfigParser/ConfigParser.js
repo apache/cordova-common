@@ -543,6 +543,9 @@ function featureToPlugin (featureElement) {
     return plugin;
 }
 
+/**
+ * The attribute target is only used for the Windows & Electron platforms
+ */
 class BaseResource {
     constructor (attrs, { platform = null } = {}) {
         // null means resource is shared between platforms
@@ -552,6 +555,10 @@ class BaseResource {
     }
 }
 
+/**
+ * The attributes density, background, and foreground are only used for the
+ * Android platform
+ */
 class ImageResource extends BaseResource {
     constructor (attrs, opts) {
         super(attrs, opts);
@@ -598,6 +605,9 @@ class ImageResources extends Array {
 
     /**
      * Returns resource with specified density.
+     *
+     * Only used by Android platform.
+     *
      * @param  {string} density Density of resource.
      * @return {ImageResource} Resource object or null if not found.
      */
