@@ -50,6 +50,7 @@
   "nyc": {
     "all": true,
     "exclude": [
+      "coverage/",
       "spec/"
     ],
     "reporter": [
