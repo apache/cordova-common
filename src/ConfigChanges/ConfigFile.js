@@ -167,7 +167,9 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
     if (file.includes('*')) {
         // handle wildcards in targets using glob.
-        matches = modules.glob.sync(path.join(project_dir, '**', file));
+        matches = modules.glob.sync(path.join(project_dir, '**', file))
+            .map(p => path.normalize(p));
+
         if (matches.length) filepath = matches[0];
 
         // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
