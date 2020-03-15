@@ -29,7 +29,7 @@
     "cross-spawn": "^7.0.1",
     "elementtree": "^0.1.7",
     "endent": "^1.4.1",
-    "fast-glob": "^3.1.1",
+    "fast-glob": "^3.2.2",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
     "plist": "^3.0.1",
