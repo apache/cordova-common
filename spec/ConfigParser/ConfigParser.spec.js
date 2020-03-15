@@ -17,11 +17,11 @@
     under the License.
 */
 
-var path = require('path');
-var fs = require('fs-extra');
-var ConfigParser = require('../../src/ConfigParser/ConfigParser');
-var xml = path.join(__dirname, '../fixtures/test-config.xml');
-var xml_contents = fs.readFileSync(xml, 'utf-8');
+const path = require('path');
+const fs = require('fs-extra');
+const ConfigParser = require('../../src/ConfigParser/ConfigParser');
+const xml = path.join(__dirname, '../fixtures/test-config.xml');
+const xml_contents = fs.readFileSync(xml, 'utf-8');
 
 describe('config.xml parser', function () {
     beforeEach(function () {
@@ -29,7 +29,7 @@ describe('config.xml parser', function () {
     });
 
     it('Test 001 : should create an instance based on an xml file', function () {
-        var cfg;
+        let cfg;
         expect(function () {
             cfg = new ConfigParser(xml);
         }).not.toThrow();
@@ -38,7 +38,7 @@ describe('config.xml parser', function () {
     });
 
     describe('methods', function () {
-        var cfg;
+        let cfg;
         beforeEach(function () {
             cfg = new ConfigParser(xml);
         });
@@ -156,7 +156,7 @@ describe('config.xml parser', function () {
         });
         describe('plugin', function () {
             it('Test 018 : should read plugin id list', function () {
-                var expectedList = [
+                const expectedList = [
                     'org.apache.cordova.pluginwithvars',
                     'org.apache.cordova.pluginwithurl',
                     'org.apache.cordova.pluginwithversion',
@@ -166,44 +166,44 @@ describe('config.xml parser', function () {
                     'org.apache.cordova.legacyfeatureurl',
                     'org.apache.cordova.legacyfeatureversionandurl'
                 ];
-                var list = cfg.getPluginIdList();
+                const list = cfg.getPluginIdList();
                 expect(list.length).toEqual(expectedList.length);
                 expectedList.forEach(function (plugin) {
                     expect(list).toContain(plugin);
                 });
             });
             it('Test 019 : should read plugin given id', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.justaplugin');
+                const plugin = cfg.getPlugin('org.apache.cordova.justaplugin');
                 expect(plugin).toBeDefined();
                 expect(plugin.name).toEqual('org.apache.cordova.justaplugin');
                 expect(plugin.variables).toBeDefined();
             });
             it('Test 020 : should not read plugin given undefined id', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.undefinedplugin');
+                const plugin = cfg.getPlugin('org.apache.cordova.undefinedplugin');
                 expect(plugin).not.toBeDefined();
             });
             it('Test 021 : should read plugin with src and store it in spec field', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.pluginwithurl');
+                const plugin = cfg.getPlugin('org.apache.cordova.pluginwithurl');
                 expect(plugin.spec).toEqual('http://cordova.apache.org/pluginwithurl');
             });
             it('Test 022 : should read plugin with version and store it in spec field', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.pluginwithversion');
+                const plugin = cfg.getPlugin('org.apache.cordova.pluginwithversion');
                 expect(plugin.spec).toEqual('1.1.1');
             });
             it('Test 023 : should read plugin with source and version and store source in spec field', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.pluginwithurlandversion');
+                const plugin = cfg.getPlugin('org.apache.cordova.pluginwithurlandversion');
                 expect(plugin.spec).toEqual('http://cordova.apache.org/pluginwithurlandversion');
             });
             it('Test 024 : should read plugin variables', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.pluginwithvars');
+                const plugin = cfg.getPlugin('org.apache.cordova.pluginwithvars');
                 expect(plugin.variables).toBeDefined();
                 expect(plugin.variables.var).toBeDefined();
                 expect(plugin.variables.var).toEqual('varvalue');
             });
             it('Test 025 : should allow adding a new plugin', function () {
                 cfg.addPlugin({ name: 'myplugin' });
-                var plugins = cfg.doc.findall('plugin');
-                var pluginNames = plugins.map(function (plugin) {
+                const plugins = cfg.doc.findall('plugin');
+                const pluginNames = plugins.map(function (plugin) {
                     return plugin.attrib.name;
                 });
                 expect(pluginNames).toContain('myplugin');
@@ -212,19 +212,19 @@ describe('config.xml parser', function () {
                 cfg.addPlugin({ name: 'aplugin' }, [{ name: 'paraname', value: 'paravalue' }]);
                 // Additional check for new parameters syntax
                 cfg.addPlugin({ name: 'bplugin' }, { paraname: 'paravalue' });
-                var plugins = cfg.doc.findall('plugin')
+                const plugins = cfg.doc.findall('plugin')
                     .filter(function (plugin) {
                         return plugin.attrib.name === 'aplugin' || plugin.attrib.name === 'bplugin';
                     });
                 expect(plugins.length).toBe(2);
                 plugins.forEach(function (plugin) {
-                    var variables = plugin.findall('variable');
+                    const variables = plugin.findall('variable');
                     expect(variables[0].attrib.name).toEqual('paraname');
                     expect(variables[0].attrib.value).toEqual('paravalue');
                 });
             });
             it('Test 027 : should be able to read legacy feature entries with a version', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureversion');
+                const plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureversion');
                 expect(plugin).toBeDefined();
                 expect(plugin.name).toEqual('org.apache.cordova.legacyfeatureversion');
                 expect(plugin.spec).toEqual('1.2.3');
@@ -232,60 +232,60 @@ describe('config.xml parser', function () {
                 expect(plugin.variables.aVar).toEqual('aValue');
             });
             it('Test 028 : should be able to read legacy feature entries with a url', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureurl');
+                const plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureurl');
                 expect(plugin).toBeDefined();
                 expect(plugin.name).toEqual('org.apache.cordova.legacyfeatureurl');
                 expect(plugin.spec).toEqual('http://cordova.apache.org/legacyfeatureurl');
             });
             it('Test 029 : should be able to read legacy feature entries with a version and a url', function () {
-                var plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureversionandurl');
+                const plugin = cfg.getPlugin('org.apache.cordova.legacyfeatureversionandurl');
                 expect(plugin).toBeDefined();
                 expect(plugin.name).toEqual('org.apache.cordova.legacyfeatureversionandurl');
                 expect(plugin.spec).toEqual('http://cordova.apache.org/legacyfeatureversionandurl');
             });
             it('Test 030 : it should remove given plugin', function () {
                 cfg.removePlugin('org.apache.cordova.justaplugin');
-                var plugins = cfg.doc.findall('plugin');
-                var pluginNames = plugins.map(function (plugin) {
+                const plugins = cfg.doc.findall('plugin');
+                const pluginNames = plugins.map(function (plugin) {
                     return plugin.attrib.name;
                 });
                 expect(pluginNames).not.toContain('org.apache.cordova.justaplugin');
             });
             it('Test 031 : it should remove given legacy feature id', function () {
                 cfg.removePlugin('org.apache.cordova.legacyplugin');
-                var plugins = cfg.doc.findall('feature');
-                var pluginNames = plugins.map(function (plugin) {
+                const plugins = cfg.doc.findall('feature');
+                const pluginNames = plugins.map(function (plugin) {
                     return plugin.attrib.name;
                 });
                 expect(pluginNames).not.toContain('org.apache.cordova.legacyplugin');
             });
             it('Test 032 : it should read <access> tag entries', function () {
-                var accesses = cfg.getAccesses();
+                const accesses = cfg.getAccesses();
                 expect(accesses.length).not.toEqual(0);
             });
             it('Test 033 : it should read <allow-navigation> tag entries', function () {
-                var navigations = cfg.getAllowNavigations();
+                const navigations = cfg.getAllowNavigations();
                 expect(navigations.length).not.toEqual(0);
             });
             it('Test 034 : it should read <allow-intent> tag entries', function () {
-                var intents = cfg.getAllowIntents();
+                const intents = cfg.getAllowIntents();
                 expect(intents.length).not.toEqual(0);
             });
             it('Test 035: it should read <edit-config> tag entries', function () {
-                var editConfigs = cfg.getEditConfigs('android');
+                const editConfigs = cfg.getEditConfigs('android');
                 expect(editConfigs.length).not.toEqual(0);
             });
             it('Test 036: it should read <config-file> tag entries', function () {
-                var configFiles = cfg.getConfigFiles('android');
+                const configFiles = cfg.getConfigFiles('android');
                 expect(configFiles.length).not.toEqual(0);
             });
         });
         describe('static resources', function () {
-            var hasPlatformPropertyDefined = function (e) { return !!e.platform; };
-            var hasSrcPropertyDefined = function (e) { return !!e.src; };
-            var hasTargetPropertyDefined = function (e) { return !!e.target; };
-            var hasDensityPropertyDefined = function (e) { return !!e.density; };
-            var hasPlatformPropertyUndefined = function (e) { return !e.platform; };
+            const hasPlatformPropertyDefined = function (e) { return !!e.platform; };
+            const hasSrcPropertyDefined = function (e) { return !!e.src; };
+            const hasTargetPropertyDefined = function (e) { return !!e.target; };
+            const hasDensityPropertyDefined = function (e) { return !!e.density; };
+            const hasPlatformPropertyUndefined = function (e) { return !e.platform; };
 
             it('Test 035 : should fetch shared resources if platform parameter is not specified', function () {
                 expect(cfg.getStaticResources(null, 'icon').length).toBe(2);
@@ -331,9 +331,9 @@ describe('config.xml parser', function () {
         });
 
         describe('file resources', function () {
-            var hasSrcPropertyDefined = function (e) { return !!e.src; };
-            var hasTargetPropertyDefined = function (e) { return !!e.target; };
-            var hasArchPropertyDefined = function (e) { return !!e.arch; };
+            const hasSrcPropertyDefined = function (e) { return !!e.src; };
+            const hasTargetPropertyDefined = function (e) { return !!e.target; };
+            const hasArchPropertyDefined = function (e) { return !!e.arch; };
 
             it('should fetch platform-specific resources', function () {
                 expect(cfg.getFileResources('android').length).toBe(2);

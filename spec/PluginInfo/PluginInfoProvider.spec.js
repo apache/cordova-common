@@ -17,16 +17,16 @@
     under the License.
 */
 
-var PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider');
-var path = require('path');
+const PluginInfoProvider = require('../../src/PluginInfo/PluginInfoProvider');
+const path = require('path');
 
-var pluginsDir = path.join(__dirname, '../fixtures/plugins');
+const pluginsDir = path.join(__dirname, '../fixtures/plugins');
 
 describe('PluginInfoProvider', function () {
     describe('getAllWithinSearchPath', function () {
         it('Test 001 : should load all plugins in a dir', function () {
-            var pluginInfoProvider = new PluginInfoProvider();
-            var plugins = pluginInfoProvider.getAllWithinSearchPath(pluginsDir);
+            const pluginInfoProvider = new PluginInfoProvider();
+            const plugins = pluginInfoProvider.getAllWithinSearchPath(pluginsDir);
             expect(plugins.length).not.toBe(0);
             expect(plugins).toContain(jasmine.objectContaining({
                 id: 'org.test.scoped',

@@ -17,10 +17,10 @@
     under the License.
 */
 
-var plistHelpers = require('../src/util/plist-helpers');
+const plistHelpers = require('../src/util/plist-helpers');
 
 describe('prunePLIST', function () {
-    var doc = {
+    const doc = {
         FirstConfigKey: {
             FirstPreferenceName: '*',
             SecondPreferenceName: 'a + b',
@@ -32,7 +32,7 @@ describe('prunePLIST', function () {
         }
     };
 
-    var xml = '<dict>' +
+    const xml = '<dict>' +
                 '<key>FirstPreferenceName</key>' +
                 '<string>*</string>' +
                 '<key>SecondPreferenceName</key>' +
@@ -41,10 +41,10 @@ describe('prunePLIST', function () {
                 '<string>x-msauth-$(CFBundleIdentifier:rfc1034identifier)</string>' +
               '</dict>';
 
-    var selector = 'FirstConfigKey';
+    const selector = 'FirstConfigKey';
 
     it('Test 01: should remove property from plist file using provided selector', () => {
-        var pruneStatus = plistHelpers.prunePLIST(doc, xml, selector);
+        const pruneStatus = plistHelpers.prunePLIST(doc, xml, selector);
 
         expect(pruneStatus).toBeTruthy();
         expect(doc).toEqual(
@@ -73,7 +73,7 @@ describe('plistGraft', function () {
     const selector = 'keychain-access-groups';
 
     it('Test 01: should not mangle existing plist entries', () => {
-        var graftStatus = plistHelpers.graftPLIST(doc, xml, selector);
+        const graftStatus = plistHelpers.graftPLIST(doc, xml, selector);
 
         expect(graftStatus).toBeTruthy();
         expect(doc).toEqual(

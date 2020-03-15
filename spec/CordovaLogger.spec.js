@@ -17,11 +17,11 @@
     under the License.
 */
 
-var CordovaError = require('../src/CordovaError');
-var CordovaLogger = require('../src/CordovaLogger');
-var EventEmitter = require('events').EventEmitter;
+const CordovaError = require('../src/CordovaError');
+const CordovaLogger = require('../src/CordovaLogger');
+const EventEmitter = require('events').EventEmitter;
 
-var DEFAULT_LEVELS = ['verbose', 'normal', 'warn', 'info', 'error', 'results'];
+const DEFAULT_LEVELS = ['verbose', 'normal', 'warn', 'info', 'error', 'results'];
 
 describe('CordovaLogger class', function () {
     it('Test 001 : should be constructable', function () {
@@ -30,7 +30,7 @@ describe('CordovaLogger class', function () {
 
     it('Test 002 : should expose default levels as constants', function () {
         DEFAULT_LEVELS.forEach(function (level) {
-            var constant = level.toUpperCase();
+            const constant = level.toUpperCase();
             expect(CordovaLogger[constant]).toBeDefined();
             expect(CordovaLogger[constant]).toBe(level);
         });
@@ -43,7 +43,7 @@ describe('CordovaLogger class', function () {
     });
 
     describe('instance', function () {
-        var logger;
+        let logger;
 
         beforeEach(function () {
             logger = new CordovaLogger();
@@ -71,7 +71,7 @@ describe('CordovaLogger class', function () {
             });
 
             it('Test 006 : should not add a shortcut method fi the property with the same name already exists', function () {
-                var logMethod = logger.log;
+                const logMethod = logger.log;
                 logger.addLevel('log', 500);
                 expect(logger.log).toBe(logMethod); // "log" method remains unchanged
             });
@@ -91,26 +91,26 @@ describe('CordovaLogger class', function () {
             });
 
             it('Test 009 : should attach corresponding listeners to supplied emitter', function () {
-                var eventNamesExclusions = {
+                const eventNamesExclusions = {
                     log: 'normal',
                     warning: 'warn'
                 };
 
-                var listenerSpy = jasmine.createSpy('listenerSpy')
+                const listenerSpy = jasmine.createSpy('listenerSpy')
                     .and.callFake(function (eventName) {
                         eventName = eventNamesExclusions[eventName] || eventName;
                         expect(logger.levels[eventName]).toBeDefined();
                     });
 
-                var emitter = new EventEmitter().on('newListener', listenerSpy);
+                const emitter = new EventEmitter().on('newListener', listenerSpy);
                 logger.subscribe(emitter);
             });
         });
 
         describe('log method', function () {
             function CursorSpy (name) {
-                var cursorMethods = ['reset', 'write'];
-                var spy = jasmine.createSpyObj(name, cursorMethods);
+                const cursorMethods = ['reset', 'write'];
+                const spy = jasmine.createSpyObj(name, cursorMethods);
 
                 // Make spy methods chainable, as original Cursor acts
                 cursorMethods.forEach(function (method) { spy[method].and.returnValue(spy); });
@@ -149,7 +149,7 @@ describe('CordovaLogger class', function () {
             });
 
             it('Test 013 : should handle CordovaError instances separately from Error ones', function () {
-                var errorMock = new CordovaError();
+                const errorMock = new CordovaError();
                 spyOn(errorMock, 'toString').and.returnValue('error_message');
 
                 logger.setLevel('verbose').log('verbose', errorMock);
@@ -160,7 +160,7 @@ describe('CordovaLogger class', function () {
 
         describe('adjustLevel method', function () {
             it('Test 014 : should properly adjust log level', function () {
-                var resetLogLevel = function () {
+                const resetLogLevel = function () {
                     logger.setLevel('normal');
                 };
 

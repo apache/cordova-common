@@ -16,23 +16,23 @@
     specific language governing permissions and limitations
     under the License.
 */
-var path = require('path');
-var ActionStack = require('../src/ActionStack');
-var android_one_project = path.join(__dirname, '..', 'projects', 'android_one');
+const path = require('path');
+const ActionStack = require('../src/ActionStack');
+const android_one_project = path.join(__dirname, '..', 'projects', 'android_one');
 
 describe('action-stack', function () {
-    var stack;
+    let stack;
     beforeEach(function () {
         stack = new ActionStack();
     });
     describe('processing of actions', function () {
         it('Test 001 : should process actions one at a time until all are done', function () {
-            var first_spy = jasmine.createSpy();
-            var first_args = [1];
-            var second_spy = jasmine.createSpy();
-            var second_args = [2];
-            var third_spy = jasmine.createSpy();
-            var third_args = [3];
+            const first_spy = jasmine.createSpy();
+            const first_args = [1];
+            const second_spy = jasmine.createSpy();
+            const second_args = [2];
+            const third_spy = jasmine.createSpy();
+            const third_args = [3];
             stack.push(stack.createAction(first_spy, first_args, function () {}, []));
             stack.push(stack.createAction(second_spy, second_args, function () {}, []));
             stack.push(stack.createAction(third_spy, third_args, function () {}, []));
@@ -43,17 +43,17 @@ describe('action-stack', function () {
         });
         it('Test 002 : should revert processed actions if an exception occurs', function () {
             spyOn(console, 'log');
-            var first_spy = jasmine.createSpy();
-            var first_args = [1];
-            var first_reverter = jasmine.createSpy();
-            var first_reverter_args = [true];
-            var process_err = new Error('process_err');
-            var second_spy = jasmine.createSpy().and.callFake(function () {
+            const first_spy = jasmine.createSpy();
+            const first_args = [1];
+            const first_reverter = jasmine.createSpy();
+            const first_reverter_args = [true];
+            const process_err = new Error('process_err');
+            const second_spy = jasmine.createSpy().and.callFake(function () {
                 throw process_err;
             });
-            var second_args = [2];
-            var third_spy = jasmine.createSpy();
-            var third_args = [3];
+            const second_args = [2];
+            const third_spy = jasmine.createSpy();
+            const third_args = [3];
             stack.push(stack.createAction(first_spy, first_args, first_reverter, first_reverter_args));
             stack.push(stack.createAction(second_spy, second_args, function () {}, []));
             stack.push(stack.createAction(third_spy, third_args, function () {}, []));
