@@ -19,7 +19,7 @@
 #
 -->
 
-[![Actions Status](https://github.com/apache/cordova-common/workflows/Node%20CI/badge.svg)](https://github.com/apache/cordova-common/actions)
+[![Node CI](https://github.com/apache/cordova-common/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions?query=branch%3Amaster)
 [![NPM](https://nodei.co/npm/cordova-common.png)](https://nodei.co/npm/cordova-common/)
 
 # cordova-common
