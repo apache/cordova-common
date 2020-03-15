@@ -17,11 +17,11 @@
     under the License.
 */
 
-var rewire = require('rewire');
-var PlatformJson = rewire('../src/PlatformJson');
-var ModuleMetadata = PlatformJson.__get__('ModuleMetadata');
+const rewire = require('rewire');
+const PlatformJson = rewire('../src/PlatformJson');
+const ModuleMetadata = PlatformJson.__get__('ModuleMetadata');
 
-var FAKE_MODULE = {
+const FAKE_MODULE = {
     name: 'fakeModule',
     src: 'www/fakeModule.js',
     clobbers: [{ target: 'window.fakeClobber' }],
@@ -35,8 +35,8 @@ describe('PlatformJson class', function () {
     });
 
     describe('instance', function () {
-        var platformJson;
-        var fakePlugin;
+        let platformJson;
+        let fakePlugin;
 
         beforeEach(function () {
             platformJson = new PlatformJson('/fake/path', 'android');
@@ -84,7 +84,7 @@ describe('PlatformJson class', function () {
             });
 
             it('Test 007 : should remove plugin modules from "root.modules" array based on file path', function () {
-                var pluginPaths = [
+                const pluginPaths = [
                     'plugins/fakeId/www/fakeModule.js',
                     'plugins/otherPlugin/www/module1.js',
                     'plugins/otherPlugin/www/module1.js'
@@ -92,7 +92,7 @@ describe('PlatformJson class', function () {
 
                 platformJson.root.modules = pluginPaths.map(function (p) { return { file: p }; });
                 platformJson.removePluginMetadata(fakePlugin);
-                var resultantPaths = platformJson.root.modules
+                const resultantPaths = platformJson.root.modules
                     .map(function (p) { return p.file; })
                     .filter(function (f) { return /fakeModule\.js$/.test(f); });
 
@@ -151,7 +151,7 @@ describe('PlatformJson class', function () {
 
 describe('ModuleMetadata class', function () {
     it('Test 010 : should be constructable', function () {
-        var meta;
+        let meta;
         expect(function () {
             meta = new ModuleMetadata('fakePlugin', { src: 'www/fakeModule.js' });
         }).not.toThrow();
@@ -170,14 +170,14 @@ describe('ModuleMetadata class', function () {
 
     it('Test 013 : should read "clobbers" property from module', function () {
         expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).clobbers).not.toBeDefined();
-        var metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
+        const metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
         expect(metadata.clobbers).toEqual(jasmine.any(Array));
         expect(metadata.clobbers[0]).toBe(FAKE_MODULE.clobbers[0].target);
     });
 
     it('Test 014 : should read "merges" property from module', function () {
         expect(new ModuleMetadata('fakePlugin', { name: 'fakeModule' }).merges).not.toBeDefined();
-        var metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
+        const metadata = new ModuleMetadata('fakePlugin', FAKE_MODULE);
         expect(metadata.merges).toEqual(jasmine.any(Array));
         expect(metadata.merges[0]).toBe(FAKE_MODULE.merges[0].target);
     });

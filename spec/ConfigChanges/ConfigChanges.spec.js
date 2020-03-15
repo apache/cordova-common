@@ -86,19 +86,19 @@ describe('config-changes module', function () {
     describe('queue methods', function () {
         describe('addInstalledPluginToPrepareQueue', function () {
             it('Test 001 : should append specified plugin to platform.json', function () {
-                var platformJson = new PlatformJson(null, 'android', null);
+                const platformJson = new PlatformJson(null, 'android', null);
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
 
-                var json = platformJson.root;
+                const json = platformJson.root;
                 expect(json.prepare_queue.installed[0].plugin).toEqual('org.test.plugins.dummyplugin');
                 expect(json.prepare_queue.installed[0].vars).toEqual({});
             });
 
             it('Test 002 : should append specified plugin with any variables to platform.json', function () {
-                var platformJson = new PlatformJson(null, 'android', null);
+                const platformJson = new PlatformJson(null, 'android', null);
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', { dude: 'man' });
 
-                var json = platformJson.root;
+                const json = platformJson.root;
                 expect(json.prepare_queue.installed[0].plugin).toEqual('org.test.plugins.dummyplugin');
                 expect(json.prepare_queue.installed[0].vars).toEqual({ dude: 'man' });
             });
@@ -106,10 +106,10 @@ describe('config-changes module', function () {
 
         describe('addUninstalledPluginToPrepareQueue', function () {
             it('Test 003 : should append specified plugin to platform.json', function () {
-                var platformJson = new PlatformJson(null, 'android', null);
+                const platformJson = new PlatformJson(null, 'android', null);
                 platformJson.addUninstalledPluginToPrepareQueue('org.test.plugins.dummyplugin');
 
-                var json = platformJson.root;
+                const json = platformJson.root;
                 expect(json.prepare_queue.uninstalled[0].plugin).toEqual('org.test.plugins.dummyplugin');
             });
         });
@@ -117,7 +117,7 @@ describe('config-changes module', function () {
 
     describe('load method', function () {
         it('Test 004 : should return an empty config json object if file doesn\'t exist', function () {
-            var platformJson = PlatformJson.load(plugins_dir, 'android');
+            const platformJson = PlatformJson.load(plugins_dir, 'android');
             expect(platformJson.root).toBeDefined();
             expect(platformJson.root.prepare_queue).toBeDefined();
             expect(platformJson.root.config_munge).toBeDefined();
@@ -125,8 +125,8 @@ describe('config-changes module', function () {
         });
 
         it('Test 005 : should return the json file if it exists', function () {
-            var filepath = path.join(plugins_dir, 'android.json');
-            var json = {
+            const filepath = path.join(plugins_dir, 'android.json');
+            const json = {
                 prepare_queue: { installed: [], uninstalled: [] },
                 config_munge: { files: { some_file: { parents: { some_parent: [{ xml: 'some_change', count: 1 }] } } } },
                 installed_plugins: {},
@@ -134,15 +134,15 @@ describe('config-changes module', function () {
             };
             fs.writeFileSync(filepath, JSON.stringify(json), 'utf-8');
 
-            var platformJson = PlatformJson.load(plugins_dir, 'android');
+            const platformJson = PlatformJson.load(plugins_dir, 'android');
             expect(JSON.stringify(json)).toEqual(JSON.stringify(platformJson.root));
         });
     });
 
     describe('save method', function () {
         it('Test 006 : should write out specified json', function () {
-            var filepath = path.join(plugins_dir, 'android.json');
-            var platformJson = new PlatformJson(filepath, 'android', { foo: true });
+            const filepath = path.join(plugins_dir, 'android.json');
+            const platformJson = new PlatformJson(filepath, 'android', { foo: true });
             platformJson.save();
             expect(JSON.parse(fs.readFileSync(filepath, 'utf-8'))).toEqual(platformJson.root);
         });
@@ -155,10 +155,10 @@ describe('config-changes module', function () {
             });
 
             it('Test 007 : should return a flat config hierarchy for simple, one-off config changes', function () {
-                var xml;
-                var dummy_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(dummyplugin, 'plugin.xml'), 'utf-8')));
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(dummyplugin), {});
+                let xml;
+                const dummy_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(dummyplugin, 'plugin.xml'), 'utf-8')));
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(dummyplugin), {});
                 expect(munge.files['AndroidManifest.xml']).toBeDefined();
                 expect(munge.files['AndroidManifest.xml'].parents['/manifest/application']).toBeDefined();
                 xml = (new et.ElementTree(dummy_xml.find('./platform[@name="android"]/config-file[@target="AndroidManifest.xml"]'))).write({ xml_declaration: false });
@@ -177,8 +177,8 @@ describe('config-changes module', function () {
             });
 
             it('Test 008 : should split out multiple children of config-file elements into individual leaves', function () {
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), { PACKAGE_NAME: 'com.alunny.childapp' });
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), { PACKAGE_NAME: 'com.alunny.childapp' });
                 expect(munge.files['AndroidManifest.xml']).toBeDefined();
                 expect(munge.files['AndroidManifest.xml'].parents['/manifest']).toBeDefined();
                 expect(get_munge_change(munge, 'AndroidManifest.xml', '/manifest', '<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />')).toBeDefined();
@@ -193,27 +193,27 @@ describe('config-changes module', function () {
             });
 
             it('Test 009 : should not use xml comments as config munge leaves', function () {
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), {});
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), {});
                 expect(get_munge_change(munge, 'AndroidManifest.xml', '/manifest', '<!--library-->')).not.toBeDefined();
                 expect(get_munge_change(munge, 'AndroidManifest.xml', '/manifest', '<!-- GCM connects to Google Services. -->')).not.toBeDefined();
             });
 
             it('Test 010 : should increment config hierarchy leaves if different config-file elements target the same file + selector + xml', function () {
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(configplugin), {});
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(configplugin), {});
                 expect(get_munge_change(munge, 'res/xml/config.xml', '/widget', '<poop />').count).toEqual(2);
             });
 
             it('Test 011 : should take into account interpolation variables', function () {
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), { PACKAGE_NAME: 'ca.filmaj.plugins' });
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(childrenplugin), { PACKAGE_NAME: 'ca.filmaj.plugins' });
                 expect(get_munge_change(munge, 'AndroidManifest.xml', '/manifest', '<uses-permission android:name="ca.filmaj.plugins.permission.C2D_MESSAGE" />')).toBeDefined();
             });
 
             it('Test 012 : should create munges for platform-agnostic config.xml changes', function () {
-                var munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
-                var munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(dummyplugin), {});
+                const munger = new configChanges.PlatformMunger('android', temp, 'unused', null, pluginInfoProvider);
+                const munge = munger.generate_plugin_config_munge(pluginInfoProvider.get(dummyplugin), {});
                 expect(get_munge_change(munge, 'config.xml', '/*', '<access origin="build.phonegap.com" />')).toBeDefined();
                 expect(get_munge_change(munge, 'config.xml', '/*', '<access origin="s3.amazonaws.com" />')).toBeDefined();
             });
@@ -227,10 +227,10 @@ describe('config-changes module', function () {
 
         it('Test 014 : should generate config munges for queued plugins', function () {
             fs.copySync(android_two_project, temp);
-            var platformJson = PlatformJson.load(plugins_dir, 'android');
+            const platformJson = PlatformJson.load(plugins_dir, 'android');
             platformJson.root.prepare_queue.installed = [{ plugin: 'org.test.plugins.dummyplugin', vars: {} }];
-            var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
-            var spy = spyOn(munger, 'generate_plugin_config_munge').and.returnValue({});
+            const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+            const spy = spyOn(munger, 'generate_plugin_config_munge').and.returnValue({});
             munger.process(plugins_dir);
             expect(spy).toHaveBeenCalledWith(jasmine.any(PluginInfo), {});
         });
@@ -242,12 +242,12 @@ describe('config-changes module', function () {
                 });
 
                 it('Test 015 : should call graftXML for every new config munge it introduces (every leaf in config munge that does not exist)', function () {
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.root.prepare_queue.installed = [{ plugin: 'org.test.plugins.dummyplugin', vars: {} }];
 
-                    var spy = spyOn(xml_helpers, 'graftXML').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXML').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(4);
                     expect(spy.calls.argsFor(0)[2]).toEqual('/*');
@@ -258,22 +258,22 @@ describe('config-changes module', function () {
 
                 it('Test 016 : should not call graftXML for a config munge that already exists from another plugin', function () {
                     install_plugin(configplugin);
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.configtest', {});
 
-                    var spy = spyOn(xml_helpers, 'graftXML').and.returnValue(true);
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const spy = spyOn(xml_helpers, 'graftXML').and.returnValue(true);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(1);
                 });
 
                 it('Test 017 : should not call graftXML for a config munge targeting a config file that does not exist', function () {
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
 
-                    var spy = spyOn(fs, 'readFileSync').and.callThrough();
+                    const spy = spyOn(fs, 'readFileSync').and.callThrough();
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy).not.toHaveBeenCalledWith(path.join(temp, 'res', 'xml', 'plugins.xml'), 'utf-8');
                 });
@@ -281,12 +281,12 @@ describe('config-changes module', function () {
                 it('Test 018 : should call graftXMLMerge for every new config munge with mode \'merge\' it introduces', function () {
                     install_plugin(editconfigplugin);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
 
-                    var spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(1);
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity[@android:name=\'org.test.DroidGap\']');
@@ -296,13 +296,13 @@ describe('config-changes module', function () {
                     install_plugin(editconfigplugin);
                     install_plugin(editconfigplugin_two);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
-                    var spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(3);
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity[@android:name=\'org.test.DroidGap\']');
@@ -313,12 +313,12 @@ describe('config-changes module', function () {
                 it('Test 020 : should call graftXMLOverwrite for every new config munge with mode \'overwrite\' it introduces', function () {
                     install_plugin(editconfigplugin);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
 
-                    var spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(1);
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity');
@@ -328,13 +328,13 @@ describe('config-changes module', function () {
                     install_plugin(editconfigplugin);
                     install_plugin(editconfigplugin_two);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
-                    var spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     expect(spy.calls.count()).toEqual(2);
                     expect(spy.calls.argsFor(0)[2]).toEqual('/manifest/application/activity');
@@ -345,20 +345,20 @@ describe('config-changes module', function () {
                     install_plugin(editconfigplugin);
                     install_plugin(editconfigplugin_two);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {});
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     expect(function () { munger.process(plugins_dir); }).toThrow(new Error('There was a conflict trying to modify attributes with <edit-config> in plugin org.test.editconfigtest_two. The conflicting plugin, org.test.editconfigtest, already modified the same attributes. The conflict must be resolved before org.test.editconfigtest_two can be added. You may use --force to add the plugin and overwrite the conflicting attributes.'));
                 });
 
                 it('should call graftXMLMerge for every new config.xml config munge with mode \'merge\' it introduces', function () {
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
 
-                    var spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLMerge').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson);
                     munger.add_config_changes(cfg, true);
 
                     expect(spy.calls.count()).toEqual(1);
@@ -366,11 +366,11 @@ describe('config-changes module', function () {
                 });
 
                 it('should call graftXMLOverwrite for every new config.xml config munge with mode \'overwrite\' it introduces', function () {
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
 
-                    var spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
+                    const spy = spyOn(xml_helpers, 'graftXMLOverwrite').and.returnValue(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson);
                     munger.add_config_changes(cfg, true);
 
                     expect(spy.calls.count()).toEqual(1);
@@ -378,15 +378,15 @@ describe('config-changes module', function () {
                 });
 
                 it('should call pruneXMLRemove for every new config.xml config munge with mode \'remove\' it introduces', function () {
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
 
                     // var spy = spyOn(xml_helpers, 'pruneXMLRemove').andReturn(true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson);
                     munger.add_config_changes(cfg, true).save_all();
 
-                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
-                    var sdk = am_xml.find('./uses-sdk');
+                    const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    const sdk = am_xml.find('./uses-sdk');
 
                     expect(sdk).toBeDefined();
                     expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
@@ -395,28 +395,28 @@ describe('config-changes module', function () {
                 it('should overwrite plugin config munge for every conflicting config.xml config munge', function () {
                     install_plugin(editconfigplugin_two);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.process(plugins_dir);
                     munger.add_config_changes(cfg, true).save_all();
 
-                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
-                    var sdk = am_xml.find('./uses-sdk');
+                    const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    const sdk = am_xml.find('./uses-sdk');
                     expect(sdk).toBeDefined();
                     expect(sdk.attrib['android:targetSdkVersion']).toEqual('24');
                 });
 
                 it('should overwrite config.xml config munge for every new config.xml config munge that has the same target', function () {
-                    var editconfig_cfg = new ConfigParser(editconfig_xml);
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const editconfig_cfg = new ConfigParser(editconfig_xml);
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.add_config_changes(cfg, true).save_all();
                     munger.add_config_changes(editconfig_cfg, true).save_all();
 
-                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
-                    var sdk = am_xml.find('./uses-sdk');
+                    const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    const sdk = am_xml.find('./uses-sdk');
                     expect(sdk).toBeDefined();
                     expect(sdk.attrib['android:targetSdkVersion']).toEqual('23');
                     expect(sdk.attrib['android:minSdkVersion']).toEqual('5');
@@ -424,33 +424,33 @@ describe('config-changes module', function () {
                 });
 
                 it('should append new children to XML document tree', function () {
-                    var configfile_cfg = new ConfigParser(configfile_xml);
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const configfile_cfg = new ConfigParser(configfile_xml);
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.add_config_changes(configfile_cfg, true).save_all();
-                    var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
-                    var activity = am_xml.find('./application/activity[@android:name="com.foo.Bar"]');
+                    const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                    const activity = am_xml.find('./application/activity[@android:name="com.foo.Bar"]');
                     expect(activity).toBeDefined();
                     expect(activity.attrib['android:label']).toEqual('@string/app_name');
                 });
 
                 // testing the "after" attribute of the <config-file> tag in config.xml
                 it('should append new children to XML document tree in the correct order', function () {
-                    var configfile_cfg = new ConfigParser(configfile_xml);
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const configfile_cfg = new ConfigParser(configfile_xml);
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.add_config_changes(configfile_cfg, true).save_all();
-                    var am_file = fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8');
+                    const am_file = fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8');
                     expect(am_file.indexOf('android:name="zoo"')).toBeLessThan(am_file.indexOf('android:name="com.foo.Bar"'));
                 });
 
                 it('should throw error for conflicting plugin config munge with config.xml config munge', function () {
                     install_plugin(editconfigplugin_two);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'android');
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
                     platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest_two', {}, true, true);
 
-                    var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                     munger.add_config_changes(cfg, true);
                     expect(function () { munger.process(plugins_dir); }).toThrow(new Error('org.test.editconfigtest_two cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.'));
                 });
@@ -461,7 +461,7 @@ describe('config-changes module', function () {
                     fs.copySync(ios_config_xml, temp);
                     install_plugin(varplugin);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                    const platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<key>APluginNode<\/key>\n\t<string\/>/m);
@@ -471,7 +471,7 @@ describe('config-changes module', function () {
                     fs.copySync(ios_config_xml, temp);
                     install_plugin(plistplugin);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                    const platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('org.apache.plist', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf-8')).toMatch(/<key>UINewsstandIcon<\/key>[\s\S]*<key>CFBundlePrimaryIcon<\/key>/);
@@ -485,10 +485,10 @@ describe('config-changes module', function () {
                     fs.copySync(ios_config_xml, temp);
                     install_plugin(bplistplugin);
 
-                    var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                    const platformJson = PlatformJson.load(plugins_dir, 'ios');
                     platformJson.addInstalledPluginToPrepareQueue('org.apache.bplist', {});
                     configChanges.process(plugins_dir, temp, 'ios', platformJson, pluginInfoProvider);
-                    var edited_plist = fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8');
+                    const edited_plist = fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8');
                     expect(edited_plist).toMatch(/<key>UINewsstandIcon<\/key>[\s\S]*<key>CFBundlePrimaryIcon<\/key>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8')).toMatch(/<string>schema-b<\/string>/);
                     expect(fs.readFileSync(path.join(temp, 'SampleApp', 'SampleApp-binary.plist'), 'utf-8')).not.toMatch(/(<string>schema-a<\/string>[^]*){2,}/);
@@ -499,11 +499,11 @@ describe('config-changes module', function () {
                 fs.copySync(ios_config_xml, temp);
                 install_plugin(cbplugin);
 
-                var platformJson = PlatformJson.load(plugins_dir, 'ios');
+                const platformJson = PlatformJson.load(plugins_dir, 'ios');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.childbrowser', {});
-                var spy = spyOn(fs, 'readFileSync').and.callThrough();
+                const spy = spyOn(fs, 'readFileSync').and.callThrough();
 
-                var munger = new configChanges.PlatformMunger('ios', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('ios', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
                 expect(spy).toHaveBeenCalledWith(path.join(temp, 'SampleApp', 'SampleApp-Info.plist'), 'utf8');
             });
@@ -512,10 +512,10 @@ describe('config-changes module', function () {
                 fs.copySync(android_two_project, temp);
                 install_plugin(varplugin);
 
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', { API_KEY: 'hi' }, true);
 
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 expect(platformJson.root.prepare_queue.installed.length).toEqual(0);
@@ -529,15 +529,15 @@ describe('config-changes module', function () {
                 fs.copySync(android_two_project, temp);
 
                 // Run through an "install"
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // Now set up an uninstall and make sure prunexml is called properly
                 platformJson.addUninstalledPluginToPrepareQueue('org.test.plugins.dummyplugin');
 
-                var spy = spyOn(xml_helpers, 'pruneXML').and.returnValue(true);
+                const spy = spyOn(xml_helpers, 'pruneXML').and.returnValue(true);
                 munger.process(plugins_dir);
                 expect(spy.calls.count()).toEqual(4);
                 expect(spy.calls.argsFor(0)[2]).toEqual('/*');
@@ -551,18 +551,18 @@ describe('config-changes module', function () {
                 install_plugin(varplugin);
 
                 // Run through an "install"
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', { API_KEY: 'canucks' });
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // Now set up an uninstall and make sure prunexml is called properly
                 platformJson.addUninstalledPluginToPrepareQueue('com.adobe.vars');
 
-                var spy = spyOn(munger, 'generate_plugin_config_munge').and.returnValue({});
+                const spy = spyOn(munger, 'generate_plugin_config_munge').and.returnValue({});
                 munger.process(plugins_dir);
 
-                var munge_params = spy.calls.argsFor(0);
+                const munge_params = spy.calls.argsFor(0);
                 expect(munge_params[0]).toEqual(jasmine.any(PluginInfo));
                 expect(munge_params[0].dir).toEqual(path.join(plugins_dir, 'com.adobe.vars'));
                 expect(munge_params[1].API_KEY).toEqual('canucks');
@@ -574,11 +574,11 @@ describe('config-changes module', function () {
                 install_plugin(shareddepsplugin);
 
                 // Run through and "install" two plugins (they share a permission for INTERNET)
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.multiple-children', {});
                 platformJson.addInstalledPluginToPrepareQueue('org.test.shareddeps', {});
 
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // Now set up an uninstall for multi-child plugin
@@ -586,8 +586,8 @@ describe('config-changes module', function () {
                 munger.process(plugins_dir);
                 munger.save_all();
 
-                var am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
-                var permission = am_xml.find('./uses-permission');
+                const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf-8')));
+                const permission = am_xml.find('./uses-permission');
                 expect(permission).toBeDefined();
                 expect(permission.attrib['android:name']).toEqual('android.permission.INTERNET');
             });
@@ -595,15 +595,15 @@ describe('config-changes module', function () {
             it('Test 030 : should not call pruneXML for a config munge targeting a config file that does not exist', function () {
                 fs.copySync(android_two_project, temp);
                 // install a plugin
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // set up an uninstall for the same plugin
                 platformJson.addUninstalledPluginToPrepareQueue('org.test.plugins.dummyplugin');
 
-                var spy = spyOn(fs, 'readFileSync').and.callThrough();
+                const spy = spyOn(fs, 'readFileSync').and.callThrough();
                 munger.process(plugins_dir);
 
                 expect(spy).not.toHaveBeenCalledWith(path.join(temp, 'res', 'xml', 'plugins.xml'), 'utf-8');
@@ -614,9 +614,9 @@ describe('config-changes module', function () {
                 install_plugin(varplugin);
 
                 // install the var plugin
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('com.adobe.vars', { API_KEY: 'eat my shorts' });
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // queue up an uninstall for the same plugin
@@ -632,16 +632,16 @@ describe('config-changes module', function () {
                 install_plugin(editconfigplugin);
 
                 // Run through an "install"
-                var platformJson = PlatformJson.load(plugins_dir, 'android');
+                const platformJson = PlatformJson.load(plugins_dir, 'android');
                 platformJson.addInstalledPluginToPrepareQueue('org.test.editconfigtest', {});
 
-                var munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
                 munger.process(plugins_dir);
 
                 // Now set up an uninstall and make sure pruneXMLMerge is called properly
                 platformJson.addUninstalledPluginToPrepareQueue('org.test.editconfigtest');
 
-                var spy = spyOn(xml_helpers, 'pruneXMLRestore').and.returnValue(true);
+                const spy = spyOn(xml_helpers, 'pruneXMLRestore').and.returnValue(true);
                 munger.process(plugins_dir);
 
                 expect(spy.calls.count()).toEqual(2);

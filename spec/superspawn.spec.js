@@ -17,13 +17,13 @@
     under the License.
 */
 
-var path = require('path');
-var superspawn = require('../src/superspawn');
+const path = require('path');
+const superspawn = require('../src/superspawn');
 
-var LS = process.platform === 'win32' ? 'dir' : 'ls';
+const LS = process.platform === 'win32' ? 'dir' : 'ls';
 
 describe('spawn method', function () {
-    var progressSpy;
+    let progressSpy;
 
     beforeEach(function () {
         progressSpy = jasmine.createSpy('progress');
@@ -56,7 +56,7 @@ describe('spawn method', function () {
     });
 
     it('Test 004 : reject handler should pass in Error object with stdout and stderr properties', () => {
-        var cp = require('child_process');
+        const cp = require('child_process');
         spyOn(cp, 'spawn').and.callFake(() => {
             return {
                 stdout: {
