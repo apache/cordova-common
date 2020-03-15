@@ -101,6 +101,21 @@ describe('ConfigFile tests', function () {
                 var configPath = path.join('project_dir', 'app', 'src', 'main', file, 'xml');
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', file)).toBe(configPath);
             });
+
+            it('should return *-Info.plist file', function () {
+                const projName = 'XXX';
+                const expectedPlistPath = `${projName}-Info.plist`;
+
+                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(require('glob'), 'sync').and.returnValue([
+                    `AAA/${projName}-Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
+                    expectedPlistPath
+                ]);
+
+                expect(ConfigFile.resolveConfigFilePath('', 'ios', '*-Info.plist')).toBe(expectedPlistPath);
+            });
         });
     });
 });
