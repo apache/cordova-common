@@ -30,7 +30,7 @@ Exposes shared functionality used by [cordova-lib](https://github.com/apache/cor
 
 ### `events`
 
-Represents special instance of NodeJS `EventEmitter` which is intended to be used to post events to **cordova-lib** and **cordova-cli**
+Represents special instance of NodeJS `EventEmitter` which is intended to be used to post events to `cordova-lib` and `cordova-cli`
 
 Usage:
 
@@ -39,7 +39,7 @@ const { events } = require('cordova-common');
 events.emit('warn', 'Some warning message')
 ```
 
-Here are the following supported events by **cordova-cli**:
+Here are the following supported events by `cordova-cli`:
 
 * `verbose`
 * `log`
@@ -62,7 +62,7 @@ See [CordovaError](src/CordovaError/CordovaError.js) for supported error codes.
 
 ### `ConfigParser`
 
-Exposes functionality to deal with cordova project **config.xml** files. For `ConfigParser` API reference check [ConfigParser Readme](src/ConfigParser/README.md).
+Exposes functionality to deal with cordova project `config.xml` files. For `ConfigParser` API reference check [ConfigParser Readme](src/ConfigParser/README.md).
 
 Usage:
 
@@ -74,7 +74,7 @@ console.log(`${appconfig.name()}:${appConfig.version()}`);
 
 ### `PluginInfoProvider` and `PluginInfo`
 
-`PluginInfo` is a wrapper for cordova plugins' **plugin.xml** files. This class may be instantiated directly or via `PluginInfoProvider`. The difference is that `PluginInfoProvider` caches `PluginInfo` instances based on plugin source directory.
+`PluginInfo` is a wrapper for cordova plugins' `plugin.xml` files. This class may be instantiated directly or via `PluginInfoProvider`. The difference is that `PluginInfoProvider` caches `PluginInfo` instances based on plugin source directory.
 
 Usage:
 
@@ -90,7 +90,7 @@ console.log(`The plugin ${plugin1.id} has version ${plugin1.version}`)
 
 ### `ActionStack`
 
-Utility module for dealing with sequential tasks. Provides a set of tasks that are needed to be done and reverts all tasks that are already completed if one of those tasks fail to complete. Used internally by **cordova-lib** and platform's plugin installation routines.
+Utility module for dealing with sequential tasks. Provides a set of tasks that are needed to be done and reverts all tasks that are already completed if one of those tasks fail to complete. Used internally by `cordova-lib` and platform's plugin installation routines.
 
 Usage:
 
@@ -158,8 +158,19 @@ The APIs listed below are also exposed but are intended to be only used internal
 ## Setup
 
 * Clone this repository onto your local machine
-    `git clone https://github.com/apache/cordova-common.git`
+
+    ```bash
+    git clone https://github.com/apache/cordova-common.git
+    ```
+
 * Navigate to cordova-common directory, install dependencies and npm-link
-    `cd cordova-common && npm install && npm link`
+
+    ```bash
+    cd cordova-common && npm install && npm link
+    ```
+
 * Navigate to cordova-lib directory and link cordova-common
-    `cd <cordova-lib directory> && npm link cordova-common && npm install`
+
+    ```bash
+    cd <cordova-lib directory> && npm link cordova-common && npm install
+    ```
