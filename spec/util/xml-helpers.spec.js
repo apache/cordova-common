@@ -18,10 +18,8 @@
 */
 
 var path = require('path');
-
-var xml_helpers = require('../../src/util/xml-helpers');
-
 var et = require('elementtree');
+var xml_helpers = require('../../src/util/xml-helpers');
 
 var title = et.XML('<title>HELLO</title>');
 var usesNetworkOne = et.XML(`<uses-permission

@@ -19,9 +19,9 @@
 
 var path = require('path');
 var rewire = require('rewire');
+const { Stats } = require('@nodelib/fs.macchiato');
 
 var FileUpdater = rewire('../src/FileUpdater');
-const { Stats } = require('@nodelib/fs.macchiato');
 
 // Normally these are internal to the module; these lines use rewire to expose them for testing.
 FileUpdater.mapDirectory = FileUpdater.__get__('mapDirectory');

@@ -19,7 +19,6 @@
 
 var CordovaError = require('../src/CordovaError');
 var CordovaLogger = require('../src/CordovaLogger');
-
 var EventEmitter = require('events').EventEmitter;
 
 var DEFAULT_LEVELS = ['verbose', 'normal', 'warn', 'info', 'error', 'results'];
