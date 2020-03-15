@@ -18,7 +18,7 @@
 # under the License.
 #
 -->
-# Cordova-common Release Notes
+# cordova-common Release Notes
 
 ### 3.2.1 (Oct 28, 2019)
 
