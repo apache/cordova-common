@@ -35,7 +35,7 @@ Represents special instance of NodeJS EventEmitter which is intended to be used 
 Usage:
 
 ```js
-var events = require('cordova-common').events;
+const { events } = require('cordova-common');
 events.emit('warn', 'Some warning message')
 ```
 
@@ -48,7 +48,7 @@ An error class used by Cordova to throw cordova-specific errors. The CordovaErro
 Usage:
 
 ```js
-var CordovaError = require('cordova-common').CordovaError;
+const { CordovaError } = require('cordova-common');
 throw new CordovaError('Some error message', SOME_ERR_CODE);
 ```
 
@@ -61,9 +61,9 @@ Exposes functionality to deal with cordova project `config.xml` files. For Confi
 Usage:
 
 ```js
-var ConfigParser = require('cordova-common').ConfigParser;
-var appConfig = new ConfigParser('path/to/cordova-app/config.xml');
-console.log(appconfig.name() + ':' + appConfig.version());
+const { ConfigParser } = require('cordova-common');
+const appConfig = new ConfigParser('path/to/cordova-app/config.xml');
+console.log(`${appconfig.name()}:${appConfig.version()}`);
 ```
 
 ### `PluginInfoProvider` and `PluginInfo`
@@ -73,14 +73,13 @@ console.log(appconfig.name() + ':' + appConfig.version());
 Usage:
 
 ```js
-var PluginInfo: require('cordova-common').PluginInfo;
-var PluginInfoProvider: require('cordova-common').PluginInfoProvider;
+const { PluginInfo, PluginInfoProvider }  = require('cordova-common');
 
 // The following instances are equal
-var plugin1 = new PluginInfo('path/to/plugin_directory');
-var plugin2 = new PluginInfoProvider().get('path/to/plugin_directory');
+const plugin1 = new PluginInfo('path/to/plugin_directory');
+const plugin2 = new PluginInfoProvider().get('path/to/plugin_directory');
 
-console.log('The plugin ' + plugin1.id + ' has version ' + plugin1.version)
+console.log(`The plugin ${plugin1.id} has version ${plugin1.version}`)
 ```
 
 ### `ActionStack`
@@ -90,22 +89,22 @@ Utility module for dealing with sequential tasks. Provides a set of tasks that a
 Usage:
 
 ```js
-var ActionStack = require('cordova-common').ActionStack;
-var stack = new ActionStack()
+const { ActionStack } = require('cordova-common');
 
-var action1 = stack.createAction(task1, [<task parameters>], task1_reverter, [<reverter_parameters>]);
-var action2 = stack.createAction(task2, [<task parameters>], task2_reverter, [<reverter_parameters>]);
+const stack = new ActionStack();
+const action1 = stack.createAction(task1, [<task parameters>], task1_reverter, [<reverter_parameters>]);
+const action2 = stack.createAction(task2, [<task parameters>], task2_reverter, [<reverter_parameters>]);
 
 stack.push(action1);
 stack.push(action2);
 
 stack.process()
-.then(function() {
-    // all actions succeded
-})
-.catch(function(error){
-    // One of actions failed with error
-})
+    .then(() => {
+        // all actions succeded
+    })
+    .catch(error => {
+        // One of actions failed with error
+    });
 ```
 
 ### `superspawn`
@@ -115,15 +114,15 @@ Module for spawning child processes with some advanced logic.
 Usage:
 
 ```js
-var superspawn = require('cordova-common').superspawn;
+const { superspawn } = require('cordova-common');
+
 superspawn.spawn('adb', ['devices'])
-.progress(function(data){
-    if (data.stderr)
-        console.error('"adb devices" raised an error: ' + data.stderr);
-})
-.then(function(devices){
-    // Do something...
-})
+    .progress(data => {
+        if (data.stderr) console.error(`"adb devices" raised an error: ${data.stderr}`);
+    })
+    .then(devices => {
+        // Do something...
+    });
 ```
 
 ### `xmlHelpers`
@@ -133,12 +132,12 @@ A set of utility methods for dealing with XML files.
 Usage:
 
 ```js
-var xml = require('cordova-common').xmlHelpers;
+const { xmlHelpers } = require('cordova-common');
 
-var xmlDoc1 = xml.parseElementtreeSync('some/xml/file');
-var xmlDoc2 = xml.parseElementtreeSync('another/xml/file');
+const doc1 = xmlHelpers.parseElementtreeSync('some/xml/file');
+const doc2 = xmlHelpers.parseElementtreeSync('another/xml/file');
 
-xml.mergeXml(doc1, doc2); // doc2 now contains all the nodes from doc1
+xmlHelpers.mergeXml(doc1, doc2); // doc2 now contains all the nodes from doc1
 ```
 
 ### Other APIs
