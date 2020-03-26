@@ -314,12 +314,14 @@ function mergePathMaps (sourceMaps, targetMap, targetDir) {
 
     const allKeys = [].concat(Object.keys(sourceMap), Object.keys(targetMap));
     const pathMap = allKeys.reduce((acc, subPath) => (
-        Object.assign(acc, { [subPath]: {
-            targetPath: path.join(targetDir, subPath),
-            targetStats: null,
-            sourcePath: null,
-            sourceStats: null
-        } })
+        Object.assign(acc, {
+            [subPath]: {
+                targetPath: path.join(targetDir, subPath),
+                targetStats: null,
+                sourcePath: null,
+                sourceStats: null
+            }
+        })
     ), {});
 
     Object.entries(sourceMap).forEach(([subPath, { subDir, stats }]) => {
