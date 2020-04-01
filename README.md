@@ -19,10 +19,11 @@
 #
 -->
 
-[![Node CI](https://github.com/apache/cordova-common/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions?query=branch%3Amaster)
+# cordova-common
+
 [![NPM](https://nodei.co/npm/cordova-common.png)](https://nodei.co/npm/cordova-common/)
 
-# cordova-common
+[![Node CI](https://github.com/apache/cordova-common/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions?query=branch%3Amaster)
 
 Exposes shared functionality used by [cordova-lib](https://github.com/apache/cordova-lib/) and Cordova platforms.
 
