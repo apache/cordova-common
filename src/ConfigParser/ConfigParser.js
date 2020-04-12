@@ -201,7 +201,7 @@ class ConfigParser {
         const commonResources = this.doc.findall(resourceName)
             .map(elt => new ImageResource(normalizedAttrs(elt)));
 
-        return new ImageResources(...platformResources, ...commonResources);
+        return ImageResources.create(...platformResources, ...commonResources);
     }
 
     /**
@@ -580,13 +580,22 @@ class FileResource extends BaseResource {
 }
 
 class ImageResources extends Array {
-    constructor (...args) {
-        super(...args);
-
-        // The spread is necessary to avoid infinite recursion
-        this.defaultResource = [...this].filter(res =>
+    /**
+     * Creates an ImageResources instance with defaultResource property.
+     *
+     * It is easy to break native Array methods like `map` when carelessly
+     * overriding the array constructor, so it's safer to use this factory
+     * function for our needs instead.
+     *
+     * @param {...ImageResource} args - The entries of this array
+     * @return {ImageResources} An ImageResources instance with args as entries
+     */
+    static create (...args) {
+        const defaultResource = args.filter(res =>
             !res.width && !res.height && !res.density
         ).pop();
+
+        return Object.assign(new ImageResources(...args), { defaultResource });
     }
 
     /**
