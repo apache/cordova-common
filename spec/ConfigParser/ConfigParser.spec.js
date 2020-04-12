@@ -328,6 +328,12 @@ describe('config.xml parser', function () {
                 expect(cfg.getStaticResources('android', 'icon').getByDensity('mdpi')).toBeDefined();
                 expect(cfg.getStaticResources('android', 'icon').getByDensity('mdpi').src).toBe('logo-android.png');
             });
+
+            it('Test 042 : should return an array that has a working map method', function () {
+                expect(() =>
+                    cfg.getStaticResources(null, 'icon').map(x => x)
+                ).not.toThrow();
+            });
         });
 
         describe('file resources', function () {
