@@ -426,7 +426,7 @@ class ConfigParser {
             allows_arbitrary_loads_in_web_content: element.get('allows-arbitrary-loads-in-web-content'),
             allows_arbitrary_loads_in_media: element.get('allows-arbitrary-loads-in-media'),
             allows_arbitrary_loads_for_media: element.get('allows-arbitrary-loads-for-media'),
-            allows_local_networkin: element.get('allows-local-networking')
+            allows_local_networking: element.get('allows-local-networking')
         }));
     }
 
@@ -441,7 +441,7 @@ class ConfigParser {
             href: element.attrib.href,
             minimum_tls_version: element.get('minimum-tls-version'),
             requires_forward_secrecy: element.get('requires-forward-secrecy'),
-            requires_certificate_transparenc: element.get('requires-certificate-transparency')
+            requires_certificate_transparency: element.get('requires-certificate-transparency')
         }));
     }
 
