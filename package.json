@@ -4,14 +4,8 @@
   "description": "Apache Cordova tools and platforms shared routines",
   "license": "Apache-2.0",
   "version": "4.0.1-dev",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/apache/cordova-common"
-  },
-  "bugs": {
-    "url": "https://issues.apache.org/jira/browse/CB",
-    "email": "dev@cordova.apache.org"
-  },
+  "repository": "github:apache/cordova-common",
+  "bugs": "https://github.com/apache/cordova-common/issues",
   "main": "cordova-common.js",
   "engines": {
     "node": ">=10.0.0"
@@ -46,7 +40,6 @@
     "nyc": "^15.0.0",
     "rewire": "^5.0.0"
   },
-  "contributors": [],
   "nyc": {
     "all": true,
     "exclude": [
