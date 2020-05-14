@@ -20,6 +20,12 @@
 -->
 # cordova-common Release Notes
 
+### 4.0.1 (May 14, 2020)
+
+* [GH-141](https://github.com/apache/cordova-common/pull/141) chore: apply random missing minor changes
+* [GH-143](https://github.com/apache/cordova-common/pull/143) fix: typo in access & allow navigation
+* [GH-142](https://github.com/apache/cordova-common/pull/142) fix(`ConfigParser`): `ImageResources` constructor
+
 ### 4.0.0 (Mar 26, 2020)
 
 * [GH-140](https://github.com/apache/cordova-common/pull/140) breaking: bump all dependencies to latest
