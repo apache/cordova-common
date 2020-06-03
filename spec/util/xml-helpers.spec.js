@@ -53,7 +53,7 @@ const TEST_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
 describe('xml-helpers', function () {
     describe('parseElementtreeSync', function () {
         it('Test 001 : should parse xml with a byte order mark', function () {
-            const xml_path = path.join(__dirname, '../fixtures/projects/windows/bom_test.xml');
+            const xml_path = path.join(__dirname, '../fixtures/projects/windows-bom-test.xml');
             expect(function () {
                 xml_helpers.parseElementtreeSync(xml_path);
             }).not.toThrow();
