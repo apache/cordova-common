@@ -174,8 +174,9 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
         // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
-            const plistName = `${getIOSProjectname(project_dir)}-Info.plist`;
-            const plistPath = path.join(project_dir, plistName);
+            const projName = getIOSProjectname(project_dir);
+            const plistName = `${projName}-Info.plist`;
+            const plistPath = path.join(project_dir, projName, plistName);
             if (matches.includes(plistPath)) return plistPath;
         }
         return filepath;
