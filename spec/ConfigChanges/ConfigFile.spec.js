@@ -104,7 +104,7 @@ describe('ConfigFile tests', function () {
 
             it('should return *-Info.plist file', function () {
                 const projName = 'XXX';
-                const expectedPlistPath = `${projName}-Info.plist`;
+                const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
                 ConfigFile.__set__('getIOSProjectname', () => projName);
                 spyOn(require('glob'), 'sync').and.returnValue([
