@@ -20,6 +20,13 @@
 -->
 # cordova-common Release Notes
 
+### 4.0.2 (Jul 01, 2020)
+
+* [GH-144](https://github.com/apache/cordova-common/pull/144) fix(ios): resolve correct path to app info `plist` when multiple `plist` files are present
+* [GH-147](https://github.com/apache/cordova-common/pull/147) chore: remove trailing whitespace
+* [GH-146](https://github.com/apache/cordova-common/pull/146) chore: bump `devDependencies` `nyc` -> `^15.1.0`
+* [GH-145](https://github.com/apache/cordova-common/pull/145) test: remove unused test fixtures
+
 ### 4.0.1 (May 14, 2020)
 
 * [GH-141](https://github.com/apache/cordova-common/pull/141) chore: apply random missing minor changes
