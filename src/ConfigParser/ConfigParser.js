@@ -24,6 +24,8 @@ const fs = require('fs-extra');
 const events = require('../events');
 
 const CDV_XMLNS_URI = 'http://cordova.apache.org/ns/1.0';
+// eslint-disable-next-line no-template-curly-in-string
+const CDV_ENV_VAR_REG_EXP = new RegExp('(\\${(.*?)})', 'g');
 
 /** Wraps a config.xml file */
 class ConfigParser {
@@ -46,7 +48,8 @@ class ConfigParser {
     }
 
     getAttribute (attr) {
-        return this.doc.getroot().attrib[attr];
+        var value = this.doc.getroot().attrib[attr];
+        return _tryToFillWithEnvVar(value);
     }
 
     packageName () {
@@ -78,7 +81,7 @@ class ConfigParser {
     }
 
     shortName () {
-        return this.doc.find('name').attrib.short || this.name();
+        return _tryToFillWithEnvVar(this.doc.find('name').attrib.short || this.name());
     }
 
     setShortName (shortname) {
@@ -120,7 +123,7 @@ class ConfigParser {
     }
 
     getGlobalPreference (name) {
-        return this._getPrefElem(name).attrib.value;
+        return _tryToFillWithEnvVar(this._getPrefElem(name).attrib.value);
     }
 
     setGlobalPreference (name, value) {
@@ -128,7 +131,7 @@ class ConfigParser {
     }
 
     getPlatformPreference (name, platform) {
-        return this._getPrefElem(name, { platform }).attrib.value;
+        return _tryToFillWithEnvVar(this._getPrefElem(name, { platform }).attrib.value);
     }
 
     setPlatformPreference (name, platform, value) {
@@ -492,7 +495,17 @@ class ConfigParser {
 }
 
 function getNodeTextSafe (el) {
-    return el && el.text && el.text.trim();
+    return _tryToFillWithEnvVar(el && el.text && el.text.trim());
+}
+
+function _tryToFillWithEnvVar (source) {
+    let str = source;
+    let searched;
+    while ((searched = CDV_ENV_VAR_REG_EXP.exec(source)) != null) {
+        str = str.replace(searched[1], process.env[searched[2]]);
+    }
+
+    return str;
 }
 
 function findOrCreate (doc, name) {
