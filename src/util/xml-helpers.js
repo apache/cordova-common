@@ -128,7 +128,13 @@ module.exports = {
     },
 
     resolveParent: function (doc, selector) {
-        if (!selector.startsWith('/')) return doc.find(selector);
+        if (!selector.startsWith('/')) {
+            try {
+                return doc.find(selector);
+            } catch(error) {
+                return doc[selector];
+            }
+        }
 
         // elementtree does not implement absolute selectors so we build an
         // extended tree where we can use an equivalent relative selector
