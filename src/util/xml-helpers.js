@@ -131,7 +131,7 @@ module.exports = {
         if (!selector.startsWith('/')) {
             try {
                 return doc.find(selector);
-            } catch(error) {
+            } catch (error) {
                 return doc[selector];
             }
         }
