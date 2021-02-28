@@ -311,13 +311,18 @@ class PlatformMunger {
 
                 // Check if the edit target will resolve to an existing target
                 if (!target || target.length === 0) {
-                    const file_xml = this.config_keeper.get(this.project_dir, this.platform, editchange.file).data;
-                    const resolveEditTarget = xml_helpers.resolveParent(file_xml, editchange.target);
-                    let resolveTarget;
+                    const targetFile = this.config_keeper.get(this.project_dir, this.platform, editchange.file);
 
+                    // For non-XML files (e.g. plist), the selector in editchange.target uniquely identifies its target.
+                    // Thus we already know that we have no conflict if we are not dealing with an XML file here.
+                    if (targetFile.type !== 'xml') return;
+
+                    // For XML files, the selector does NOT uniquely identify its target. So we resolve editchange.target
+                    // and any existing selectors to their matched elements and compare those for equality.
+                    const resolveEditTarget = xml_helpers.resolveParent(targetFile.data, editchange.target);
                     if (resolveEditTarget) {
                         for (const parent in parents) {
-                            resolveTarget = xml_helpers.resolveParent(file_xml, parent);
+                            const resolveTarget = xml_helpers.resolveParent(targetFile.data, parent);
                             if (resolveEditTarget === resolveTarget) {
                                 conflictingParent = parent;
                                 target = parents[parent];
