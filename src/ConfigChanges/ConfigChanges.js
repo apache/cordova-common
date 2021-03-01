@@ -67,13 +67,13 @@ class PlatformMunger {
     // The remove parameter tells whether to add the change or remove it.
     apply_file_munge (file, munge, remove) {
         for (const selector in munge.parents) {
-            for (const xml_child in munge.parents[selector]) {
+            for (const mungeElem of munge.parents[selector]) {
                 // this xml child is new, graft it (only if config file exists)
                 const config_file = this.config_keeper.get(this.project_dir, this.platform, file);
 
                 if (config_file.exists) {
                     const operation = remove ? 'prune_child' : 'graft_child';
-                    config_file[operation](selector, munge.parents[selector][xml_child]);
+                    config_file[operation](selector, mungeElem);
                 } else {
                     events.emit('warn', `config file ${file} requested for changes not found at ${config_file.filepath}, ignoring`);
                 }
