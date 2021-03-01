@@ -47,7 +47,7 @@ module.exports = {
     equalNodes (one, two) {
         return one.tag === two.tag &&
             one.len() === two.len() &&
-            one.text.trim() === two.text.trim() &&
+            String(one.text).trim() === String(two.text).trim() &&
             attribMatch(one, two) &&
             _.zip(one.getchildren(), two.getchildren())
                 .every(([c1, c2]) => module.exports.equalNodes(c1, c2));
@@ -233,7 +233,7 @@ function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
  * @return {et.Element | undefined}
  */
 function findChild (node, parent) {
-    const matches = parent.findall(node.tag);
+    const matches = parent.findall(String(node.tag));
     return matches.find(m => module.exports.equalNodes(node, m));
 }
 
@@ -267,7 +267,7 @@ const SINGLETONS = ['content', 'author', 'name'];
  */
 function mergeXml (src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
-    if (BLACKLIST.includes(src.tag)) return;
+    if (BLACKLIST.includes(String(src.tag))) return;
 
     // Handle attributes
     const omitAttrs = new Set(clobber ? [] : dest.keys());
@@ -293,7 +293,7 @@ function mergeXml (src, dest, platform, clobber) {
 
     /** @param {et.Element} srcChild */
     function mergeChild (srcChild) {
-        const srcTag = srcChild.tag;
+        const srcTag = String(srcChild.tag);
         const query = srcTag + '';
         let destChild;
         let shouldMerge = true;
@@ -313,7 +313,7 @@ function mergeXml (src, dest, platform, clobber) {
         if (destChild) {
             dest.remove(destChild);
         } else {
-            destChild = new et.Element(srcTag);
+            destChild = et.Element(srcTag);
         }
         mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
         dest.append(destChild);
@@ -348,7 +348,7 @@ module.exports.mergeXml = mergeXml;
  */
 function textMatch (elm1, elm2) {
     /** @param {et.ElementText | null} text */
-    const format = text => text ? text.replace(/\s+/, '') : '';
+    const format = text => text ? String(text).replace(/\s+/, '') : '';
     const text1 = format(elm1.text);
     const text2 = format(elm2.text);
     return (text1 === '' || text1 === text2);
