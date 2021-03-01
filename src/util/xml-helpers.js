@@ -30,7 +30,7 @@ const stripBom = require('strip-bom');
 module.exports = {
     // compare two et.XML nodes, see if they match
     // compares tagName, text, attributes and children (recursively)
-    equalNodes: function (one, two) {
+    equalNodes (one, two) {
         return one.tag === two.tag &&
             one.len() === two.len() &&
             one.text.trim() === two.text.trim() &&
@@ -40,7 +40,7 @@ module.exports = {
     },
 
     // adds node to doc at selector, creating parent if it doesn't exist
-    graftXML: function (doc, nodes, selector, after) {
+    graftXML (doc, nodes, selector, after) {
         let parent = module.exports.resolveParent(doc, selector);
 
         if (!parent) {
@@ -75,18 +75,18 @@ module.exports = {
 
     // adds new attributes to doc at selector
     // Will only merge if attribute has not been modified already or --force is used
-    graftXMLMerge: function (doc, nodes, selector, xml) {
+    graftXMLMerge (doc, nodes, selector, xml) {
         return graftXMLAttrs(doc, nodes, selector, xml);
     },
 
     // overwrite all attributes to doc at selector with new attributes
     // Will only overwrite if attribute has not been modified already or --force is used
-    graftXMLOverwrite: function (doc, nodes, selector, xml) {
+    graftXMLOverwrite (doc, nodes, selector, xml) {
         return graftXMLAttrs(doc, nodes, selector, xml, { overwrite: true });
     },
 
     // removes node from doc at selector
-    pruneXML: function (doc, nodes, selector) {
+    pruneXML (doc, nodes, selector) {
         const parent = module.exports.resolveParent(doc, selector);
         if (!parent) return false;
 
@@ -99,7 +99,7 @@ module.exports = {
     },
 
     // restores attributes from doc at selector
-    pruneXMLRestore: function (doc, selector, xml) {
+    pruneXMLRestore (doc, selector, xml) {
         const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
@@ -110,7 +110,7 @@ module.exports = {
         return true;
     },
 
-    pruneXMLRemove: function (doc, selector, nodes) {
+    pruneXMLRemove (doc, selector, nodes) {
         const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
@@ -123,11 +123,11 @@ module.exports = {
         return true;
     },
 
-    parseElementtreeSync: function (filename) {
+    parseElementtreeSync (filename) {
         return et.parse(stripBom(fs.readFileSync(filename, 'utf-8')));
     },
 
-    resolveParent: function (doc, selector) {
+    resolveParent (doc, selector) {
         if (!selector.startsWith('/')) return doc.find(selector);
 
         // elementtree does not implement absolute selectors so we build an
