@@ -101,11 +101,9 @@ class PlatformMunger {
     }
 
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
-        const platform_config = this.platformJson.root;
-
         const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
-        const isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
+        const isConflictingInfo = this._is_conflicting(edit_config_changes, plugin_force);
         if (isConflictingInfo.conflictWithConfigxml) {
             throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
         }
@@ -130,14 +128,12 @@ class PlatformMunger {
 
     // Handle edit-config changes from config.xml
     add_config_changes (config, should_increment) {
-        const platform_config = this.platformJson.root;
-
         const changes = [
             ...this._getChanges(config, 'EditConfig'),
             ...this._getChanges(config, 'ConfigFile')
         ];
 
-        const isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
+        const isConflictingInfo = this._is_conflicting(changes, true /* always force overwrite other edit-config */);
         if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
             // silently remove conflicting config.xml munges so new munges can be added
             this._munge_helper(isConflictingInfo.configxmlMunge, { remove: true });
@@ -244,8 +240,10 @@ class PlatformMunger {
     }
 
     /** @private */
-    _is_conflicting (editchanges, config_munge, force) {
-        const files = config_munge.files;
+    _is_conflicting (editchanges, force) {
+        const platform_config = this.platformJson.root;
+        const { files } = platform_config.config_munge;
+
         let conflictFound = false;
         let conflictWithConfigxml = false;
         const conflictingMunge = { files: {} };
