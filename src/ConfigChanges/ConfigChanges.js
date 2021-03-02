@@ -103,17 +103,21 @@ class PlatformMunger {
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
         const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
-        const isConflictingInfo = this._is_conflicting(edit_config_changes, plugin_force);
-        if (isConflictingInfo.conflictWithConfigxml) {
+        const { configxmlMunge, conflictingMunge } = this._is_conflicting(edit_config_changes);
+        if (Object.keys(configxmlMunge.files).length > 0) {
+            // plugin.xml cannot overwrite config.xml changes even if --force is used
             throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
         }
         if (plugin_force) {
             events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
 
             // remove conflicting munges, if any
-            this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
-        } else if (isConflictingInfo.conflictFound) {
-            throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
+            this._munge_helper(conflictingMunge, { remove: true });
+        } else if (Object.keys(conflictingMunge.files).length > 0) {
+            // plugin cannot overwrite other plugin changes without --force
+            const witness = Object.values(Object.values(conflictingMunge.files)[0].parents)[0][0];
+            const conflictingPlugin = witness.plugin;
+            throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
         }
 
         // get config munge, aka how should this plugin change various config files
@@ -133,7 +137,7 @@ class PlatformMunger {
             ...this._getChanges(config, 'ConfigFile')
         ];
 
-        const { configxmlMunge, conflictingMunge } = this._is_conflicting(changes, true /* always force overwrite other edit-config */);
+        const { configxmlMunge, conflictingMunge } = this._is_conflicting(changes);
         if (Object.keys(conflictingMunge.files).length !== 0) {
             events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
         }
@@ -237,16 +241,13 @@ class PlatformMunger {
     }
 
     /** @private */
-    _is_conflicting (editchanges, force) {
+    _is_conflicting (editchanges) {
         const platform_config = this.platformJson.root;
         const { files } = platform_config.config_munge;
 
-        let conflictFound = false;
-        let conflictWithConfigxml = false;
-        const conflictingMunge = { files: {} };
-        const configxmlMunge = { files: {} };
+        const configxmlMunge = { files: {} }; // config.xml edit-config conflicts
+        const conflictingMunge = { files: {} }; // plugin.xml edit-config conflicts
         let conflictingParent;
-        let conflictingPlugin;
 
         editchanges.forEach(editchange => {
             if (files[editchange.file]) {
@@ -280,41 +281,16 @@ class PlatformMunger {
 
                 if (target && target.length !== 0) {
                     // conflict has been found
-                    conflictFound = true;
-
-                    if (editchange.id === 'config.xml') {
-                        if (target[0].id === 'config.xml') {
-                            // Keep track of config.xml/config.xml edit-config conflicts
-                            mungeutil.deep_add(configxmlMunge, editchange.file, conflictingParent, target[0]);
-                        } else {
-                            // Keep track of config.xml x plugin.xml edit-config conflicts
-                            mungeutil.deep_add(conflictingMunge, editchange.file, conflictingParent, target[0]);
-                        }
-                    } else {
-                        if (target[0].id === 'config.xml') {
-                            // plugin.xml cannot overwrite config.xml changes even if --force is used
-                            conflictWithConfigxml = true;
-                            return;
-                        }
-
-                        if (force) {
-                            // Need to find all conflicts when --force is used, track conflicting munges
-                            mungeutil.deep_add(conflictingMunge, editchange.file, conflictingParent, target[0]);
-                        } else {
-                            // plugin cannot overwrite other plugin changes without --force
-                            conflictingPlugin = target[0].plugin;
-                        }
-                    }
+                    const witness = target[0];
+                    const conflictMunge = witness.id === 'config.xml' ? configxmlMunge : conflictingMunge;
+                    mungeutil.deep_add(conflictMunge, editchange.file, conflictingParent, witness);
                 }
             }
         });
 
         return {
-            conflictFound,
-            conflictingPlugin,
-            conflictingMunge,
             configxmlMunge,
-            conflictWithConfigxml
+            conflictingMunge
         };
     }
 
