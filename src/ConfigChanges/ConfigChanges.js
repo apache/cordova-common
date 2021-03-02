@@ -131,7 +131,7 @@ class PlatformMunger {
 
         // get config munge, aka how should this plugin change various config files
         const config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
-        this._munge_helper(should_increment, platform_config, config_munge);
+        this._munge_helper(config_munge, { should_increment });
 
         // Move to installed/dependent_plugins
         this.platformJson.addPlugin(pluginInfo.id, plugin_vars || {}, is_top_level);
@@ -173,20 +173,22 @@ class PlatformMunger {
 
         // Add config.xml edit-config and config-file munges
         const config_munge = this.generate_config_xml_munge(config, changes, 'config.xml');
-        this._munge_helper(should_increment, platform_config, config_munge);
+        this._munge_helper(config_munge, { should_increment });
 
         // Move to installed/dependent_plugins
         return this;
     }
 
     /** @private */
-    _munge_helper (should_increment, platform_config, config_munge) {
+    _munge_helper (config_munge, { should_increment = true } = {}) {
         // global munge looks at all changes to config files
         // TODO: The should_increment param is only used by cordova-cli and is going away soon.
         // If should_increment is set to false, avoid modifying the global_munge (use clone)
         // and apply the entire config_munge because it's already a proper subset of the global_munge.
 
+        const platform_config = this.platformJson.root;
         const global_munge = platform_config.config_munge;
+
         const munge = should_increment
             ? mungeutil.increment_munge(global_munge, config_munge)
             : config_munge;
