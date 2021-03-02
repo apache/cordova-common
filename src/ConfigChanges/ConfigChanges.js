@@ -133,16 +133,13 @@ class PlatformMunger {
             ...this._getChanges(config, 'ConfigFile')
         ];
 
-        const isConflictingInfo = this._is_conflicting(changes, true /* always force overwrite other edit-config */);
-        if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
-            // silently remove conflicting config.xml munges so new munges can be added
-            this._munge_helper(isConflictingInfo.configxmlMunge, { remove: true });
-        }
-        if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
+        const { configxmlMunge, conflictingMunge } = this._is_conflicting(changes, true /* always force overwrite other edit-config */);
+        if (Object.keys(conflictingMunge.files).length !== 0) {
             events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
-
-            // remove conflicting plugin.xml munges
-            this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
+        }
+        // remove conflicting config.xml & plugin.xml munges, if any
+        for (const conflict_munge of [configxmlMunge, conflictingMunge]) {
+            this._munge_helper(conflict_munge, { remove: true });
         }
 
         // Add config.xml edit-config and config-file munges
