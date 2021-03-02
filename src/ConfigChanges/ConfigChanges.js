@@ -86,11 +86,8 @@ class PlatformMunger {
         const plugin_vars = is_top_level
             ? platform_config.installed_plugins[pluginInfo.id]
             : platform_config.dependent_plugins[pluginInfo.id];
-        let edit_config_changes = null;
 
-        if (pluginInfo.getEditConfigs) {
-            edit_config_changes = pluginInfo.getEditConfigs(this.platform);
-        }
+        const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
         // get config munge, aka how did this plugin change various config files
         const config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
@@ -111,11 +108,8 @@ class PlatformMunger {
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
         const platform_config = this.platformJson.root;
         let config_munge;
-        let edit_config_changes = null;
 
-        if (pluginInfo.getEditConfigs) {
-            edit_config_changes = pluginInfo.getEditConfigs(this.platform);
-        }
+        const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
         if (!edit_config_changes || edit_config_changes.length === 0) {
             // get config munge, aka how should this plugin change various config files
@@ -156,21 +150,11 @@ class PlatformMunger {
     // Handle edit-config changes from config.xml
     add_config_changes (config, should_increment) {
         const platform_config = this.platformJson.root;
-        let changes = [];
 
-        if (config.getEditConfigs) {
-            const edit_config_changes = config.getEditConfigs(this.platform);
-            if (edit_config_changes) {
-                changes = changes.concat(edit_config_changes);
-            }
-        }
-
-        if (config.getConfigFiles) {
-            const config_files_changes = config.getConfigFiles(this.platform);
-            if (config_files_changes) {
-                changes = changes.concat(config_files_changes);
-            }
-        }
+        const changes = [
+            ...this._getChanges(config, 'EditConfig'),
+            ...this._getChanges(config, 'ConfigFile')
+        ];
 
         if (changes && changes.length > 0) {
             const isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
@@ -292,6 +276,12 @@ class PlatformMunger {
         });
 
         return munge;
+    }
+
+    /** @private */
+    _getChanges (cfg, changeType) {
+        const method = `get${changeType}s`;
+        return (cfg[method] && cfg[method](this.platform)) || [];
     }
 
     /** @private */
