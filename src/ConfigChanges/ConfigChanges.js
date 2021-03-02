@@ -91,13 +91,8 @@ class PlatformMunger {
 
         // get config munge, aka how did this plugin change various config files
         const config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
-        // global munge looks at all plugins' changes to config files
-        const global_munge = platform_config.config_munge;
-        const munge = mungeutil.decrement_munge(global_munge, config_munge);
 
-        for (const file in munge.files) {
-            this.apply_file_munge(file, munge.files[file], /* remove = */ true);
-        }
+        this._munge_helper(config_munge, { remove: true });
 
         // Remove from installed_plugins
         this.platformJson.removePlugin(pluginInfo.id, is_top_level);
@@ -120,10 +115,7 @@ class PlatformMunger {
                 events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
 
                 // remove conflicting munges
-                const conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
-                for (const conflict_file in conflict_munge.files) {
-                    this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
-                }
+                this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
             } else if (isConflictingInfo.conflictFound) {
                 throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
             }
@@ -153,20 +145,14 @@ class PlatformMunger {
             if (isConflictingInfo.conflictFound) {
                 if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
                     // silently remove conflicting config.xml munges so new munges can be added
-                    const conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.configxmlMunge);
-                    for (const conflict_file in conflict_munge.files) {
-                        this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
-                    }
+                    this._munge_helper(isConflictingInfo.configxmlMunge, { remove: true });
                 }
 
                 if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
                     events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
                     // remove conflicting plugin.xml munges
-                    const conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
-                    for (const conflict_file in conflict_munge.files) {
-                        this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
-                    }
+                    this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
                 }
             }
         }
@@ -180,7 +166,7 @@ class PlatformMunger {
     }
 
     /** @private */
-    _munge_helper (config_munge, { should_increment = true } = {}) {
+    _munge_helper (config_munge, { should_increment = true, remove = false } = {}) {
         // global munge looks at all changes to config files
         // TODO: The should_increment param is only used by cordova-cli and is going away soon.
         // If should_increment is set to false, avoid modifying the global_munge (use clone)
@@ -189,12 +175,13 @@ class PlatformMunger {
         const platform_config = this.platformJson.root;
         const global_munge = platform_config.config_munge;
 
+        const method = remove ? 'decrement_munge' : 'increment_munge';
         const munge = should_increment
-            ? mungeutil.increment_munge(global_munge, config_munge)
+            ? mungeutil[method](global_munge, config_munge)
             : config_munge;
 
         for (const file in munge.files) {
-            this.apply_file_munge(file, munge.files[file]);
+            this.apply_file_munge(file, munge.files[file], remove);
         }
 
         return this;
