@@ -247,45 +247,35 @@ class PlatformMunger {
 
         const configConflicts = { files: {} }; // config.xml edit-config conflicts
         const pluginConflicts = { files: {} }; // plugin.xml edit-config conflicts
-        let conflictingParent;
 
-        editchanges.forEach(editchange => {
-            if (files[editchange.file]) {
-                const parents = files[editchange.file].parents;
-                let target = parents[editchange.target];
+        const registerConflict = (file, selector) => {
+            const witness = files[file].parents[selector][0];
+            const conflictMunge = witness.id === 'config.xml' ? configConflicts : pluginConflicts;
+            mungeutil.deep_add(conflictMunge, file, selector, witness);
+        };
 
-                // Check if the edit target will resolve to an existing target
-                if (!target || target.length === 0) {
-                    const targetFile = this.config_keeper.get(this.project_dir, this.platform, editchange.file);
+        editchanges.forEach(({ file, target }) => {
+            if (!files[file]) return;
+            const { parents: changesBySelector } = files[file];
 
-                    // For non-XML files (e.g. plist), the selector in editchange.target uniquely identifies its target.
-                    // Thus we already know that we have no conflict if we are not dealing with an XML file here.
-                    if (targetFile.type !== 'xml') return;
+            const conflicts = changesBySelector[target] || [];
+            if (conflicts.length > 0) return registerConflict(file, target);
 
-                    // For XML files, the selector does NOT uniquely identify its target. So we resolve editchange.target
-                    // and any existing selectors to their matched elements and compare those for equality.
-                    const resolveEditTarget = xml_helpers.resolveParent(targetFile.data, editchange.target);
-                    if (resolveEditTarget) {
-                        for (const parent in parents) {
-                            const resolveTarget = xml_helpers.resolveParent(targetFile.data, parent);
-                            if (resolveEditTarget === resolveTarget) {
-                                conflictingParent = parent;
-                                target = parents[parent];
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    conflictingParent = editchange.target;
-                }
+            const targetFile = this.config_keeper.get(this.project_dir, this.platform, file);
 
-                if (target && target.length !== 0) {
-                    // conflict has been found
-                    const witness = target[0];
-                    const conflictMunge = witness.id === 'config.xml' ? configConflicts : pluginConflicts;
-                    mungeutil.deep_add(conflictMunge, editchange.file, conflictingParent, witness);
-                }
-            }
+            // For non-XML files (e.g. plist), the selector in editchange.target uniquely identifies its target.
+            // Thus we already know that we have no conflict if we are not dealing with an XML file here.
+            if (targetFile.type !== 'xml') return;
+
+            // For XML files, the selector does NOT uniquely identify its target. So we resolve editchange.target
+            // and any existing selectors to their matched elements and compare those for equality.
+            const resolveEditTarget = xml_helpers.resolveParent(targetFile.data, target);
+            if (!resolveEditTarget) return;
+
+            const selector = Object.keys(changesBySelector).find(parent =>
+                resolveEditTarget === xml_helpers.resolveParent(targetFile.data, parent)
+            );
+            if (selector) return registerConflict(file, selector);
         });
 
         return {
