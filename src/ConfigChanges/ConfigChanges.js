@@ -107,14 +107,10 @@ class PlatformMunger {
 
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
         const platform_config = this.platformJson.root;
-        let config_munge;
 
         const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
-        if (!edit_config_changes || edit_config_changes.length === 0) {
-            // get config munge, aka how should this plugin change various config files
-            config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars);
-        } else {
+        if (edit_config_changes && edit_config_changes.length > 0) {
             const isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
 
             if (isConflictingInfo.conflictWithConfigxml) {
@@ -128,17 +124,13 @@ class PlatformMunger {
                 for (const conflict_file in conflict_munge.files) {
                     this.apply_file_munge(conflict_file, conflict_munge.files[conflict_file], /* remove = */ true);
                 }
-
-                // force add new munges
-                config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
             } else if (isConflictingInfo.conflictFound) {
                 throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
-            } else {
-                // no conflicts, will handle edit-config
-                config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
             }
         }
 
+        // get config munge, aka how should this plugin change various config files
+        const config_munge = this.generate_plugin_config_munge(pluginInfo, plugin_vars, edit_config_changes);
         this._munge_helper(should_increment, platform_config, config_munge);
 
         // Move to installed/dependent_plugins

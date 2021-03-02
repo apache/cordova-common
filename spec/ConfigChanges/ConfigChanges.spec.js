@@ -232,7 +232,7 @@ describe('config-changes module', function () {
             const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
             const spy = spyOn(munger, 'generate_plugin_config_munge').and.returnValue({});
             munger.process(plugins_dir);
-            expect(spy).toHaveBeenCalledWith(jasmine.any(PluginInfo), {});
+            expect(spy).toHaveBeenCalledWith(jasmine.any(PluginInfo), {}, []);
         });
 
         describe(': installation', function () {
