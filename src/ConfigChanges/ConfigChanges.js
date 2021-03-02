@@ -103,8 +103,8 @@ class PlatformMunger {
     add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_increment, plugin_force) {
         const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
-        const { configxmlMunge, conflictingMunge } = this._is_conflicting(edit_config_changes);
-        if (Object.keys(configxmlMunge.files).length > 0) {
+        const { configConflicts, pluginConflicts } = this._is_conflicting(edit_config_changes);
+        if (Object.keys(configConflicts.files).length > 0) {
             // plugin.xml cannot overwrite config.xml changes even if --force is used
             throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
         }
@@ -112,10 +112,10 @@ class PlatformMunger {
             events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
 
             // remove conflicting munges, if any
-            this._munge_helper(conflictingMunge, { remove: true });
-        } else if (Object.keys(conflictingMunge.files).length > 0) {
+            this._munge_helper(pluginConflicts, { remove: true });
+        } else if (Object.keys(pluginConflicts.files).length > 0) {
             // plugin cannot overwrite other plugin changes without --force
-            const witness = Object.values(Object.values(conflictingMunge.files)[0].parents)[0][0];
+            const witness = Object.values(Object.values(pluginConflicts.files)[0].parents)[0][0];
             const conflictingPlugin = witness.plugin;
             throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
         }
@@ -137,12 +137,12 @@ class PlatformMunger {
             ...this._getChanges(config, 'ConfigFile')
         ];
 
-        const { configxmlMunge, conflictingMunge } = this._is_conflicting(changes);
-        if (Object.keys(conflictingMunge.files).length !== 0) {
+        const { configConflicts, pluginConflicts } = this._is_conflicting(changes);
+        if (Object.keys(pluginConflicts.files).length !== 0) {
             events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
         }
         // remove conflicting config.xml & plugin.xml munges, if any
-        for (const conflict_munge of [configxmlMunge, conflictingMunge]) {
+        for (const conflict_munge of [configConflicts, pluginConflicts]) {
             this._munge_helper(conflict_munge, { remove: true });
         }
 
@@ -245,8 +245,8 @@ class PlatformMunger {
         const platform_config = this.platformJson.root;
         const { files } = platform_config.config_munge;
 
-        const configxmlMunge = { files: {} }; // config.xml edit-config conflicts
-        const conflictingMunge = { files: {} }; // plugin.xml edit-config conflicts
+        const configConflicts = { files: {} }; // config.xml edit-config conflicts
+        const pluginConflicts = { files: {} }; // plugin.xml edit-config conflicts
         let conflictingParent;
 
         editchanges.forEach(editchange => {
@@ -282,15 +282,15 @@ class PlatformMunger {
                 if (target && target.length !== 0) {
                     // conflict has been found
                     const witness = target[0];
-                    const conflictMunge = witness.id === 'config.xml' ? configxmlMunge : conflictingMunge;
+                    const conflictMunge = witness.id === 'config.xml' ? configConflicts : pluginConflicts;
                     mungeutil.deep_add(conflictMunge, editchange.file, conflictingParent, witness);
                 }
             }
         });
 
         return {
-            configxmlMunge,
-            conflictingMunge
+            configConflicts,
+            pluginConflicts
         };
     }
 
