@@ -105,20 +105,17 @@ class PlatformMunger {
 
         const edit_config_changes = this._getChanges(pluginInfo, 'EditConfig');
 
-        if (edit_config_changes && edit_config_changes.length > 0) {
-            const isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
+        const isConflictingInfo = this._is_conflicting(edit_config_changes, platform_config.config_munge, plugin_force);
+        if (isConflictingInfo.conflictWithConfigxml) {
+            throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
+        }
+        if (plugin_force) {
+            events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
 
-            if (isConflictingInfo.conflictWithConfigxml) {
-                throw new Error(`${pluginInfo.id} cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.`);
-            }
-            if (plugin_force) {
-                events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
-
-                // remove conflicting munges
-                this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
-            } else if (isConflictingInfo.conflictFound) {
-                throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
-            }
+            // remove conflicting munges, if any
+            this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
+        } else if (isConflictingInfo.conflictFound) {
+            throw new Error(`There was a conflict trying to modify attributes with <edit-config> in plugin ${pluginInfo.id}. The conflicting plugin, ${isConflictingInfo.conflictingPlugin}, already modified the same attributes. The conflict must be resolved before ${pluginInfo.id} can be added. You may use --force to add the plugin and overwrite the conflicting attributes.`);
         }
 
         // get config munge, aka how should this plugin change various config files
@@ -140,21 +137,16 @@ class PlatformMunger {
             ...this._getChanges(config, 'ConfigFile')
         ];
 
-        if (changes && changes.length > 0) {
-            const isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
-            if (isConflictingInfo.conflictFound) {
-                if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
-                    // silently remove conflicting config.xml munges so new munges can be added
-                    this._munge_helper(isConflictingInfo.configxmlMunge, { remove: true });
-                }
+        const isConflictingInfo = this._is_conflicting(changes, platform_config.config_munge, true /* always force overwrite other edit-config */);
+        if (Object.keys(isConflictingInfo.configxmlMunge.files).length !== 0) {
+            // silently remove conflicting config.xml munges so new munges can be added
+            this._munge_helper(isConflictingInfo.configxmlMunge, { remove: true });
+        }
+        if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
+            events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
-                if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
-                    events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
-
-                    // remove conflicting plugin.xml munges
-                    this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
-                }
-            }
+            // remove conflicting plugin.xml munges
+            this._munge_helper(isConflictingInfo.conflictingMunge, { remove: true });
         }
 
         // Add config.xml edit-config and config-file munges
