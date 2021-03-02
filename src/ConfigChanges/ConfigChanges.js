@@ -219,59 +219,45 @@ class PlatformMunger {
         return this;
     }
 
-    // generate_config_xml_munge
     // Generate the munge object from config.xml
     generate_config_xml_munge (config, config_changes, type) {
-        const munge = { files: {} };
-
-        if (!config_changes) return munge;
-
-        const id = type === 'config.xml' ? type : config.id;
-
-        config_changes.forEach(change => {
-            change.xmls.forEach(xml => {
-                // 1. stringify each xml
-                const stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
-                // 2. add into munge
-                if (change.mode) {
-                    mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, id });
-                } else {
-                    mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after });
-                }
-            });
-        });
-
-        return munge;
+        const originInfo = { id: type === 'config.xml' ? type : config.id };
+        return this._generateMunge(config_changes, originInfo);
     }
 
-    // generate_plugin_config_munge
     // Generate the munge object from plugin.xml + vars
     generate_plugin_config_munge (pluginInfo, vars, edit_config_changes) {
-        vars = vars || {};
-        const munge = { files: {} };
         const changes = pluginInfo.getConfigFiles(this.platform);
-
         if (edit_config_changes) {
             Array.prototype.push.apply(changes, edit_config_changes);
         }
+        const filteredChanges = changes.filter(({ mode }) => mode !== 'remove');
+
+        const originInfo = { plugin: pluginInfo.id };
+        return this._generateMunge(filteredChanges, originInfo, vars || {});
+    }
+
+    /** @private */
+    _generateMunge (changes, originInfo, vars = {}) {
+        const munge = { files: {} };
 
         changes.forEach(change => {
+            const [file, selector, rest] = change.mode
+                ? [change.file, change.target, { mode: change.mode, ...originInfo }]
+                : [change.target, change.parent, { after: change.after }];
+
             change.xmls.forEach(xml => {
                 // 1. stringify each xml
                 let stringified = (new et.ElementTree(xml)).write({ xml_declaration: false });
-                // interp vars
+
+                // interpolate vars, if any
                 Object.keys(vars).forEach(key => {
                     const regExp = new RegExp(`\\$${key}`, 'g');
                     stringified = stringified.replace(regExp, vars[key]);
                 });
+
                 // 2. add into munge
-                if (change.mode) {
-                    if (change.mode !== 'remove') {
-                        mungeutil.deep_add(munge, change.file, change.target, { xml: stringified, count: 1, mode: change.mode, plugin: pluginInfo.id });
-                    }
-                } else {
-                    mungeutil.deep_add(munge, change.target, change.parent, { xml: stringified, count: 1, after: change.after });
-                }
+                mungeutil.deep_add(munge, file, selector, { xml: stringified, count: 1, ...rest });
             });
         });
 
