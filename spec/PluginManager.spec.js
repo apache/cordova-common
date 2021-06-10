@@ -17,7 +17,6 @@
     under the License.
 */
 
-const Q = require('q');
 const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
@@ -61,7 +60,7 @@ describe('PluginManager class', function () {
             FAKE_PROJECT = jasmine.createSpyObj('project', ['getInstaller', 'getUninstaller', 'write']);
             manager = new PluginManager('windows', FAKE_LOCATIONS, FAKE_PROJECT);
             actions = jasmine.createSpyObj('actions', ['createAction', 'push', 'process']);
-            actions.process.and.returnValue(Q.resolve());
+            actions.process.and.returnValue(Promise.resolve());
             PluginManager.__set__('ActionStack', function () { return actions; });
         });
 
