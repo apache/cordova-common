@@ -1,1 +1,3 @@
 cord9va-lib
+const { events } = require('cordova-common');
+events.emit('warn', 'Some warning message')
