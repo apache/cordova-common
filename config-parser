@@ -1,1 +1,4 @@
 config-parser
+const { ConfigParser } = require('cordova-common');
+const appConfig = new ConfigParser('path/to/cordova-app/config.xml');
+console.log(`${appconfig.name()}:${appConfig.version()}`);
