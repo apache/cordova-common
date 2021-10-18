@@ -17,6 +17,8 @@
     under the License.
 */
 
+// @ts-check
+
 /**
  * contains XML utility functions, some of which are specific to elementtree
  */
@@ -27,20 +29,40 @@ const _ = require('underscore');
 const et = require('elementtree');
 const stripBom = require('strip-bom');
 
+/**
+ * The part of the <edit-config> interface that is used here
+ * @typedef {{oldAttrib?: et.Attributes}} EditConfigMunge
+ */
+
 module.exports = {
-    // compare two et.XML nodes, see if they match
-    // compares tagName, text, attributes and children (recursively)
-    equalNodes: function (one, two) {
+    /**
+     * Compares two et.XML nodes, see if they match.
+     *
+     * Compares tagName, text, attributes and children (recursively)
+     *
+     * @param {et.Element} one
+     * @param {et.Element} two
+     * @return {boolean} true iff one and two are equal
+     */
+    equalNodes (one, two) {
         return one.tag === two.tag &&
             one.len() === two.len() &&
-            one.text.trim() === two.text.trim() &&
+            String(one.text).trim() === String(two.text).trim() &&
             attribMatch(one, two) &&
             _.zip(one.getchildren(), two.getchildren())
                 .every(([c1, c2]) => module.exports.equalNodes(c1, c2));
     },
 
-    // adds node to doc at selector, creating parent if it doesn't exist
-    graftXML: function (doc, nodes, selector, after) {
+    /**
+     * Adds node to doc at selector, creating parent if it doesn't exist
+     *
+     * @param {et.ElementTree} doc
+     * @param {et.Element[]} nodes
+     * @param {string} selector
+     * @param {string | undefined} [after]
+     * @return {boolean}
+     */
+    graftXML (doc, nodes, selector, after) {
         let parent = module.exports.resolveParent(doc, selector);
 
         if (!parent) {
@@ -73,20 +95,45 @@ module.exports = {
         return true;
     },
 
-    // adds new attributes to doc at selector
-    // Will only merge if attribute has not been modified already or --force is used
-    graftXMLMerge: function (doc, nodes, selector, xml) {
+    /**
+     * Adds new attributes to doc at selector.
+     *
+     * Will only merge if attribute has not been modified already or --force is used
+     *
+     * @param {et.ElementTree} doc
+     * @param {et.Element[]} nodes
+     * @param {string} selector
+     * @param {EditConfigMunge} xml
+     * @return {boolean}
+     */
+    graftXMLMerge (doc, nodes, selector, xml) {
         return graftXMLAttrs(doc, nodes, selector, xml);
     },
 
-    // overwrite all attributes to doc at selector with new attributes
-    // Will only overwrite if attribute has not been modified already or --force is used
-    graftXMLOverwrite: function (doc, nodes, selector, xml) {
+    /**
+     * Overwrites all attributes to doc at selector with new attributes.
+     *
+     * Will only overwrite if attribute has not been modified already or --force is used
+     *
+     * @param {et.ElementTree} doc
+     * @param {et.Element[]} nodes
+     * @param {string} selector
+     * @param {EditConfigMunge} xml
+     * @return {boolean}
+     */
+    graftXMLOverwrite (doc, nodes, selector, xml) {
         return graftXMLAttrs(doc, nodes, selector, xml, { overwrite: true });
     },
 
-    // removes node from doc at selector
-    pruneXML: function (doc, nodes, selector) {
+    /**
+     * Removes node from doc at selector.
+     *
+     * @param {et.ElementTree} doc
+     * @param {et.Element[]} nodes
+     * @param {string} selector
+     * @return {boolean}
+     */
+    pruneXML (doc, nodes, selector) {
         const parent = module.exports.resolveParent(doc, selector);
         if (!parent) return false;
 
@@ -98,8 +145,15 @@ module.exports = {
         return true;
     },
 
-    // restores attributes from doc at selector
-    pruneXMLRestore: function (doc, selector, xml) {
+    /**
+     * Restores attributes from doc at selector.
+     *
+     * @param {et.ElementTree} doc
+     * @param {string} selector
+     * @param {EditConfigMunge} xml
+     * @return {boolean}
+     */
+    pruneXMLRestore (doc, selector, xml) {
         const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
@@ -110,7 +164,13 @@ module.exports = {
         return true;
     },
 
-    pruneXMLRemove: function (doc, selector, nodes) {
+    /**
+     * @param {et.ElementTree} doc
+     * @param {string} selector
+     * @param {et.Element[]} nodes
+     * @return {boolean}
+     */
+    pruneXMLRemove (doc, selector, nodes) {
         const target = module.exports.resolveParent(doc, selector);
         if (!target) return false;
 
@@ -123,11 +183,20 @@ module.exports = {
         return true;
     },
 
-    parseElementtreeSync: function (filename) {
+    /**
+     * @param {string} filename
+     * @return {et.ElementTree}
+     */
+    parseElementtreeSync (filename) {
         return et.parse(stripBom(fs.readFileSync(filename, 'utf-8')));
     },
 
-    resolveParent: function (doc, selector) {
+    /**
+     * @param {et.ElementTree} doc
+     * @param {string} selector
+     * @return {et.Element | null}
+     */
+    resolveParent (doc, selector) {
         if (!selector.startsWith('/')) return doc.find(selector);
 
         // elementtree does not implement absolute selectors so we build an
@@ -138,6 +207,13 @@ module.exports = {
     }
 };
 
+/**
+ * @param {et.ElementTree} doc
+ * @param {et.Element[]} nodes
+ * @param {string} selector
+ * @param {EditConfigMunge} xml
+ * @return {boolean}
+ */
 function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
     const target = module.exports.resolveParent(doc, selector);
     if (!target) return false;
@@ -151,15 +227,25 @@ function graftXMLAttrs (doc, nodes, selector, xml, { overwrite = false } = {}) {
     return true;
 }
 
+/**
+ * @param {et.Element} node
+ * @param {et.Element | et.ElementTree} parent
+ * @return {et.Element | undefined}
+ */
 function findChild (node, parent) {
-    const matches = parent.findall(node.tag);
+    const matches = parent.findall(String(node.tag));
     return matches.find(m => module.exports.equalNodes(node, m));
 }
 
-// Find the index at which to insert an entry. After is a ;-separated priority list
-// of tags after which the insertion should be made. E.g. If we need to
-// insert an element C, and the rule is that the order of children has to be
-// As, Bs, Cs. After will be equal to "C;B;A".
+/**
+ * Find the index at which to insert an entry.
+ *
+ * @param {et.Element[]} children
+ * @param {string} after a ;-separated priority list of tags after which the
+ *  insertion should be made. E.g. if we need to insert an element C, and the
+ *  order of children has to be As, Bs, Cs then `after` will be equal to "C;B;A".
+ * @return {number}
+ */
 function findInsertIdx (children, after) {
     const childrenTags = children.map(child => child.tag);
     const foundIndex = after.split(';')
@@ -173,9 +259,15 @@ function findInsertIdx (children, after) {
 const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
 const SINGLETONS = ['content', 'author', 'name'];
 
+/**
+ * @param {et.Element} src
+ * @param {et.Element} dest
+ * @param {string} platform
+ * @param {boolean} clobber
+ */
 function mergeXml (src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
-    if (BLACKLIST.includes(src.tag)) return;
+    if (BLACKLIST.includes(String(src.tag))) return;
 
     // Handle attributes
     const omitAttrs = new Set(clobber ? [] : dest.keys());
@@ -199,8 +291,9 @@ function mergeXml (src, dest, platform, clobber) {
     // Handle duplicate preference tags (by name attribute)
     removeDuplicatePreferences(dest);
 
+    /** @param {et.Element} srcChild */
     function mergeChild (srcChild) {
-        const srcTag = srcChild.tag;
+        const srcTag = String(srcChild.tag);
         const query = srcTag + '';
         let destChild;
         let shouldMerge = true;
@@ -220,12 +313,13 @@ function mergeXml (src, dest, platform, clobber) {
         if (destChild) {
             dest.remove(destChild);
         } else {
-            destChild = new et.Element(srcTag);
+            destChild = et.Element(srcTag);
         }
         mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
         dest.append(destChild);
     }
 
+    /** @param {et.Element} xml */
     function removeDuplicatePreferences (xml) {
         const prefs = xml.findall('preference[@name][@value]');
 
@@ -247,13 +341,24 @@ function mergeXml (src, dest, platform, clobber) {
 // Expose for testing.
 module.exports.mergeXml = mergeXml;
 
+/**
+ * @param {et.Element} elm1
+ * @param {et.Element} elm2
+ * @return {boolean}
+ */
 function textMatch (elm1, elm2) {
-    const format = text => text ? text.replace(/\s+/, '') : '';
+    /** @param {et.ElementText | null} text */
+    const format = text => text ? String(text).replace(/\s+/, '') : '';
     const text1 = format(elm1.text);
     const text2 = format(elm2.text);
     return (text1 === '' || text1 === text2);
 }
 
+/**
+ * @param {et.Element} a
+ * @param {et.Element} b
+ * @return {boolean} true iff attributes on a and b are equal
+ */
 function attribMatch (a, b) {
     const aKeys = a.keys();
     return aKeys.length === b.keys().length &&
