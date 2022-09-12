@@ -67,9 +67,12 @@ describe('PluginInfo', function () {
         expect(Object.keys(podSpec.declarations).length).toBe(2);
         expect(Object.keys(podSpec.sources).length).toBe(1);
         expect(Object.keys(podSpec.libraries).length).toBe(4);
+        expect(Object.keys(podSpec.plugins).length).toBe(2);
         expect(podSpec.declarations['use-frameworks']).toBe('true');
         expect(podSpec.sources['https://github.com/CocoaPods/Specs.git'].source).toBe('https://github.com/CocoaPods/Specs.git');
         expect(podSpec.libraries.AFNetworking.spec).toBe('~> 3.2');
         expect(podSpec.libraries.Eureka['swift-version']).toBe('4.1');
+        expect(podSpec.plugins['my-other-plugin'].name).toBe('my-other-plugin');
+        expect(podSpec.plugins['cocoapods-art'].options).toBe(":sources => [ 'my.source.url' ]");
     });
 });
