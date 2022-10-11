@@ -352,6 +352,10 @@ class PluginInfo {
             parent: attrib.parent,
             custom: isStrTrue(attrib.custom),
             embed: isStrTrue(attrib.embed),
+            // link can be set to null for backwards compatibility. Without null this would be a breaking change.
+            // If it's always true or false platforms will not know when to fallback to pre-link attribute behaviour.
+            // By setting link to null when it's not explicitly set we allow platforms to support backwards compatibility.
+            link: attrib.link === 'true' || attrib.link === 'false' ? isStrTrue(attrib.link) : null,
             src: expandVars(attrib.src),
             spec: attrib.spec,
             weak: isStrTrue(attrib.weak),

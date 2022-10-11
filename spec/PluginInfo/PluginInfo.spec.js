@@ -72,4 +72,46 @@ describe('PluginInfo', function () {
         expect(podSpec.libraries.AFNetworking.spec).toBe('~> 3.2');
         expect(podSpec.libraries.Eureka['swift-version']).toBe('4.1');
     });
+
+    describe('Test 006: framework embed and link interactions', function () {
+        const p = new PluginInfo(path.join(pluginsDir, 'org.test.framework_embed_link'));
+        const result = p.getFrameworks(null, {});
+
+        it('embed true, link true', function () {
+            expect(result[0].embed).toBe(true);
+            expect(result[0].link).toBe(true);
+        });
+
+        it('embed true, link false', function () {
+            expect(result[1].embed).toBe(true);
+            expect(result[1].link).toBe(false);
+        });
+
+        it('embed false, link true', function () {
+            expect(result[2].embed).toBe(false);
+            expect(result[2].link).toBe(true);
+        });
+
+        it('embed false, link false', function () {
+            expect(result[3].embed).toBe(false);
+            expect(result[3].link).toBe(false);
+        });
+
+        // Undefined means the attribute didn't exist in the framework tag XML.
+
+        it('embed undefined, link undefined', function () {
+            expect(result[4].embed).toBe(false);
+            expect(result[4].link).toBe(null);
+        });
+
+        it('embed true, link undefined', function () {
+            expect(result[5].embed).toBe(true);
+            expect(result[5].link).toBe(null);
+        });
+
+        it('embed false, link undefined', function () {
+            expect(result[6].embed).toBe(false);
+            expect(result[5].link).toBe(null);
+        });
+    });
 });
