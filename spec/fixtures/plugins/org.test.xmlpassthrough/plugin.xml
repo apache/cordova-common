@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="org.test.xmlpassthrough"
+    version="3.0.0">
+
+    <name>For testing xml passthrough</name>
+
+    <!--
+        XML passthrough for preferences is not supported because multiple preferences will override each other.
+        https://github.com/apache/cordova-common/issues/182
+        <preference name="passthroughpref" anattrib="value" />
+    -->
+    <asset src="nope" target="alsono" anattrib="value" />
+    <dependency id="nope" anattrib="value" />
+    <config-file anattrib="value" />    
+    <edit-config anattrib="value" />    
+    <!--Podspec does not support passthrough-->
+    <hook src="hi" type="hi" anattrib="value" />
+    <js-module anattrib="value" />
+    <engines>
+        <engine anattrib="value"/>
+    </engines>
+    <platform name="android" anattrib="value">
+        <source-file anattrib="value" />
+        <header-file anattrib="value" />
+        <resource-file anattrib="value" />
+        <lib-file anattrib="value" />
+    </platform>
+    <framework src="hi" anattrib="value" />    
+</plugin>
