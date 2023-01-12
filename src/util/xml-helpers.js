@@ -25,7 +25,8 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const _ = require('underscore');
+const extend = require('lodash.assign');
+const zip = require('lodash.zip');
 const et = require('elementtree');
 const stripBom = require('strip-bom');
 
@@ -49,7 +50,7 @@ module.exports = {
             one.len() === two.len() &&
             String(one.text).trim() === String(two.text).trim() &&
             attribMatch(one, two) &&
-            _.zip(one.getchildren(), two.getchildren())
+            zip(one.getchildren(), two.getchildren())
                 .every(([c1, c2]) => module.exports.equalNodes(c1, c2));
     },
 
@@ -158,7 +159,7 @@ module.exports = {
         if (!target) return false;
 
         if (xml.oldAttrib) {
-            target.attrib = _.extend({}, xml.oldAttrib);
+            target.attrib = extend({}, xml.oldAttrib);
         }
 
         return true;
