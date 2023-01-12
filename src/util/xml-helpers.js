@@ -256,7 +256,7 @@ function findInsertIdx (children, after) {
     return foundIndex === undefined ? 0 : foundIndex + 1;
 }
 
-const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
+const DENIED_TAGS = ['platform', 'feature', 'plugin', 'engine'];
 const SINGLETONS = ['content', 'author', 'name'];
 
 /**
@@ -266,8 +266,8 @@ const SINGLETONS = ['content', 'author', 'name'];
  * @param {boolean} clobber
  */
 function mergeXml (src, dest, platform, clobber) {
-    // Do nothing for blacklisted tags.
-    if (BLACKLIST.includes(String(src.tag))) return;
+    // Do nothing for denied tags.
+    if (DENIED_TAGS.includes(String(src.tag))) return;
 
     // Handle attributes
     const omitAttrs = new Set(clobber ? [] : dest.keys());
@@ -298,7 +298,7 @@ function mergeXml (src, dest, platform, clobber) {
         let destChild;
         let shouldMerge = true;
 
-        if (BLACKLIST.includes(srcTag)) return;
+        if (DENIED_TAGS.includes(srcTag)) return;
 
         if (SINGLETONS.includes(srcTag)) {
             destChild = dest.find(query);
