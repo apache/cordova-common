@@ -22,7 +22,7 @@
     "bplist-parser": "^0.3.2",
     "cross-spawn": "^7.0.3",
     "elementtree": "^0.1.7",
-    "endent": "^1.4.1",
+    "endent": "^2.1.0",
     "fast-glob": "^3.2.12",
     "fs-extra": "^11.1.0",
     "glob": "^7.1.6",
