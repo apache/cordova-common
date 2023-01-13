@@ -17,7 +17,7 @@
     under the License.
 */
 
-const endent = require('endent');
+const endent = require('endent').default;
 const CordovaError = require('../../src/CordovaError');
 
 describe('CordovaError class', () => {
