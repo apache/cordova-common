@@ -36,7 +36,7 @@
     "strip-bom": "^4.0.0"
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^4.0.0",
+    "@cordova/eslint-config": "^5.0.0",
     "@nodelib/fs.macchiato": "^1.0.4",
     "jasmine": "^4.5.0",
     "jasmine-spec-reporter": "^7.0.0",
