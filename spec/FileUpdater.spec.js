@@ -729,7 +729,7 @@ describe('FileUpdater class', function () {
                 testFileStats3;
 
             const updated = FileUpdater.mergeAndUpdateDir(
-                [testSourceDir, testSourceDir2], testTargetDir, { rootDir: rootDir });
+                [testSourceDir, testSourceDir2], testTargetDir, { rootDir });
             expect(updated).toBe(true);
             expect(FileUpdater.updatePathWithStatsCalls.length).toBe(4);
 
