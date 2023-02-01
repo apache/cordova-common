@@ -25,7 +25,8 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const _ = require('underscore');
+const extend = require('lodash.assign');
+const zip = require('lodash.zip');
 const et = require('elementtree');
 const stripBom = require('strip-bom');
 
@@ -49,7 +50,7 @@ module.exports = {
             one.len() === two.len() &&
             String(one.text).trim() === String(two.text).trim() &&
             attribMatch(one, two) &&
-            _.zip(one.getchildren(), two.getchildren())
+            zip(one.getchildren(), two.getchildren())
                 .every(([c1, c2]) => module.exports.equalNodes(c1, c2));
     },
 
@@ -158,7 +159,7 @@ module.exports = {
         if (!target) return false;
 
         if (xml.oldAttrib) {
-            target.attrib = _.extend({}, xml.oldAttrib);
+            target.attrib = extend({}, xml.oldAttrib);
         }
 
         return true;
@@ -256,7 +257,7 @@ function findInsertIdx (children, after) {
     return foundIndex === undefined ? 0 : foundIndex + 1;
 }
 
-const BLACKLIST = ['platform', 'feature', 'plugin', 'engine'];
+const DENIED_TAGS = ['platform', 'feature', 'plugin', 'engine'];
 const SINGLETONS = ['content', 'author', 'name'];
 
 /**
@@ -266,8 +267,8 @@ const SINGLETONS = ['content', 'author', 'name'];
  * @param {boolean} clobber
  */
 function mergeXml (src, dest, platform, clobber) {
-    // Do nothing for blacklisted tags.
-    if (BLACKLIST.includes(String(src.tag))) return;
+    // Do nothing for denied tags.
+    if (DENIED_TAGS.includes(String(src.tag))) return;
 
     // Handle attributes
     const omitAttrs = new Set(clobber ? [] : dest.keys());
@@ -298,7 +299,7 @@ function mergeXml (src, dest, platform, clobber) {
         let destChild;
         let shouldMerge = true;
 
-        if (BLACKLIST.includes(srcTag)) return;
+        if (DENIED_TAGS.includes(srcTag)) return;
 
         if (SINGLETONS.includes(srcTag)) {
             destChild = dest.find(query);
