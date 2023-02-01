@@ -84,16 +84,6 @@ describe('PluginInfo', function () {
         });
     });
 
-    // describe('Preference', () => {
-    //     // XML passthrough for preferences is not supported because multiple preferences will override each other.
-    //     // https://github.com/apache/cordova-common/issues/182
-    //     // it('Test 007: Preference supports xml passthrough', function () {
-    //     //     const preferences = pluginPassthrough.getPreferences('android');
-    //     //     console.log(preferences);
-    //     //     expect(preferences.passthroughpref.anattrib).toBe('value');
-    //     // });
-    // });
-
     describe('Asset', () => {
         it('Test 008: Asset supports xml passthrough', function () {
             const assets = pluginPassthrough.getAssets('android');
