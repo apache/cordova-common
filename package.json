@@ -25,7 +25,7 @@
     "endent": "^2.1.0",
     "fast-glob": "^3.2.12",
     "fs-extra": "^11.1.0",
-    "glob": "^7.1.6",
+    "glob": "^9.0.1",
     "lodash.assign": "^4.2.0",
     "lodash.isdate": "^4.0.1",
     "lodash.isobject": "^3.0.2",

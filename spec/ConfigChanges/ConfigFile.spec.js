@@ -107,7 +107,7 @@ describe('ConfigFile tests', function () {
                 const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
                 ConfigFile.__set__('getIOSProjectname', () => projName);
-                spyOn(require('glob'), 'sync').and.returnValue([
+                spyOn(require('glob'), 'globSync').and.returnValue([
                     `AAA/${projName}-Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
