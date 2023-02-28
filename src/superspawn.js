@@ -101,7 +101,7 @@ exports.spawn = (cmd, args, opts) => {
     let capturedErr = '';
 
     if (child.stdout) {
-        child.stdout.setEncoding('utf8');
+        child.stdout.setEncoding('utf-8');
         child.stdout.on('data', data => {
             capturedOut += data;
             d.notify({ stdout: data });
@@ -109,7 +109,7 @@ exports.spawn = (cmd, args, opts) => {
     }
 
     if (child.stderr) {
-        child.stderr.setEncoding('utf8');
+        child.stderr.setEncoding('utf-8');
         child.stderr.on('data', data => {
             capturedErr += data;
             d.notify({ stderr: data });
