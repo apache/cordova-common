@@ -167,7 +167,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
     if (file.includes('*')) {
         // handle wildcards in targets using glob.
-        matches = modules.glob.globSync(path.join(project_dir, '**', file))
+        matches = modules.glob.globSync(path.join(project_dir, '**', file).replaceAll(path.sep, '/'))
             .map(p => path.normalize(p));
 
         if (matches.length) filepath = matches[0];
@@ -217,7 +217,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
                 'config.xml'
             );
         } else {
-            matches = modules.glob.globSync(path.join(project_dir, '**', 'config.xml'));
+            matches = modules.glob.globSync(path.join(project_dir, '**', 'config.xml').replaceAll(path.sep, '/'));
             if (matches.length) filepath = matches[0];
         }
 
