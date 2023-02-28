@@ -20,6 +20,19 @@
 -->
 # cordova-common Release Notes
 
+### 5.0.0 (Feb 28, 2023)
+
+* [GH-186](https://github.com/apache/cordova-common/pull/186) feat!: bump package requirement node>=16
+* [GH-197](https://github.com/apache/cordova-common/pull/197) feat(android): added monochrome attribute
+* [GH-99](https://github.com/apache/cordova-common/pull/99) chore: drop q where possible
+* [GH-198](https://github.com/apache/cordova-common/pull/198) test: Removed obsolete test
+* [GH-196](https://github.com/apache/cordova-common/pull/196) dep: bump @cordova/eslint-config@^5.0.0
+* [GH-192](https://github.com/apache/cordova-common/pull/192) dep!: bump all available packages
+* [GH-193](https://github.com/apache/cordova-common/pull/193) refactor: replace underscore w/ lodash module pkgs
+* [GH-194](https://github.com/apache/cordova-common/pull/194) refactor: renamed variable
+* [GH-188](https://github.com/apache/cordova-common/pull/188) ci(actions): test w/ node 14, 16, 18
+* [GH-187](https://github.com/apache/cordova-common/pull/187) ci(actions): update workflow
+
 ### 4.1.0 (Nov 08, 2022)
 
 * [GH-181](https://github.com/apache/cordova-common/pull/181) feat(PluginInfo): Allow XML Attributes to be passed through to core platforms
