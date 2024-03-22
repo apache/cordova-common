@@ -17,8 +17,8 @@
     under the License.
 */
 
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const rewire = require('rewire');
 const PluginInfo = require('../src/PluginInfo/PluginInfo');
 const ConfigChanges = require('../src/ConfigChanges/ConfigChanges');
@@ -36,9 +36,8 @@ const FAKE_LOCATIONS = {
 describe('PluginManager class', function () {
     beforeEach(function () {
         spyOn(ConfigChanges, 'PlatformMunger');
-        spyOn(fs, 'outputJsonSync');
         spyOn(fs, 'writeFileSync');
-        spyOn(fs, 'ensureDirSync');
+        spyOn(fs, 'mkdirSync');
     });
 
     it('Test 001 : should be constructable', function () {
@@ -97,8 +96,8 @@ describe('PluginManager class', function () {
 
                 return manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), {})
                     .then(function () {
-                        expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
-                        expect(fs.writeFileSync).not.toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
+                        expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf8');
+                        expect(fs.writeFileSync).not.toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf8');
                     });
             });
 
@@ -108,8 +107,8 @@ describe('PluginManager class', function () {
 
                 return manager.addPlugin(new PluginInfo(DUMMY_PLUGIN), { usePlatformWww: true })
                     .then(function () {
-                        expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf-8');
-                        expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf-8');
+                        expect(fs.writeFileSync).toHaveBeenCalledWith(metadataPath, jasmine.any(String), 'utf8');
+                        expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf8');
                     });
             });
         });

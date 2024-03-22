@@ -17,6 +17,7 @@
     under the License.
 */
 
+const fs = require('node:fs');
 const rewire = require('rewire');
 const PlatformJson = rewire('../src/PlatformJson');
 const ModuleMetadata = PlatformJson.__get__('ModuleMetadata');
@@ -133,8 +134,7 @@ describe('PlatformJson class', function () {
 
         describe('generateAndSaveMetadata method', function () {
             it('should save generated metadata', function () {
-                // Needs to use graceful-fs, since that is used by fs-extra
-                const spy = spyOn(require('graceful-fs'), 'writeFileSync');
+                const spy = spyOn(fs, 'writeFileSync');
 
                 const dest = require('path').join(__dirname, 'test-destination');
                 platformJson.addPluginMetadata(fakePlugin).generateAndSaveMetadata(dest);

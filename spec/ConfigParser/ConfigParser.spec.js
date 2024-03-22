@@ -17,11 +17,11 @@
     under the License.
 */
 
-const path = require('path');
-const fs = require('fs-extra');
+const path = require('node:path');
+const fs = require('node:fs');
 const ConfigParser = require('../../src/ConfigParser/ConfigParser');
 const xml = path.join(__dirname, '../fixtures/test-config.xml');
-const xml_contents = fs.readFileSync(xml, 'utf-8');
+const xml_contents = fs.readFileSync(xml, 'utf8');
 
 describe('config.xml parser', function () {
     beforeEach(function () {

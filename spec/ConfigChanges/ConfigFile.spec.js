@@ -16,8 +16,8 @@
 */
 
 const rewire = require('rewire');
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const readChunk = require('read-chunk');
 
 describe('ConfigFile tests', function () {
@@ -107,7 +107,7 @@ describe('ConfigFile tests', function () {
                 const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
                 ConfigFile.__set__('getIOSProjectname', () => projName);
-                spyOn(require('glob'), 'sync').and.returnValue([
+                spyOn(require('fast-glob'), 'sync').and.returnValue([
                     `AAA/${projName}-Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
