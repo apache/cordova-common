@@ -19,7 +19,6 @@
 
 module.exports = {
     get events () { return require('./src/events'); },
-    get superspawn () { return require('./src/superspawn'); },
 
     get ActionStack () { return require('./src/ActionStack'); },
     get CordovaError () { return require('./src/CordovaError'); },
