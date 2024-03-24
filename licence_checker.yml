@@ -61,4 +61,4 @@ allowed-licenses:
   - ZPL-2.0
 
 ignored-packages:
-  - caniuse-lite@@1.0.30001446
+  - caniuse-lite@1.0.30001446
