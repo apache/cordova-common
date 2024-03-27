@@ -17,9 +17,9 @@
     under the License.
 */
 
-const path = require('path');
+const { Stats } = require('node:fs');
+const path = require('node:path');
 const rewire = require('rewire');
-const { Stats } = require('@nodelib/fs.macchiato');
 
 const FileUpdater = rewire('../src/FileUpdater');
 
@@ -39,20 +39,10 @@ FileUpdater.__set__('updatePathWithStats', function () {
 
 // Create mock fs.Stats to simulate file or directory attributes.
 function mockFileStats (modified) {
-    return new Stats({
-        isFile: true,
-        isDirectory: false,
-        ctime: modified,
-        mtime: modified
-    });
+    return new Stats(0, 32768, 0, 0, 0, 0, 0, 0, 0, 0, null, modified, modified, null);
 }
 function mockDirStats () {
-    return new Stats({
-        isFile: false,
-        isDirectory: true,
-        ctime: null,
-        mtime: null
-    });
+    return new Stats(0, 16384, 0, 0, 0, 0, 0, 0, 0, 0, null, null, null, null);
 }
 
 class SystemError extends Error {
@@ -63,7 +53,7 @@ class SystemError extends Error {
     }
 }
 
-// Create a mock to replace the fs-extra module used by the FileUpdater,
+// Create a mock to replace the fs module used by the FileUpdater,
 // so the tests don't have to actually touch the filesystem.
 const mockFs = {
     mkdirPaths: [],
@@ -100,15 +90,15 @@ const mockFs = {
         return this.statSync(fileOrDirPath);
     },
 
-    ensureDirSync: function (path) {
+    mkdirSync: function (path, opts) {
         this.mkdirPaths.push(path);
     },
 
-    copySync: function (sourcePath, targetPath) {
+    cpSync: function (sourcePath, targetPath, opts) {
         this.cpPaths.push([sourcePath, targetPath]);
     },
 
-    removeSync: function (path) {
+    rmSync: function (path, opts) {
         this.rmPaths.push(path);
     },
 
@@ -118,7 +108,7 @@ const mockFs = {
     }
 };
 
-FileUpdater.__set__('fs', mockFs);
+FileUpdater.__set__('node:fs', mockFs);
 
 // Define some constants used in the test cases.
 const testRootDir = 'testRootDir';
@@ -286,7 +276,7 @@ describe('FileUpdater class', function () {
             let loggedTarget = 0;
             let loggedRoot = 0;
             FileUpdater.updatePathWithStats(
-                testSourceDir, mockDirStats(now), testTargetDir, null, { rootDir: testRootDir },
+                testSourceDir, mockDirStats(), testTargetDir, null, { rootDir: testRootDir },
                 function (message) {
                     loggedSource += new RegExp(testSourceDir).test(message) ? 1 : 0;
                     loggedTarget += new RegExp(testTargetDir).test(message) ? 1 : 0;
@@ -302,7 +292,7 @@ describe('FileUpdater class', function () {
             let loggedTarget = 0;
             let loggedRoot = 0;
             FileUpdater.updatePathWithStats(
-                testSourceDir, null, testTargetDir, mockDirStats(now), { rootDir: testRootDir },
+                testSourceDir, null, testTargetDir, mockDirStats(), { rootDir: testRootDir },
                 function (message) {
                     loggedSource += new RegExp(testSourceDir).test(message) ? 1 : 0;
                     loggedTarget += new RegExp(testTargetDir).test(message) ? 1 : 0;
