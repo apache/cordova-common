@@ -39,10 +39,42 @@ FileUpdater.__set__('updatePathWithStats', function () {
 
 // Create mock fs.Stats to simulate file or directory attributes.
 function mockFileStats (modified) {
-    return new Stats(0, 32768, 0, 0, 0, 0, 0, 0, 0, 0, null, modified, modified, null);
+    return {
+        __proto__: Stats.prototype,
+        dev: 0,
+        mode: 32768,
+        nlink: 0,
+        uid: 0,
+        gid: 0,
+        rdev: 0,
+        blksize: 0,
+        ino: 0,
+        size: 0,
+        blocks: 0,
+        atime: null,
+        mtime: modified,
+        ctime: modified,
+        birthtime: null
+    };
 }
 function mockDirStats () {
-    return new Stats(0, 16384, 0, 0, 0, 0, 0, 0, 0, 0, null, null, null, null);
+    return {
+        __proto__: Stats.prototype,
+        dev: 0,
+        mode: 16384,
+        nlink: 0,
+        uid: 0,
+        gid: 0,
+        rdev: 0,
+        blksize: 0,
+        ino: 0,
+        size: 0,
+        blocks: 0,
+        atime: null,
+        mtime: null,
+        ctime: null,
+        birthtime: null
+    };
 }
 
 class SystemError extends Error {
