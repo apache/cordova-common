@@ -15,17 +15,11 @@
     under the License.
 */
 
-const rewire = require('rewire');
 const fs = require('node:fs');
 const path = require('node:path');
-const readChunk = require('read-chunk');
+const ConfigFile = require('../../src/ConfigChanges/ConfigFile');
 
 describe('ConfigFile tests', function () {
-    let ConfigFile;
-    beforeEach(() => {
-        ConfigFile = rewire('../../src/ConfigChanges/ConfigFile');
-    });
-
     describe('instance methods', () => {
         describe('save', () => {
             it('calls fs.writeFileSync', function () {
@@ -37,18 +31,6 @@ describe('ConfigFile tests', function () {
     });
 
     describe('static methods', () => {
-        describe('isBinaryPlist', () => {
-            it('should return false if not binary', function () {
-                spyOn(readChunk, 'sync').and.returnValue('not bplist');
-                expect(ConfigFile.isBinaryPlist('someFile')).toBe(false);
-            });
-
-            it('should return true if binary', function () {
-                spyOn(readChunk, 'sync').and.returnValue('bplist');
-                expect(ConfigFile.isBinaryPlist('someFile')).toBe(true);
-            });
-        });
-
         describe('getIOSProjectname', () => {
             it('should throw error', function () {
                 expect(function () { ConfigFile.getIOSProjectname('some/project/name'); }).toThrow();

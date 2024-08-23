@@ -16,7 +16,6 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const readChunk = require('read-chunk');
 
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
@@ -73,13 +72,13 @@ class ConfigFile {
         } else {
             // plist file
             this.type = 'plist';
-            // TODO: isBinaryPlist() reads the file and then parse re-reads it again.
-            //       We always write out text plist, not binary.
-            //       Do we still need to support binary plist?
-            //       If yes, use plist.parseStringSync() and read the file once.
-            this.data = isBinaryPlist(filepath)
-                ? modules.bplist.parseBuffer(fs.readFileSync(filepath))[0]
-                : modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
+
+            const fileData = fs.readFileSync(filepath);
+            if (fileData.toString('utf8', 0, 6) === 'bplist') {
+                this.data = modules.bplist.parseBuffer(fileData)[0];
+            } else {
+                this.data = modules.plist.parse(fileData.toString('utf8'));
+            }
         }
     }
 
@@ -271,13 +270,6 @@ function getIOSProjectname (project_dir) {
     return projectName;
 }
 
-// determine if a plist file is binary
-// i.e. they start with the magic header "bplist"
-function isBinaryPlist (filename) {
-    return readChunk.sync(filename, 0, 6).toString() === 'bplist';
-}
-
 module.exports = ConfigFile;
-module.exports.isBinaryPlist = isBinaryPlist;
 module.exports.getIOSProjectname = getIOSProjectname;
 module.exports.resolveConfigFilePath = resolveConfigFilePath;
