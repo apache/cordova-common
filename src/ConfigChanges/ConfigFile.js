@@ -158,7 +158,6 @@ class ConfigFile {
 
 // Some config-file target attributes are not qualified with a full leading directory, or contain wildcards.
 // Resolve to a real path in this function.
-// TODO: getIOSProjectname is slow because of glob, try to avoid calling it several times per project.
 function resolveConfigFilePath (project_dir, platform, file) {
     let filepath = path.join(project_dir, file);
     let matches;
@@ -173,14 +172,26 @@ function resolveConfigFilePath (project_dir, platform, file) {
             absolute: true
         }).map(path.normalize);
 
-        if (matches.length) filepath = matches[0];
+        if (matches.length) {
+            filepath = matches[0];
+        }
 
-        // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
+        // [CB-5989] multiple Info.plist files may exist. default to Info.plist then $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
             const projName = getIOSProjectname(project_dir);
+
+            // Try to find a unprefix Info.plist file first
+            let plistPath = path.join(project_dir, projName, 'Info.plist');
+            if (matches.includes(plistPath)) {
+                return plistPath;
+            }
+
+            // Then try to find one prefixed with the project name
             const plistName = `${projName}-Info.plist`;
-            const plistPath = path.join(project_dir, projName, plistName);
-            if (matches.includes(plistPath)) return plistPath;
+            plistPath = path.join(project_dir, projName, plistName);
+            if (matches.includes(plistPath)) {
+                return plistPath;
+            }
         }
         return filepath;
     }
@@ -216,7 +227,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         if (platform === 'ios' || platform === 'osx') {
             filepath = path.join(
                 project_dir,
-                module.exports.getIOSProjectname(project_dir),
+                getIOSProjectname(project_dir),
                 'config.xml'
             );
         } else {
@@ -235,9 +246,16 @@ function resolveConfigFilePath (project_dir, platform, file) {
     return filepath;
 }
 
-// Find out the real name of an iOS or OSX project
-// TODO: glob is slow, need a better way or caching, or avoid using more than once.
+const xcodeprojMap = new Map();
+// Find out the real name of an iOS project
+//
+// This caches the project name for a given directory path, assuming that it
+// won't change over the course of a single Cordova command invocation
 function getIOSProjectname (project_dir) {
+    if (xcodeprojMap.has(project_dir)) {
+        return xcodeprojMap.get(project_dir);
+    }
+
     const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir, onlyDirectories: true });
 
     if (matches.length !== 1) {
@@ -248,7 +266,9 @@ function getIOSProjectname (project_dir) {
         throw new Error(`${msg} in ${project_dir}`);
     }
 
-    return path.basename(matches[0], '.xcodeproj');
+    const projectName = path.basename(matches[0], '.xcodeproj');
+    xcodeprojMap.set(project_dir, projectName);
+    return projectName;
 }
 
 // determine if a plist file is binary
