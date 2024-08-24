@@ -28,6 +28,9 @@ const modules = {
     get xml_helpers () { return require('../util/xml-helpers'); }
 };
 
+// Cache of project folder paths to Xcode project names
+const xcodeprojMap = new Map();
+
 /******************************************************************************
 * ConfigFile class
 *
@@ -153,6 +156,30 @@ class ConfigFile {
 
         this.is_changed = true;
     }
+
+    // Find out the real name of an iOS project
+    //
+    // This caches the project name for a given directory path, assuming that
+    // it won't change over the course of a single Cordova command invocation
+    static getIOSProjectname (project_dir) {
+        if (xcodeprojMap.has(project_dir)) {
+            return xcodeprojMap.get(project_dir);
+        }
+
+        const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir, onlyDirectories: true });
+
+        if (matches.length !== 1) {
+            const msg = matches.length === 0
+                ? 'Does not appear to be an xcode project, no xcode project file'
+                : 'There are multiple *.xcodeproj dirs';
+
+            throw new Error(`${msg} in ${project_dir}`);
+        }
+
+        const projectName = path.basename(matches[0], '.xcodeproj');
+        xcodeprojMap.set(project_dir, projectName);
+        return projectName;
+    }
 }
 
 // Some config-file target attributes are not qualified with a full leading directory, or contain wildcards.
@@ -177,7 +204,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
         // [CB-5989] multiple Info.plist files may exist. default to Info.plist then $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
-            const projName = getIOSProjectname(project_dir);
+            const projName = ConfigFile.getIOSProjectname(project_dir);
 
             // Try to find a unprefix Info.plist file first
             let plistPath = path.join(project_dir, projName, 'Info.plist');
@@ -226,7 +253,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         if (platform === 'ios' || platform === 'osx') {
             filepath = path.join(
                 project_dir,
-                getIOSProjectname(project_dir),
+                ConfigFile.getIOSProjectname(project_dir),
                 'config.xml'
             );
         } else {
@@ -245,31 +272,5 @@ function resolveConfigFilePath (project_dir, platform, file) {
     return filepath;
 }
 
-const xcodeprojMap = new Map();
-// Find out the real name of an iOS project
-//
-// This caches the project name for a given directory path, assuming that it
-// won't change over the course of a single Cordova command invocation
-function getIOSProjectname (project_dir) {
-    if (xcodeprojMap.has(project_dir)) {
-        return xcodeprojMap.get(project_dir);
-    }
-
-    const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir, onlyDirectories: true });
-
-    if (matches.length !== 1) {
-        const msg = matches.length === 0
-            ? 'Does not appear to be an xcode project, no xcode project file'
-            : 'There are multiple *.xcodeproj dirs';
-
-        throw new Error(`${msg} in ${project_dir}`);
-    }
-
-    const projectName = path.basename(matches[0], '.xcodeproj');
-    xcodeprojMap.set(project_dir, projectName);
-    return projectName;
-}
-
 module.exports = ConfigFile;
-module.exports.getIOSProjectname = getIOSProjectname;
 module.exports.resolveConfigFilePath = resolveConfigFilePath;

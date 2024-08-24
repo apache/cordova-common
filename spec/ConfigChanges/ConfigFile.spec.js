@@ -66,13 +66,13 @@ describe('ConfigFile tests', function () {
             });
 
             it('should return ios config.xml file path', function () {
-                ConfigFile.__set__('getIOSProjectname', () => 'iospath');
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue('iospath');
                 const configPath = path.join('project_dir', 'iospath', 'config.xml');
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'ios', 'config.xml')).toBe(configPath);
             });
 
             it('should return osx config.xml file path', function () {
-                ConfigFile.__set__('getIOSProjectname', () => 'osxpath');
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue('osxpath');
                 const configPath = path.join('project_dir', 'osxpath', 'config.xml');
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'osx', 'config.xml')).toBe(configPath);
             });
@@ -93,7 +93,7 @@ describe('ConfigFile tests', function () {
                 const projName = 'XXX';
                 const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
-                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
                 spyOn(require('fast-glob'), 'sync').and.returnValue([
                     `AAA/${projName}-Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
@@ -108,7 +108,7 @@ describe('ConfigFile tests', function () {
                 const projName = 'XXX';
                 const expectedPlistPath = path.join(projName, 'Info.plist');
 
-                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
                 spyOn(require('fast-glob'), 'sync').and.returnValue([
                     'AAA/Info.plist',
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
