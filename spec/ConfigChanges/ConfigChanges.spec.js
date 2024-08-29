@@ -18,9 +18,11 @@
 */
 
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const et = require('elementtree');
+const tmp = require('tmp');
+
+tmp.setGracefulCleanup();
 
 const configChanges = require('../../src/ConfigChanges/ConfigChanges');
 const mungeutil = require('../../src/ConfigChanges/munge-util');
@@ -54,7 +56,8 @@ const varplugin = path.join(fixturePath, 'plugins/com.adobe.vars');
 const plistplugin = path.join(fixturePath, 'plugins/org.apache.plist');
 const bplistplugin = path.join(fixturePath, 'plugins/org.apache.bplist');
 
-const temp = path.join(os.tmpdir(), 'plugman');
+const tempdir = tmp.dirSync({ unsafeCleanup: true });
+const temp = path.join(tempdir.name, 'plugman');
 const plugins_dir = path.join(temp, 'cordova', 'plugins');
 
 const cfg = new ConfigParser(xml);
