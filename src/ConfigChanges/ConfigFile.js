@@ -192,7 +192,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
     if (file.includes('*')) {
         // handle wildcards in targets using glob.
-        matches = modules.glob.sync(`**/${file}`, {
+        matches = modules.glob.sync(`**/${file.replace('*-Info.plist', '*Info.plist')}`, {
             fs,
             cwd: project_dir,
             absolute: true
