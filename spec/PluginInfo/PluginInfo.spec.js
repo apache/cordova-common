@@ -179,4 +179,16 @@ describe('PluginInfo', function () {
             expect(platforms[0].anattrib).toBe('value');
         });
     });
+
+    describe('isSwiftPackage', () => {
+        it('Test 020: returns false for non-annotated plugins', function () {
+            const p = new PluginInfo(path.join(pluginsDir, 'org.test.plugins.withcocoapods'));
+            expect(p.isSwiftPackage()).toBe(false);
+        });
+
+        it('Test 021: returns true for annotated plugins', function () {
+            const p = new PluginInfo(path.join(pluginsDir, 'org.test.plugins.swiftpackage'));
+            expect(p.isSwiftPackage()).toBe(true);
+        });
+    });
 });

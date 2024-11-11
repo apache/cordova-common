@@ -411,6 +411,19 @@ class PluginInfo {
     }
 
     /**
+     * Helper method to determine if this plugin is distributed as a Swift
+     * package.
+     *
+     * @example
+     * <platform name="ios" package="swift">
+     * </platform>
+     */
+    isSwiftPackage () {
+        const platformTag = this._et.find('./platform[@name="ios"]');
+        return !!platformTag.attrib.package;
+    }
+
+    /**
      * Helper method used by most of the getSomething methods of PluginInfo.
      *
      * Get all elements of a given name. Both in root and in platform sections
