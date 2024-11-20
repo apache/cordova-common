@@ -78,6 +78,11 @@ describe('ConfigFile tests', function () {
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', 'strings.xml')).toBe(stringsPath);
             });
 
+            it('should return android values xml file path', function () {
+                const resPath = path.join(projectDir, 'res', 'values', 'colors.xml');
+                expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', path.join('res', 'values', 'colors.xml'))).toBe(resPath);
+            });
+
             it('should return ios config.xml file path', function () {
                 spyOn(ConfigFile, 'getIOSProjectname').and.returnValue('iospath');
                 const configPath = path.join('project_dir', 'iospath', 'config.xml');
@@ -106,9 +111,24 @@ describe('ConfigFile tests', function () {
                 const projName = 'XXX';
                 const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
-                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
                 spyOn(require('fast-glob'), 'sync').and.returnValue([
                     `AAA/${projName}-Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
+                    expectedPlistPath
+                ]);
+
+                expect(ConfigFile.resolveConfigFilePath('', 'ios', '*-Info.plist')).toBe(expectedPlistPath);
+            });
+
+            it('should return Info.plist file', function () {
+                const projName = 'XXX';
+                const expectedPlistPath = path.join(projName, 'Info.plist');
+
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
+                spyOn(require('fast-glob'), 'sync').and.returnValue([
+                    'AAA/Info.plist',
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
                     expectedPlistPath
