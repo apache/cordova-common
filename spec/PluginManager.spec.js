@@ -19,11 +19,10 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const rewire = require('rewire');
 const PluginInfo = require('../src/PluginInfo/PluginInfo');
 const ConfigChanges = require('../src/ConfigChanges/ConfigChanges');
-
-const PluginManager = rewire('../src/PluginManager');
+const ActionStack = require('../src/ActionStack');
+const PluginManager = require('../src/PluginManager');
 
 const DUMMY_PLUGIN = path.join(__dirname, 'fixtures/plugins/org.test.plugins.dummyplugin');
 const FAKE_PLATFORM = 'cordova-atari';
@@ -51,20 +50,21 @@ describe('PluginManager class', function () {
     });
 
     describe('instance', function () {
-        let actions, manager;
+        let manager;
         let FAKE_PROJECT;
-        const ActionStackOrig = PluginManager.__get__('ActionStack');
 
         beforeEach(function () {
             FAKE_PROJECT = jasmine.createSpyObj('project', ['getInstaller', 'getUninstaller', 'write']);
             manager = new PluginManager('windows', FAKE_LOCATIONS, FAKE_PROJECT);
-            actions = jasmine.createSpyObj('actions', ['createAction', 'push', 'process']);
-            actions.process.and.returnValue(Promise.resolve());
-            PluginManager.__set__('ActionStack', function () { return actions; });
+            spyOn(ActionStack.prototype, 'createAction');
+            spyOn(ActionStack.prototype, 'push');
+            spyOn(ActionStack.prototype, 'process').and.resolveTo();
         });
 
-        afterEach(function () {
-            PluginManager.__set__('ActionStack', ActionStackOrig);
+        describe('doOperation', function () {
+            it('should reject if the operation is invalid', function () {
+                return expectAsync(manager.doOperation('test', {}, {})).toBeRejected();
+            });
         });
 
         describe('addPlugin method', function () {
@@ -84,8 +84,8 @@ describe('PluginManager class', function () {
                         expect(FAKE_PROJECT.getInstaller.calls.count()).toBe(16);
                         expect(FAKE_PROJECT.getUninstaller.calls.count()).toBe(16);
 
-                        expect(actions.push.calls.count()).toBe(16);
-                        expect(actions.process).toHaveBeenCalled();
+                        expect(ActionStack.prototype.push.calls.count()).toBe(16);
+                        expect(ActionStack.prototype.process).toHaveBeenCalled();
                         expect(FAKE_PROJECT.write).toHaveBeenCalled();
                     });
             });
@@ -111,6 +111,20 @@ describe('PluginManager class', function () {
                         expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwMetadataPath, jasmine.any(String), 'utf8');
                     });
             });
+        });
+
+        describe('removePlugin method', function () {
+            it('should return a promise', function () {
+                return expectAsync(manager.removePlugin(new PluginInfo(DUMMY_PLUGIN), {})).toBeResolved();
+            });
+
+            it('should reject if "plugin" parameter is not specified or not a PluginInfo instance', () => {
+                return Promise.resolve()
+                    .then(() => expectAsync(manager.removePlugin(null, {})).toBeRejected())
+                    .then(() => expectAsync(manager.removePlugin({}, {})).toBeRejected());
+            });
+
+            // The rest of this is essentially identical to the addPlugin flow
         });
     });
 });

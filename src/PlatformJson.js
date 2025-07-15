@@ -260,3 +260,4 @@ class ModuleMetadata {
 }
 
 module.exports = PlatformJson;
+module.exports.ModuleMetadata = ModuleMetadata;

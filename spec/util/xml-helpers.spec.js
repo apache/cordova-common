@@ -412,7 +412,7 @@ describe('xml-helpers', function () {
             expect(testElements[0].text).toContain('SUPER_NAME');
         });
 
-        it('Test 038 : should append non singelton children', function () {
+        it('Test 038 : should append non singleton children', function () {
             const testXml = et.XML('<widget><preference num="1"/> <preference num="2"/></widget>');
 
             xml_helpers.mergeXml(testXml, dstXml, '', true);
@@ -430,7 +430,7 @@ describe('xml-helpers', function () {
             expect(testElement.text).toEqual('testText');
         });
 
-        it('Test 040 : should not append duplicate non singelton children', function () {
+        it('Test 040 : should not append duplicate non singleton children', function () {
             const testXml = et.XML('<widget><preference name="fullscreen" value="true"/></widget>');
 
             xml_helpers.mergeXml(testXml, dstXml, '', true);
@@ -438,7 +438,7 @@ describe('xml-helpers', function () {
             expect(testElements.length).toEqual(2);
         });
 
-        it('Test 041 : should not skip partial duplicate non singelton children', function () {
+        it('Test 041 : should not skip partial duplicate non singleton children', function () {
             // remove access tags from dstXML
             let testElements = dstXml.findall('access');
             for (let i = 0; i < testElements.length; i++) {

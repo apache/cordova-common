@@ -18,10 +18,9 @@
 */
 
 const fs = require('node:fs');
-const rewire = require('rewire');
-const PlatformJson = rewire('../src/PlatformJson');
-const ModuleMetadata = PlatformJson.__get__('ModuleMetadata');
+const PlatformJson = require('../src/PlatformJson');
 
+const ModuleMetadata = PlatformJson.ModuleMetadata;
 const FAKE_MODULE = {
     name: 'fakeModule',
     src: 'www/fakeModule.js',
@@ -160,6 +159,7 @@ describe('ModuleMetadata class', function () {
 
     it('Test 011 : should throw if either pluginId or jsModule argument isn\'t specified', function () {
         expect(ModuleMetadata).toThrow();
+        expect(() => new ModuleMetadata(null, {})).toThrow();
         expect(() => new ModuleMetadata('fakePlugin', {})).toThrow();
     });
 

@@ -46,5 +46,9 @@
         <resource-file anattrib="value" />
         <lib-file anattrib="value" />
     </platform>
+    <platform name="ios" anattrib="value">
+        <asset src="nope" anattrib="value" />
+        <dependency anattrib="value" />
+    </platform>
     <framework src="hi" anattrib="value" />    
 </plugin>
