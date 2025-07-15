@@ -25,7 +25,6 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const zip = require('lodash.zip');
 const et = require('elementtree');
 const stripBom = require('strip-bom');
 
@@ -45,6 +44,12 @@ module.exports = {
      * @return {boolean} true iff one and two are equal
      */
     equalNodes (one, two) {
+        // This is effectively lodash's zip helper
+        // Taken from https://stackoverflow.com/a/49316371
+        //
+        // zip([a, b], [c, d]) => [[a, c], [b, d]]
+        const zip = (...args) => [...new Array(Math.max(...args.map(arr => arr.length)))].map((x, i) => args.map((y) => y[i]));
+
         return one.tag === two.tag &&
             one.len() === two.len() &&
             String(one.text).trim() === String(two.text).trim() &&

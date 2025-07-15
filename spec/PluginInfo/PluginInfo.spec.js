@@ -178,5 +178,10 @@ describe('PluginInfo', function () {
             expect(platforms.length).toBe(1);
             expect(platforms[0].anattrib).toBe('value');
         });
+
+        it('should retrieve a list of platform names', function () {
+            const platforms = pluginPassthrough.getPlatformsArray();
+            expect(platforms).toEqual(['android']);
+        });
     });
 });

@@ -14,7 +14,7 @@
     "test": "npm run lint && npm run cover",
     "test:unit": "jasmine \"spec/**/*.spec.js\"",
     "lint": "eslint .",
-    "cover": "nyc npm run test:unit"
+    "cover": "c8 npm run test:unit"
   },
   "dependencies": {
     "@netflix/nerror": "^1.1.3",
@@ -24,7 +24,6 @@
     "elementtree": "^0.1.7",
     "endent": "^2.1.0",
     "fast-glob": "^3.3.3",
-    "lodash.zip": "^4.2.0",
     "plist": "^3.1.0",
     "q": "^1.5.1",
     "read-chunk": "^3.2.0",
@@ -32,13 +31,13 @@
   },
   "devDependencies": {
     "@cordova/eslint-config": "^5.1.0",
+    "c8": "^10.1.3",
     "jasmine": "^5.8.0",
     "jasmine-spec-reporter": "^7.0.0",
-    "nyc": "^17.1.0",
     "rewire": "^9.0.0",
     "tmp": "^0.2.3"
   },
-  "nyc": {
+  "c8": {
     "all": true,
     "exclude": [
       "coverage/",
