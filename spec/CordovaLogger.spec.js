@@ -109,18 +109,18 @@ describe('CordovaLogger class', function () {
 
         describe('log method', function () {
             function CursorSpy (name) {
-                const cursorMethods = ['reset', 'write'];
+                const cursorMethods = ['reset', 'write', 'bold'];
                 const spy = jasmine.createSpyObj(name, cursorMethods);
 
                 // Make spy methods chainable, as original Cursor acts
                 cursorMethods.forEach(function (method) { spy[method].and.returnValue(spy); });
 
+                spy.fg = jasmine.createSpyObj('fg', ['grey', 'yellow', 'blue', 'red']);
+
                 return spy;
             }
 
             beforeEach(function () {
-                // Empty colors table to make it easier to mock
-                logger.colors = {};
                 logger.stdoutCursor = new CursorSpy('stdoutCursor');
                 logger.stderrCursor = new CursorSpy('stderrCursor');
             });

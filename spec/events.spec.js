@@ -82,5 +82,13 @@ describe('Cordova events', function () {
             events.emit('log', 'test message #2');
             expect(logSpy).not.toHaveBeenCalled();
         });
+
+        it('should throw an error if the forwarding target is not a listener', function () {
+            const nonListener = {};
+
+            expect(() => {
+                events.forwardEventsTo(nonListener);
+            }).toThrow();
+        });
     });
 });
