@@ -90,6 +90,10 @@ describe('PluginInfo', function () {
             expect(assets.length).toBe(1);
             expect(assets[0].anattrib).toBe('value');
         });
+
+        it('throws if missing src or target attributes', function () {
+            expect(function () { pluginPassthrough.getAssets('ios'); }).toThrow();
+        });
     });
 
     describe('Dependency', () => {
@@ -97,6 +101,10 @@ describe('PluginInfo', function () {
             const dependencies = pluginPassthrough.getDependencies('android');
             expect(dependencies.length).toBe(1);
             expect(dependencies[0].anattrib).toBe('value');
+        });
+
+        it('throws if missing id attribute', function () {
+            expect(function () { pluginPassthrough.getDependencies('ios'); }).toThrow();
         });
     });
 
@@ -175,13 +183,13 @@ describe('PluginInfo', function () {
     describe('Platform', () => {
         it('Test 019: platform supports xml passthrough', function () {
             const platforms = pluginPassthrough.getPlatforms();
-            expect(platforms.length).toBe(1);
+            expect(platforms.length).toBe(2);
             expect(platforms[0].anattrib).toBe('value');
         });
 
         it('should retrieve a list of platform names', function () {
             const platforms = pluginPassthrough.getPlatformsArray();
-            expect(platforms).toEqual(['android']);
+            expect(platforms).toEqual(['android', 'ios']);
         });
     });
 });
