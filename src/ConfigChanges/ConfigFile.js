@@ -16,7 +16,6 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const readChunk = require('read-chunk');
 
 // Use delay loading to ensure plist and other node modules to not get loaded
 // on Android, Windows platforms
@@ -28,6 +27,9 @@ const modules = {
     get plist_helpers () { return require('../util/plist-helpers'); },
     get xml_helpers () { return require('../util/xml-helpers'); }
 };
+
+// Cache of project folder paths to Xcode project names
+const xcodeprojMap = new Map();
 
 /******************************************************************************
 * ConfigFile class
@@ -73,13 +75,13 @@ class ConfigFile {
         } else {
             // plist file
             this.type = 'plist';
-            // TODO: isBinaryPlist() reads the file and then parse re-reads it again.
-            //       We always write out text plist, not binary.
-            //       Do we still need to support binary plist?
-            //       If yes, use plist.parseStringSync() and read the file once.
-            this.data = isBinaryPlist(filepath)
-                ? modules.bplist.parseBuffer(fs.readFileSync(filepath))[0]
-                : modules.plist.parse(fs.readFileSync(filepath, 'utf8'));
+
+            const fileData = fs.readFileSync(filepath);
+            if (fileData.toString('utf8', 0, 6) === 'bplist') {
+                this.data = modules.bplist.parseBuffer(fileData)[0];
+            } else {
+                this.data = modules.plist.parse(fileData.toString('utf8'));
+            }
         }
     }
 
@@ -154,11 +156,34 @@ class ConfigFile {
 
         this.is_changed = true;
     }
+
+    // Find out the real name of an iOS project
+    //
+    // This caches the project name for a given directory path, assuming that
+    // it won't change over the course of a single Cordova command invocation
+    static getIOSProjectname (project_dir) {
+        if (xcodeprojMap.has(project_dir)) {
+            return xcodeprojMap.get(project_dir);
+        }
+
+        const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir, onlyDirectories: true });
+
+        if (matches.length !== 1) {
+            const msg = matches.length === 0
+                ? 'Does not appear to be an xcode project, no xcode project file'
+                : 'There are multiple *.xcodeproj dirs';
+
+            throw new Error(`${msg} in ${project_dir}`);
+        }
+
+        const projectName = path.basename(matches[0], '.xcodeproj');
+        xcodeprojMap.set(project_dir, projectName);
+        return projectName;
+    }
 }
 
 // Some config-file target attributes are not qualified with a full leading directory, or contain wildcards.
 // Resolve to a real path in this function.
-// TODO: getIOSProjectname is slow because of glob, try to avoid calling it several times per project.
 function resolveConfigFilePath (project_dir, platform, file) {
     let filepath = path.join(project_dir, file);
     let matches;
@@ -167,20 +192,32 @@ function resolveConfigFilePath (project_dir, platform, file) {
 
     if (file.includes('*')) {
         // handle wildcards in targets using glob.
-        matches = modules.glob.sync(`**/${file}`, {
+        matches = modules.glob.sync(`**/${file.replace('*-Info.plist', '*Info.plist')}`, {
             fs,
             cwd: project_dir,
             absolute: true
         }).map(path.normalize);
 
-        if (matches.length) filepath = matches[0];
+        if (matches.length) {
+            filepath = matches[0];
+        }
 
-        // [CB-5989] multiple Info.plist files may exist. default to $PROJECT_NAME-Info.plist
+        // [CB-5989] multiple Info.plist files may exist. default to Info.plist then $PROJECT_NAME-Info.plist
         if (matches.length > 1 && file.includes('-Info.plist')) {
-            const projName = getIOSProjectname(project_dir);
+            const projName = ConfigFile.getIOSProjectname(project_dir);
+
+            // Try to find a unprefix Info.plist file first
+            let plistPath = path.join(project_dir, projName, 'Info.plist');
+            if (matches.includes(plistPath)) {
+                return plistPath;
+            }
+
+            // Then try to find one prefixed with the project name
             const plistName = `${projName}-Info.plist`;
-            const plistPath = path.join(project_dir, projName, plistName);
-            if (matches.includes(plistPath)) return plistPath;
+            plistPath = path.join(project_dir, projName, plistName);
+            if (matches.includes(plistPath)) {
+                return plistPath;
+            }
         }
         return filepath;
     }
@@ -216,7 +253,7 @@ function resolveConfigFilePath (project_dir, platform, file) {
         if (platform === 'ios' || platform === 'osx') {
             filepath = path.join(
                 project_dir,
-                module.exports.getIOSProjectname(project_dir),
+                ConfigFile.getIOSProjectname(project_dir),
                 'config.xml'
             );
         } else {
@@ -235,29 +272,5 @@ function resolveConfigFilePath (project_dir, platform, file) {
     return filepath;
 }
 
-// Find out the real name of an iOS or OSX project
-// TODO: glob is slow, need a better way or caching, or avoid using more than once.
-function getIOSProjectname (project_dir) {
-    const matches = modules.glob.sync('*.xcodeproj', { cwd: project_dir, onlyDirectories: true });
-
-    if (matches.length !== 1) {
-        const msg = matches.length === 0
-            ? 'Does not appear to be an xcode project, no xcode project file'
-            : 'There are multiple *.xcodeproj dirs';
-
-        throw new Error(`${msg} in ${project_dir}`);
-    }
-
-    return path.basename(matches[0], '.xcodeproj');
-}
-
-// determine if a plist file is binary
-// i.e. they start with the magic header "bplist"
-function isBinaryPlist (filename) {
-    return readChunk.sync(filename, 0, 6).toString() === 'bplist';
-}
-
 module.exports = ConfigFile;
-module.exports.isBinaryPlist = isBinaryPlist;
-module.exports.getIOSProjectname = getIOSProjectname;
 module.exports.resolveConfigFilePath = resolveConfigFilePath;

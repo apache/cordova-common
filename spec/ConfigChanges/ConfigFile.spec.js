@@ -15,17 +15,11 @@
     under the License.
 */
 
-const rewire = require('rewire');
 const fs = require('node:fs');
 const path = require('node:path');
-const readChunk = require('read-chunk');
+const ConfigFile = require('../../src/ConfigChanges/ConfigFile');
 
 describe('ConfigFile tests', function () {
-    let ConfigFile;
-    beforeEach(() => {
-        ConfigFile = rewire('../../src/ConfigChanges/ConfigFile');
-    });
-
     describe('instance methods', () => {
         describe('save', () => {
             it('calls fs.writeFileSync', function () {
@@ -37,18 +31,6 @@ describe('ConfigFile tests', function () {
     });
 
     describe('static methods', () => {
-        describe('isBinaryPlist', () => {
-            it('should return false if not binary', function () {
-                spyOn(readChunk, 'sync').and.returnValue('not bplist');
-                expect(ConfigFile.isBinaryPlist('someFile')).toBe(false);
-            });
-
-            it('should return true if binary', function () {
-                spyOn(readChunk, 'sync').and.returnValue('bplist');
-                expect(ConfigFile.isBinaryPlist('someFile')).toBe(true);
-            });
-        });
-
         describe('getIOSProjectname', () => {
             it('should throw error', function () {
                 expect(function () { ConfigFile.getIOSProjectname('some/project/name'); }).toThrow();
@@ -76,6 +58,11 @@ describe('ConfigFile tests', function () {
             it('should return android strings.xml file path', function () {
                 const stringsPath = path.join(projectDir, 'res', 'values', 'strings.xml');
                 expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', 'strings.xml')).toBe(stringsPath);
+            });
+
+            it('should return android values xml file path', function () {
+                const resPath = path.join(projectDir, 'res', 'values', 'colors.xml');
+                expect(ConfigFile.resolveConfigFilePath('project_dir', 'android', path.join('res', 'values', 'colors.xml'))).toBe(resPath);
             });
 
             it('should return ios config.xml file path', function () {
@@ -106,9 +93,24 @@ describe('ConfigFile tests', function () {
                 const projName = 'XXX';
                 const expectedPlistPath = `${projName}${path.sep}${projName}-Info.plist`;
 
-                ConfigFile.__set__('getIOSProjectname', () => projName);
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
                 spyOn(require('fast-glob'), 'sync').and.returnValue([
                     `AAA/${projName}-Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Info.plist`,
+                    `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
+                    expectedPlistPath
+                ]);
+
+                expect(ConfigFile.resolveConfigFilePath('', 'ios', '*-Info.plist')).toBe(expectedPlistPath);
+            });
+
+            it('should return Info.plist file', function () {
+                const projName = 'XXX';
+                const expectedPlistPath = path.join(projName, 'Info.plist');
+
+                spyOn(ConfigFile, 'getIOSProjectname').and.returnValue(projName);
+                spyOn(require('fast-glob'), 'sync').and.returnValue([
+                    'AAA/Info.plist',
                     `Pods/Target Support Files/Pods-${projName}/Info.plist`,
                     `Pods/Target Support Files/Pods-${projName}/Pods-${projName}-Info.plist`,
                     expectedPlistPath

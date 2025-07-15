@@ -26,7 +26,6 @@
     "fast-glob": "^3.3.3",
     "plist": "^3.1.0",
     "q": "^1.5.1",
-    "read-chunk": "^3.2.0",
     "strip-bom": "^4.0.0"
   },
   "devDependencies": {
