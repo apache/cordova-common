@@ -77,7 +77,7 @@ module.exports = {
                 const parentSelector = path.dirname(selector);
 
                 this.graftXML(doc, [parentToCreate], parentSelector);
-            } catch (e) {
+            } catch {
                 return false;
             }
 

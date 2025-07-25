@@ -27,7 +27,6 @@ module.exports = defineConfig([
         'spec/fixtures/'
     ]),
     ...nodeConfig.map(config => ({
-        files: ['spec/**/*.js'],
         ...config,
         rules: {
             ...(config.rules || {}),
@@ -38,5 +37,8 @@ module.exports = defineConfig([
             }]
         }
     })),
-    ...nodeTestConfig
+    ...nodeTestConfig.map(config => ({
+        files: ['spec/**/*.js'],
+        ...config
+    }))
 ]);
