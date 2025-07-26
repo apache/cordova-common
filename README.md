@@ -114,24 +114,6 @@ stack.process()
     });
 ```
 
-### `superspawn`
-
-Module for spawning child processes with some advanced logic.
-
-Usage:
-
-```js
-const { superspawn } = require('cordova-common');
-
-superspawn.spawn('adb', ['devices'])
-    .progress(data => {
-        if (data.stderr) console.error(`"adb devices" raised an error: ${data.stderr}`);
-    })
-    .then(devices => {
-        // Do something...
-    });
-```
-
 ### `xmlHelpers`
 
 A set of utility methods for dealing with XML files.
