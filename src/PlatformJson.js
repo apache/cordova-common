@@ -17,7 +17,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const endent = require('endent').default;
-const stripBom = require('strip-bom');
+const stripBom = require('./util/strip-bom.js');
 const mungeutil = require('./ConfigChanges/munge-util');
 
 class PlatformJson {
