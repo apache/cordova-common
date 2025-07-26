@@ -79,7 +79,7 @@ exports.spawn = (cmd, args, opts) => {
         try {
             // This fails when module is installed in a system directory (e.g. via sudo npm install)
             fs.chmodSync(cmd, '755');
-        } catch (e) {
+        } catch {
             // If the perms weren't set right, then this will come as an error upon execution.
         }
     }
