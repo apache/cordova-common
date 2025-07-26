@@ -26,7 +26,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const et = require('elementtree');
-const stripBom = require('strip-bom');
+const stripBom = require('./strip-bom.js');
 
 /**
  * The part of the <edit-config> interface that is used here

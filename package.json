@@ -23,8 +23,7 @@
     "elementtree": "^0.1.7",
     "endent": "^2.1.0",
     "fast-glob": "^3.3.3",
-    "plist": "^3.1.0",
-    "strip-bom": "^4.0.0"
+    "plist": "^3.1.0"
   },
   "devDependencies": {
     "@cordova/eslint-config": "^6.0.0",
