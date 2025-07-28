@@ -180,9 +180,9 @@ describe('FileUpdater class', function () {
             const updated = FileUpdater.updatePathWithStats(
                 testSourceDir, mockDirStats(), testTargetDir, null);
             expect(updated).toBe(true);
-            expect(mockFs.mkdirPaths.length).toBe(1);
+            expect(mockFs.cpPaths.length).toBe(1);
             expect(mockFs.rmPaths.length).toBe(0);
-            expect(mockFs.mkdirPaths[0]).toBe(testTargetDir);
+            expect(mockFs.cpPaths[0]).toEqual([testSourceDir, testTargetDir]);
         });
 
         it('Test 003 : should remove a directory that exists at target and not at source', function () {
@@ -275,11 +275,10 @@ describe('FileUpdater class', function () {
             const updated = FileUpdater.updatePathWithStats(
                 testSourceDir, mockDirStats(), testTargetDir, mockFileStats(now));
             expect(updated).toBe(true);
-            expect(mockFs.cpPaths.length).toBe(0);
+            expect(mockFs.cpPaths.length).toBe(1);
             expect(mockFs.rmPaths.length).toBe(1);
-            expect(mockFs.mkdirPaths.length).toBe(1);
             expect(mockFs.rmPaths[0]).toBe(testTargetDir);
-            expect(mockFs.mkdirPaths[0]).toBe(testTargetDir);
+            expect(mockFs.cpPaths[0]).toEqual([testSourceDir, testTargetDir]);
         });
 
         it('Test 013 : should remove and copy when source is a file and target is a directory', function () {
