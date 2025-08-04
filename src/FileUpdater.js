@@ -81,9 +81,9 @@ function updatePathWithStats (sourcePath, sourceStats, targetPath, targetStats, 
     }
 
     if (sourceStats.isDirectory() && !targetStats) {
-        // The target directory does not exist, so we create it.
-        log(`mkdir ${targetPath}`);
-        fs.mkdirSync(targetFullPath, { recursive: true });
+        // The target directory does not exist, so recursive copy to create it and its contents.
+        log(`cpSync ${targetPath}`);
+        fs.cpSync(path.join(rootDir, sourcePath), targetFullPath, { recursive: true });
         return true;
     }
 
