@@ -20,6 +20,35 @@
 -->
 # cordova-common Release Notes
 
+### 6.0.0 (Aug 06, 2025)
+
+**Breaking Changes:**
+
+* feat!: change `resource-file` behavior to support directory contents (#239)
+* feat!: remove `superspawn.js` (#236)
+* feat!: remove `superspawn` & npm packages `q` & `cross-spawn` (#231)
+* dep(npm)!: bump `@cordova/eslint-config@6.0.0` (#235)
+  * Bumps `node >=20.9.0`
+* chore!: bump `node >=20.5.0` & upgrade npm packages (#228)
+
+**Features:**
+
+* feat: Support finding an unprefixed `Info.plist` file (#212)
+
+**Chores:**
+
+* chore: update `package-lock.json` (#240)
+* chore(tests): Improve test coverage (#232)
+* chore(coverage): Move from `nyc` to `c8` for code coverage (#229)
+* dep(npm): update w/ rebuilt `package-lock.json` (#238)
+* refactor(bom): Bring `strip-bom` in as util (#237)
+
+**CI & Refactoring:**
+
+* ci: use macos-15 (#234)
+* ci(workflow): update release-audit & license config (#233)
+* ci: add permissions block & commit hash pinning of third-party actions (#230)
+
 ### 5.0.1 (Jan 28, 2025)
 
 **Chores:**
