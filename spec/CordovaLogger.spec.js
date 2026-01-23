@@ -17,7 +17,6 @@
     under the License.
 */
 
-const CordovaError = require('../src/CordovaError');
 const CordovaLogger = require('../src/CordovaLogger');
 const EventEmitter = require('events').EventEmitter;
 
@@ -148,12 +147,19 @@ describe('CordovaLogger class', function () {
                 expect(logger.stderrCursor.write).toHaveBeenCalled();
             });
 
-            it('Test 013 : should handle CordovaError instances separately from Error ones', function () {
-                const errorMock = new CordovaError();
-                spyOn(errorMock, 'toString').and.returnValue('error_message');
+            it('Test 013 : should log error stacktraces in verbose mode', function () {
+                const errorMock = new Error('error_message');
+                errorMock.stack = 'error_stacktrace';
 
                 logger.setLevel('verbose').log('verbose', errorMock);
-                expect(errorMock.toString).toHaveBeenCalled();
+                expect(logger.stderrCursor.write.calls.argsFor(0)).toMatch('Error: error_stacktrace');
+            });
+
+            it('Test 013 : should log error messages in non-verbose mode', function () {
+                const errorMock = new Error('error_message');
+                errorMock.stack = 'error_stacktrace';
+
+                logger.setLevel('info').log('info', errorMock);
                 expect(logger.stderrCursor.write.calls.argsFor(0)).toMatch('Error: error_message');
             });
         });

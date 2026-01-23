@@ -17,8 +17,6 @@
        under the License.
 */
 
-const CordovaError = require('../CordovaError');
-
 /**
  * Formats an error for logging.
  *
@@ -31,9 +29,7 @@ const CordovaError = require('../CordovaError');
 module.exports = function formatError (error, isVerbose) {
     let message = '';
 
-    if (error instanceof CordovaError) {
-        message = error.toString(isVerbose);
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
         if (isVerbose) {
             message = error.stack;
         } else {

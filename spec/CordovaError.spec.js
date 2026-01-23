@@ -18,7 +18,7 @@
 */
 
 const endent = require('endent').default;
-const CordovaError = require('../../src/CordovaError');
+const CordovaError = require('../src/CordovaError');
 
 describe('CordovaError class', () => {
     let error;
@@ -39,6 +39,14 @@ describe('CordovaError class', () => {
         expect(error.toString()).toEqual('CordovaError: error');
     });
 
+    it('should have a message', () => {
+        expect(error.message).toEqual('error');
+    });
+
+    it('should have a stacktrace', () => {
+        expect(error.stack).toBeDefined();
+    });
+
     describe('given a cause', () => {
         let cause;
 
@@ -48,8 +56,11 @@ describe('CordovaError class', () => {
         });
 
         it('should save it', () => {
-            expect(error.cause()).toBe(cause);
+            expect(error.cause).toBe(cause);
+
+            process.noDeprecation = true;
             expect(CordovaError.cause(error)).toBe(cause);
+            process.noDeprecation = false;
         });
 
         it('should include the cause in toString result', () => {
@@ -58,14 +69,21 @@ describe('CordovaError class', () => {
             expect(error.toString()).toEqual(stringifiedError);
         });
 
-        it('should include the cause stack in CordovaError.fullStack', () => {
+        it('should include the cause stack', () => {
             cause.stack = 'CAUSE_STACK';
             error.stack = 'ERROR_STACK';
 
+            expect(error.stack).toEqual(endent`
+                ERROR_STACK
+                caused by: CAUSE_STACK
+            `);
+
+            process.noDeprecation = true;
             expect(CordovaError.fullStack(error)).toEqual(endent`
                 ERROR_STACK
                 caused by: CAUSE_STACK
             `);
+            process.noDeprecation = false;
         });
     });
 
@@ -81,14 +99,22 @@ describe('CordovaError class', () => {
             const cause = new Error('cause');
             error = new CordovaError('error', { cause });
 
+            expect(error.cause).toBe(cause);
+
+            process.noDeprecation = true;
             expect(CordovaError.cause(error)).toBe(cause);
+            process.noDeprecation = false;
         });
 
         it('should apply info option', () => {
             const info = { foo: 'bar' };
             error = new CordovaError('error', { info });
 
+            expect(error.info).toEqual(info);
+
+            process.noDeprecation = true;
             expect(CordovaError.info(error)).toEqual(info);
+            process.noDeprecation = false;
         });
     });
 });
