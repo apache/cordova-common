@@ -17,10 +17,21 @@
  under the License.
  */
 
-const ansi = require('ansi');
-const EventEmitter = require('events').EventEmitter;
-const EOL = require('os').EOL;
+const { EventEmitter } = require('node:events');
+const { EOL } = require('node:os');
+const util = require('node:util');
 const formatError = require('./util/formatError');
+
+const hasStyleText = (function () {
+    try {
+        if (util.styleText(['bold', 'red'], 'test') !== '') {
+            return true;
+        }
+    } catch { }
+    return false;
+})();
+
+const ansi = !hasStyleText ? require('ansi') : null;
 
 const INSTANCE_KEY = Symbol.for('org.apache.cordova.common.CordovaLogger');
 
@@ -49,6 +60,11 @@ class CordovaLogger {
     static get RESULTS () { return 'results'; }
 
     /**
+     * @private This is just exposed temporarily for unit testing.
+     */
+    static get __hasStyleText () { return hasStyleText; }
+
+    /**
      * Static method to create new or acquire existing instance.
      *
      * @returns {CordovaLogger} Logger instance
@@ -74,10 +90,17 @@ class CordovaLogger {
         /** @private */
         this.stderr = process.stderr;
 
-        /** @private */
-        this.stdoutCursor = ansi(this.stdout);
-        /** @private */
-        this.stderrCursor = ansi(this.stderr);
+        if (hasStyleText) {
+            /** @private */
+            this.stdoutCursor = this.stdout;
+            /** @private */
+            this.stderrCursor = this.stderr;
+        } else {
+            /** @private */
+            this.stdoutCursor = ansi(this.stdout);
+            /** @private */
+            this.stderrCursor = ansi(this.stderr);
+        }
 
         this.addLevel(CordovaLogger.VERBOSE, 1000, 'grey');
         this.addLevel(CordovaLogger.NORMAL, 2000);
@@ -120,11 +143,17 @@ class CordovaLogger {
         }
 
         const color = this.colors[logLevel];
-        if (color) {
-            cursor.bold().fg[color]();
-        }
 
-        cursor.write(message).reset().write(EOL);
+        if (!hasStyleText) {
+            if (color) {
+                cursor.bold().fg[color]();
+            }
+
+            cursor.write(message).reset().write(EOL);
+        } else {
+            const styles = color ? ['bold', color] : [];
+            cursor.write(util.styleText(styles, message) + EOL);
+        }
 
         return this;
     }
