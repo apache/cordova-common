@@ -105,6 +105,18 @@ describe('CordovaLogger class', function () {
                 const emitter = new EventEmitter().on('newListener', listenerSpy);
                 logger.subscribe(emitter);
             });
+
+            it('should avoid subscribing the same emitter multiple times', function () {
+                spyOn(logger, 'log');
+
+                const emitter = new EventEmitter();
+                logger.subscribe(emitter);
+                logger.subscribe(emitter);
+
+                emitter.emit('info', 'This is an error message');
+
+                expect(logger.log).toHaveBeenCalledTimes(1);
+            });
         });
 
         describe('log method', function () {

@@ -62,6 +62,8 @@ class CordovaLogger {
         return global[INSTANCE_KEY];
     }
 
+    #subscriptions = new WeakSet();
+
     constructor () {
         /** @private */
         this.levels = {};
@@ -213,6 +215,11 @@ class CordovaLogger {
             throw new Error('Subscribe method only accepts an EventEmitter instance as argument');
         }
 
+        // Check to make sure we don't subscribe the same emitter multiple times
+        if (this.#subscriptions.has(eventEmitter)) {
+            return this;
+        }
+
         eventEmitter.on('verbose', this.verbose)
             .on('log', this.normal)
             .on('info', this.info)
@@ -220,6 +227,8 @@ class CordovaLogger {
             .on('warning', this.warn)
             // Set up event handlers for logging and results emitted as events.
             .on('results', this.results);
+
+        this.#subscriptions.add(eventEmitter);
 
         return this;
     }
