@@ -1,0 +1,9 @@
+const { superspawn } = require('cordova-common');
+
+superspawn.spawn('adb', ['devices'])
+    .progress(data => {
+        if (data.stderr) console.error(`"adb devices" raised an error: ${data.stderr}`);
+    })
+    .then(devices => {
+        //  Get Current
+    });
