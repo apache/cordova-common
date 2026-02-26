@@ -1,0 +1,7 @@
+const { PluginInfo, PluginInfoProvider }  = require('cordova-common');
+
+// The following instances are equal
+const plugin1 = new PluginInfo('path/to/plugin_directory');
+const plugin2 = new PluginInfoProvider().get('path/to/plugin_directory');
+
+console.log(`The plugin ${plugin1.id} has version ${plugin1.version}`)
