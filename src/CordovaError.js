@@ -19,7 +19,7 @@
 
 // @ts-check
 
-const { VError } = require('@netflix/nerror');
+const { deprecate } = require('node:util');
 
 /**
  * @public
@@ -29,25 +29,65 @@ const { VError } = require('@netflix/nerror');
  * @param {Object} [info] - Specifies arbitrary informational properties.
  */
 
-/**
- * A custom exception class derived from VError
- */
-class CordovaError extends VError {
+class CordovaError extends Error {
+    #stackObj = {};
+    #info;
+    #name;
+    #cause;
+
     /**
      * @param {String} message - Error message
      * @param {Error|CordovaErrorOptions} [causeOrOpts] - The Error that caused
      * this to be thrown or a CordovaErrorOptions object.
      */
     constructor (message, causeOrOpts = {}) {
-        const defaults = { name: 'CordovaError' };
-        const overrides = { strict: false, skipPrintf: true };
-        const userOpts = causeOrOpts instanceof Error
-            ? { cause: causeOrOpts }
-            : causeOrOpts;
-        const opts = Object.assign(defaults, userOpts, overrides);
+        super(message);
 
-        super(opts, message);
+        const opts = causeOrOpts instanceof Error ? { cause: causeOrOpts } : causeOrOpts;
+
+        this.#name = opts.name ?? this.constructor.name;
+        this.#cause = opts.cause;
+        this.#info = opts.info;
+
+        if (this.#cause) {
+            this.message = `${message}: ${this.#cause.message}`;
+        }
+
+        delete this.stack; // Remove the existing stack property so it calls our getter
+        Error.captureStackTrace(this.#stackObj, this.constructor);
+    }
+
+    toString () {
+        return `${this.#name}: ${this.message}`;
+    }
+
+    get name () {
+        return this.#name;
+    }
+
+    get cause () {
+        return this.#cause;
+    }
+
+    get info () {
+        return this.#info;
+    }
+
+    get stack () {
+        if (this.#cause) {
+            return `${this.#stackObj.stack}\ncaused by: ${this.#cause.stack}`;
+        }
+
+        return this.#stackObj.stack;
+    }
+
+    set stack (value) {
+        this.#stackObj.stack = value;
     }
 }
+
+CordovaError.info = deprecate((err) => err.info, 'info(err) is deprecated. Use err.info instead.');
+CordovaError.cause = deprecate((err) => err.cause, 'cause(err) is deprecated. Use err.cause instead.');
+CordovaError.fullStack = deprecate((err) => err.stack, 'fullStack(err) is deprecated. Use err.stack instead.');
 
 module.exports = CordovaError;
