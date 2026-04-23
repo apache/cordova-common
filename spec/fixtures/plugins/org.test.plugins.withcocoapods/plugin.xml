@@ -44,6 +44,10 @@
           <pod name="Eureka" swift-version="4.1" />
           <pod name="AcknowList" />
         </pods>
+        <plugins>
+            <plugin name="my-other-plugin" />
+            <plugin name="cocoapods-art" options=":sources =&gt; [ &apos;my.source.url&apos; ]" />
+        </plugins>
       </podspec>
     </platform>
 </plugin>
