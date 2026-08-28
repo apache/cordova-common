@@ -19,8 +19,9 @@
 
 const CordovaError = require('../src/CordovaError');
 const CordovaLogger = require('../src/CordovaLogger');
-const EventEmitter = require('events').EventEmitter;
+const { EventEmitter } = require('node:events');
 
+const hasStyleText = CordovaLogger.__hasStyleText;
 const DEFAULT_LEVELS = ['verbose', 'normal', 'warn', 'info', 'error', 'results'];
 
 describe('CordovaLogger class', function () {
@@ -105,58 +106,110 @@ describe('CordovaLogger class', function () {
                 const emitter = new EventEmitter().on('newListener', listenerSpy);
                 logger.subscribe(emitter);
             });
+
+            it('should avoid subscribing the same emitter multiple times', function () {
+                spyOn(logger, 'log');
+
+                const emitter = new EventEmitter();
+                logger.subscribe(emitter);
+                logger.subscribe(emitter);
+
+                emitter.emit('info', 'This is an error message');
+
+                expect(logger.log).toHaveBeenCalledTimes(1);
+            });
         });
 
-        describe('log method', function () {
-            function CursorSpy (name) {
-                const cursorMethods = ['reset', 'write', 'bold'];
-                const spy = jasmine.createSpyObj(name, cursorMethods);
-
-                // Make spy methods chainable, as original Cursor acts
-                cursorMethods.forEach(function (method) { spy[method].and.returnValue(spy); });
-
-                spy.fg = jasmine.createSpyObj('fg', ['grey', 'yellow', 'blue', 'red']);
-
-                return spy;
-            }
-
-            beforeEach(function () {
-                logger.stdoutCursor = new CursorSpy('stdoutCursor');
-                logger.stderrCursor = new CursorSpy('stderrCursor');
-            });
-
-            it('Test 010 : should ignore message if severity is less than logger\'s level', function () {
-                logger.setLevel('error').log('verbose', 'some_messgge');
-                expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
-                expect(logger.stderrCursor.write).not.toHaveBeenCalled();
-            });
-
-            it('Test 011 : should log everything except error messages to stdout', function () {
-                logger.setLevel('verbose');
-                DEFAULT_LEVELS.forEach(function (level) {
-                    logger.log(level, 'message');
+        if (hasStyleText) {
+            describe('log method', function () {
+                beforeEach(function () {
+                    logger.stdoutCursor = jasmine.createSpyObj('stdout', ['write']);
+                    logger.stderrCursor = jasmine.createSpyObj('stderr', ['write']);
                 });
 
-                // Multiply calls number to 2 because 'write' method is get called twice (with message and EOL)
-                expect(logger.stdoutCursor.write.calls.count()).toBe((DEFAULT_LEVELS.length - 1) * 2);
-                expect(logger.stderrCursor.write.calls.count()).toBe(1 * 2);
-            });
+                it('Test 010 : should ignore message if severity is less than logger\'s level', function () {
+                    logger.setLevel('error').log('verbose', 'some_messgge');
+                    expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
+                    expect(logger.stderrCursor.write).not.toHaveBeenCalled();
+                });
 
-            it('Test 012 : should log Error objects to stderr despite of loglevel', function () {
-                logger.setLevel('verbose').log('verbose', new Error());
-                expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
-                expect(logger.stderrCursor.write).toHaveBeenCalled();
-            });
+                it('Test 011 : should log everything except error messages to stdout', function () {
+                    logger.setLevel('verbose');
+                    DEFAULT_LEVELS.forEach(function (level) {
+                        logger.log(level, 'message');
+                    });
 
-            it('Test 013 : should handle CordovaError instances separately from Error ones', function () {
-                const errorMock = new CordovaError();
-                spyOn(errorMock, 'toString').and.returnValue('error_message');
+                    expect(logger.stdoutCursor.write.calls.count()).toBe((DEFAULT_LEVELS.length - 1));
+                    expect(logger.stderrCursor.write.calls.count()).toBe(1);
+                });
 
-                logger.setLevel('verbose').log('verbose', errorMock);
-                expect(errorMock.toString).toHaveBeenCalled();
-                expect(logger.stderrCursor.write.calls.argsFor(0)).toMatch('Error: error_message');
+                it('Test 012 : should log Error objects to stderr despite of loglevel', function () {
+                    logger.setLevel('verbose').log('verbose', new Error());
+                    expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
+                    expect(logger.stderrCursor.write).toHaveBeenCalled();
+                });
+
+                it('Test 013 : should handle CordovaError instances separately from Error ones', function () {
+                    const errorMock = new CordovaError();
+                    spyOn(errorMock, 'toString').and.returnValue('error_message');
+
+                    logger.setLevel('verbose').log('verbose', errorMock);
+                    expect(errorMock.toString).toHaveBeenCalled();
+                    expect(logger.stderrCursor.write.calls.argsFor(0)).toMatch('Error: error_message');
+                });
             });
-        });
+        } else {
+            describe('log method (ansi)', function () {
+                function CursorSpy (name) {
+                    const cursorMethods = ['reset', 'write', 'bold'];
+                    const spy = jasmine.createSpyObj(name, cursorMethods);
+
+                    // Make spy methods chainable, as original Cursor acts
+                    cursorMethods.forEach(function (method) { spy[method].and.returnValue(spy); });
+
+                    spy.fg = jasmine.createSpyObj('fg', ['grey', 'yellow', 'blue', 'red']);
+
+                    return spy;
+                }
+
+                beforeEach(function () {
+                    logger.stdoutCursor = new CursorSpy('stdoutCursor');
+                    logger.stderrCursor = new CursorSpy('stderrCursor');
+                });
+
+                it('Test 010 : should ignore message if severity is less than logger\'s level', function () {
+                    logger.setLevel('error').log('verbose', 'some_messgge');
+                    expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
+                    expect(logger.stderrCursor.write).not.toHaveBeenCalled();
+                });
+
+                it('Test 011 : should log everything except error messages to stdout', function () {
+                    logger.setLevel('verbose');
+                    DEFAULT_LEVELS.forEach(function (level) {
+                        logger.log(level, 'message');
+                    });
+
+                    // Multiply calls number to 2 because 'write' method is get called twice (with message and EOL)
+                    expect(logger.stdoutCursor.write.calls.count()).toBe((DEFAULT_LEVELS.length - 1) * 2);
+                    expect(logger.stderrCursor.write.calls.count()).toBe(1 * 2);
+                });
+
+                it('Test 012 : should log Error objects to stderr despite of loglevel', function () {
+                    logger.setLevel('verbose').log('verbose', new Error());
+                    expect(logger.stdoutCursor.write).not.toHaveBeenCalled();
+                    expect(logger.stderrCursor.write).toHaveBeenCalled();
+                });
+
+                it('Test 013 : should handle CordovaError instances separately from Error ones', function () {
+                    const errorMock = new CordovaError();
+                    spyOn(errorMock, 'toString').and.returnValue('error_message');
+
+                    logger.setLevel('verbose').log('verbose', errorMock);
+                    expect(errorMock.toString).toHaveBeenCalled();
+                    expect(logger.stderrCursor.write.calls.argsFor(0)).toMatch('Error: error_message');
+                });
+            });
+        }
 
         describe('adjustLevel method', function () {
             it('Test 014 : should properly adjust log level', function () {
