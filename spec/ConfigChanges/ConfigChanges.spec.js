@@ -449,6 +449,31 @@ describe('config-changes module', function () {
                     }
                 });
 
+                it('should keep a plugin config-file graft that shares a selector with a config.xml edit-config', function () {
+                    // config-file adds a child under /manifest/application, edit-config rewrites
+                    // that element's attributes. They do not contend, so the plugin's element must
+                    // survive however many times config.xml is applied.
+                    install_plugin(dummyplugin);
+                    const multi_cfg = new ConfigParser(editconfig_multiple_children_xml);
+
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
+                    platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    munger.process(plugins_dir);
+                    munger.save_all();
+
+                    for (let pass = 1; pass <= 3; pass++) {
+                        const json = PlatformJson.load(plugins_dir, 'android');
+                        new configChanges.PlatformMunger('android', temp, json, pluginInfoProvider)
+                            .add_config_changes(multi_cfg, true)
+                            .save_all();
+
+                        const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf8')));
+                        const activity = am_xml.find('./application/activity[@android:name="DummyPlugin.org.test.plugins.dummyplugin"]');
+                        expect(activity).withContext(`pass ${pass}`).not.toBeNull();
+                    }
+                });
+
                 it('should append new children to XML document tree', function () {
                     const configfile_cfg = new ConfigParser(configfile_xml);
                     const platformJson = PlatformJson.load(plugins_dir, 'android');
