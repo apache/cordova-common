@@ -248,10 +248,16 @@ class PlatformMunger {
         const configConflicts = { files: {} }; // config.xml edit-config conflicts
         const pluginConflicts = { files: {} }; // plugin.xml edit-config conflicts
 
+        // A selector can hold more than one munge -- an <edit-config> with several children
+        // contributes one per child, and config.xml and a plugin can both target the same element.
+        // Every one of them conflicts with the incoming change, so register them all: registering
+        // only the first leaves the rest in place, and a partially removed selector is then
+        // re-grafted one entry at a time on each later run.
         const registerConflict = (file, selector) => {
-            const witness = files[file].parents[selector][0];
-            const conflictMunge = witness.id === 'config.xml' ? configConflicts : pluginConflicts;
-            mungeutil.deep_add(conflictMunge, file, selector, witness);
+            for (const witness of files[file].parents[selector]) {
+                const conflictMunge = witness.id === 'config.xml' ? configConflicts : pluginConflicts;
+                mungeutil.deep_add(conflictMunge, file, selector, witness);
+            }
         };
 
         editchanges.forEach(({ file, target }) => {
