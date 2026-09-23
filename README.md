@@ -21,9 +21,11 @@
 
 # cordova-common
 
-[![NPM](https://nodei.co/npm/cordova-common.png)](https://nodei.co/npm/cordova-common/)
+[![npm - Latest](https://img.shields.io/npm/v/cordova-common/latest?label=Latest%20Release%20(npm))](https://npmjs.com/package/cordova-common)
+[![GitHub](https://img.shields.io/github/package-json/v/apache/cordova-common?label=Development%20(Git))](https://github.com/apache/cordova-common)
 
-[![Node CI](https://github.com/apache/cordova-common/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions?query=branch%3Amaster)
+[![GitHub - Node Workflow](https://github.com/apache/cordova-common/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions/workflows/ci.yml?query=branch%3Amaster)
+[![GitHub - Release Audit Workflow](https://github.com/apache/cordova-common/actions/workflows/release-audit.yml/badge.svg?branch=master)](https://github.com/apache/cordova-common/actions/workflows/release-audit.yml?query=branch%3Amaster)
 
 Exposes shared functionality used by [cordova-lib](https://github.com/apache/cordova-lib/) and Cordova platforms.
 
