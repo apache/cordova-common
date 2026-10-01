@@ -278,6 +278,10 @@ class PluginInfo {
      *          <pod name="Foobar4" swift-version="4.1" />
      *          <pod name="Foobar5" swift-version="3.0" />
      *      </pods>
+     *      <plugins>
+     *          <plugin name="my-other-plugin" />
+     *          <plugin name="cocoapods-art" options=":sources =&gt; [ &apos;my.repo.name&apos; ]" />
+     *      </plugins>
      *  </podspec>
      *
      * @param {string} platform
@@ -286,6 +290,7 @@ class PluginInfo {
         return this._getTagsInPlatform('podspec', platform).map(tag => {
             const config = tag.find('config');
             const pods = tag.find('pods');
+            const pluginsTag = tag.find('plugins');
 
             const sources = config && config.findall('source')
                 .map(el => ({ source: el.attrib.url }))
@@ -297,7 +302,11 @@ class PluginInfo {
                 .map(t => t.attrib)
                 .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {});
 
-            return { declarations, sources, libraries };
+            const plugins = pluginsTag && pluginsTag.findall('plugin')
+                .map(t => t.attrib)
+                .reduce((acc, val) => Object.assign(acc, { [val.name]: val }), {});
+
+            return { declarations, sources, libraries, plugins };
         });
     }
 
