@@ -37,6 +37,7 @@ const fixturePath = path.join(__dirname, '../fixtures');
 // XML fixtures
 const xml = path.join(fixturePath, 'test-config.xml');
 const editconfig_xml = path.join(fixturePath, 'test-editconfig.xml');
+const editconfig_multiple_children_xml = path.join(fixturePath, 'test-editconfig-multiple-children.xml');
 const configfile_xml = path.join(fixturePath, 'test-configfile.xml');
 
 // Project fixtures
@@ -424,6 +425,53 @@ describe('config-changes module', function () {
                     expect(sdk.attrib['android:targetSdkVersion']).toEqual('23');
                     expect(sdk.attrib['android:minSdkVersion']).toEqual('5');
                     expect(sdk.attrib['android:maxSdkVersion']).toBeUndefined();
+                });
+
+                it('should keep every child of a multi-child edit-config applied across repeated runs', function () {
+                    // Each pass is a separate PlatformJson load and PlatformMunger, as a fresh
+                    // cordova prepare would be: the munges of the previous pass are read back from
+                    // the platform json rather than held in memory.
+                    const multi_cfg = new ConfigParser(editconfig_multiple_children_xml);
+                    const wanted = ['android:allowBackup', 'android:largeHeap', 'android:extractNativeLibs'];
+
+                    for (let pass = 1; pass <= wanted.length + 1; pass++) {
+                        const platformJson = PlatformJson.load(plugins_dir, 'android');
+                        new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider)
+                            .add_config_changes(multi_cfg, true)
+                            .save_all();
+
+                        const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf8')));
+                        const application = am_xml.find('./application');
+                        expect(application).toBeDefined();
+
+                        const applied = wanted.filter(attribute => attribute in application.attrib);
+                        expect(applied).withContext(`pass ${pass}`).toEqual(wanted);
+                    }
+                });
+
+                it('should keep a plugin config-file graft that shares a selector with a config.xml edit-config', function () {
+                    // config-file adds a child under /manifest/application, edit-config rewrites
+                    // that element's attributes. They do not contend, so the plugin's element must
+                    // survive however many times config.xml is applied.
+                    install_plugin(dummyplugin);
+                    const multi_cfg = new ConfigParser(editconfig_multiple_children_xml);
+
+                    const platformJson = PlatformJson.load(plugins_dir, 'android');
+                    platformJson.addInstalledPluginToPrepareQueue('org.test.plugins.dummyplugin', {});
+                    const munger = new configChanges.PlatformMunger('android', temp, platformJson, pluginInfoProvider);
+                    munger.process(plugins_dir);
+                    munger.save_all();
+
+                    for (let pass = 1; pass <= 3; pass++) {
+                        const json = PlatformJson.load(plugins_dir, 'android');
+                        new configChanges.PlatformMunger('android', temp, json, pluginInfoProvider)
+                            .add_config_changes(multi_cfg, true)
+                            .save_all();
+
+                        const am_xml = new et.ElementTree(et.XML(fs.readFileSync(path.join(temp, 'AndroidManifest.xml'), 'utf8')));
+                        const activity = am_xml.find('./application/activity[@android:name="DummyPlugin.org.test.plugins.dummyplugin"]');
+                        expect(activity).withContext(`pass ${pass}`).not.toBeNull();
+                    }
                 });
 
                 it('should append new children to XML document tree', function () {
